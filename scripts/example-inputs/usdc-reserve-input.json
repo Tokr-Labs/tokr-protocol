@@ -1,6 +1,6 @@
 {
-  "ownerKeyPair": "~/Documents/workspace/tokr/keys/owner-041222325.json",
-  "lendingKeyPair": "~/Documents/workspace/tokr/keys/lending-041222325.json",
+  "ownerKeyPair": "./keys/owner-041222325.json",
+  "lendingKeyPair": "./keys/lending-041222325.json",
   "tokenLendingCli": "./target/debug/spl-token-lending",
   "tokenLendingExe": "./target/deploy/spl_token_lending.so",
   "marketAddress": "3JS8TYkeWuBdwE5ePb6hCoH7MDtXXaC32VxXxxCin9qZ",
