@@ -1,3 +1,6 @@
+[package]
+name = "whitelist"
+
 [workspace]
 members = ["program"]
 
@@ -6,7 +9,10 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.devnet]
-whitelist = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
+
+[programs.localnet]
+whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
 
 [scripts]
 test = "yarn run mocha -t 1000000 tests/"

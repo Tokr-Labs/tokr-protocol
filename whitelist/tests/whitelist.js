@@ -3,16 +3,22 @@ const anchor = require("@project-serum/anchor");
 const { SystemProgram } = anchor.web3;
 
 describe("whitelist", () => {
+
   // Use a local provider.
   const provider = anchor.AnchorProvider.local();
+
+  console.log(provider);
 
   // Configure the client to use the local cluster.
   anchor.setProvider(provider);
 
   it("Creates and initializes an account in a single atomic transaction (simplified)", async () => {
+
     // #region code-simplified
     // The program to execute.
-    const program = anchor.workspace.Basic1;
+    const program = anchor.workspace.Whitelist;
+
+    console.log(anchor.workspace);
 
     // The Account to create.
     const myAccount = anchor.web3.Keypair.generate();
@@ -45,7 +51,7 @@ describe("whitelist", () => {
     // #region update-test
 
     // The program to execute.
-    const program = anchor.workspace.Basic1;
+    const program = anchor.workspace.Whitelist;
 
     // Invoke the update rpc.
     await program.rpc.update(new anchor.BN(4321), {
@@ -62,4 +68,5 @@ describe("whitelist", () => {
 
     // #endregion update-test
   });
+
 });
