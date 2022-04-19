@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/associated-token-account/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/associated-token-account/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/binary-option/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/binary-oracle-pair/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/binary-oracle-pair/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/cross-program-invocation/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/cross-program-invocation/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/custom-heap/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/custom-heap/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/logging/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/logging/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/sysvar/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/sysvar/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/transfer-lamports/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust/transfer-lamports/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/feature-proposal/cli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/feature-proposal/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/feature-proposal/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/addin-api/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/addin-mock/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/chat/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/chat/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/test-sdk/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/governance/tools/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libraries/math/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libraries/math/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/memo/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/memo/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/name-service/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/name-service/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/record/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/record/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/shared-memory/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/shared-memory/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/stake-pool/cli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/stake-pool/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/stake-pool/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/stateless-asks/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token-lending/cli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token-lending/flash_loan_receiver/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token-lending/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token-lending/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/token-swap/program/fuzz/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token-swap/program/sim/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token-swap/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token/cli/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token/client/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token/client/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/token/program-2022-test/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/token/program-2022/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token/program-2022/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/token/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/token/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/utils/cgen/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/utils/test-client/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
+      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
