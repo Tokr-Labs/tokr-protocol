@@ -39,10 +39,12 @@ describe("that whitelist program", () => {
             signers: [keypair],
         });
 
-        const accountInfo = await program.account.metadata.fetch(account);
+        const accountInfo = await provider.connection.getAccountInfo(account);
+        const accountMeta = await program.account.metadata.fetch(account);
 
-        assert.equal(accountInfo.status, 0);
-        assert.equal(accountInfo.bump, bump);
+        assert.equal(accountInfo.owner, program.programId);
+        assert.equal(accountMeta.status, 0);
+        assert.equal(accountMeta.bump, bump);
         assert.exists(tx);
 
     });
@@ -64,6 +66,5 @@ describe("that whitelist program", () => {
         assert.fail("not implemented")
 
     });
-
 
 });
