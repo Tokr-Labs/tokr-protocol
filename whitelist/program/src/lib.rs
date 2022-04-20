@@ -2,39 +2,50 @@ use anchor_lang::prelude::*;
 
 declare_id!("JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A");
 
+const DISCRIMINATOR_LENGTH: usize = 8;
+const STATUS_LENGTH: usize = 1;
+const BUMP_LENGTH: usize = 1;
+
 #[program]
 mod whitelist {
+
     use super::*;
 
-    pub fn initialize(ctx: Context<Initialize>, data: u64) -> Result<()> {
-        let my_account = &mut ctx.accounts.my_account;
-        my_account.data = data;
+    pub fn initialize(
+        ctx: Context<Initialize>,
+        bump: u8,
+    ) -> Result<()> {
+
+        ctx.accounts.whitelist_account.status = 0;
+        ctx.accounts.whitelist_account.bump = bump;
+
         Ok(())
     }
 
-    pub fn update(ctx: Context<Update>, data: u64) -> Result<()> {
-        let my_account = &mut ctx.accounts.my_account;
-        my_account.data = data;
-        Ok(())
-    }
 }
 
 #[derive(Accounts)]
+#[instruction(bump: u8)]
 pub struct Initialize<'info> {
-    #[account(init, payer = user, space = 8 + 8)]
-    pub my_account: Account<'info, MyAccount>,
     #[account(mut)]
-    pub user: Signer<'info>,
+    pub signer: Signer<'info>,
+    #[account(init, seeds = [b"whitelist".as_ref(), signer.key.as_ref()], bump, payer = signer, space = Metadata::LEN)]
+    pub whitelist_account: Account<'info, Metadata>,
     pub system_program: Program<'info, System>,
 }
 
-#[derive(Accounts)]
-pub struct Update<'info> {
-    #[account(mut)]
-    pub my_account: Account<'info, MyAccount>,
+#[account]
+#[derive(Default)]
+pub struct Metadata {
+    pub bump: u8,
+    pub status: u8
+    // pub authority: Pubkey
 }
 
-#[account]
-pub struct MyAccount {
-    pub data: u64,
+impl Metadata {
+
+    const LEN: usize = DISCRIMINATOR_LENGTH +
+        STATUS_LENGTH +
+        BUMP_LENGTH;
+
 }

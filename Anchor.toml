@@ -20,4 +20,4 @@ whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
 whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
 
 [scripts]
-test = "yarn run mocha -t 1000000 whitelist/tests"
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 ./whitelist/tests/**/*.ts"
