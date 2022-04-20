@@ -10,6 +10,7 @@ describe("test that the whitelist program", () => {
     let program: Program<Whitelist>;
     let provider: AnchorProvider;
     let keypair: Keypair;
+    let authority: Keypair;
 
     before(async () => {
 
@@ -27,6 +28,13 @@ describe("test that the whitelist program", () => {
         const uint8Array = Uint8Array.from(parsed);
         keypair = anchor.web3.Keypair.fromSecretKey(uint8Array);
 
+        authority = anchor.web3.Keypair.generate();
+        await provider.connection.requestAirdrop(authority.publicKey, 1000000000)
+
+    })
+
+    beforeEach(() => {
+        console.log("authority = ", authority.publicKey.toBase58());
     })
 
     it("succeeds in creating a whitelist record for a user", async () => {
@@ -36,7 +44,9 @@ describe("test that the whitelist program", () => {
             provider.wallet.publicKey.toBytes()
         ], program.programId);
 
-        const tx = await program.rpc.createRecord(bump, {
+        console.log("pda = ", account.toBase58(), bump);
+
+        const tx = await program.rpc.createRecord(bump, authority.publicKey, {
             accounts: {
                 signer: keypair.publicKey,
                 record: account,
@@ -51,6 +61,7 @@ describe("test that the whitelist program", () => {
         assert.equal(accountInfo.owner.toBase58(), program.programId.toBase58());
         assert.equal(accountMeta.status, 0);
         assert.equal(accountMeta.bump, bump);
+        assert.equal(accountMeta.authority.toBase58(), authority.publicKey.toBase58());
         assert.exists(tx);
 
     });
@@ -62,16 +73,57 @@ describe("test that the whitelist program", () => {
             provider.wallet.publicKey.toBytes()
         ], program.programId);
 
+        console.log("pda = ", account.toBase58(), bump);
+
         const tx = await program.rpc.updateRecord(1, {
             accounts: {
                 record: account,
-                subject: keypair.publicKey
-            }
+                subject: keypair.publicKey,
+                signer: authority.publicKey
+            },
+            signers:[authority],
         });
 
         const accountMeta = await program.account.metadata.fetch(account);
 
         assert.equal(accountMeta.status, 1);
+
+    });
+
+    it("fails to update an account if the signer is not the authority", async () => {
+
+        const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
+            Buffer.from('whitelist'),
+            provider.wallet.publicKey.toBytes()
+        ], program.programId);
+
+        console.log("pda = ", account.toBase58(), bump);
+
+        const unknownKeypair = anchor.web3.Keypair.generate();
+
+        try {
+
+            const tx = await program.rpc.updateRecord(2, {
+                accounts: {
+                    record: account,
+                    subject: keypair.publicKey,
+                    signer: unknownKeypair.publicKey
+                },
+                signers: [unknownKeypair],
+            });
+
+        } catch (exception) {
+
+            const error = exception.error;
+
+            assert.equal(error.errorCode.code, "NotAuthorized");
+
+        }
+
+        const accountMeta = await program.account.metadata.fetch(account);
+
+        assert.equal(accountMeta.status, 1);
+
 
     });
 
@@ -82,6 +134,8 @@ describe("test that the whitelist program", () => {
             provider.wallet.publicKey.toBytes()
         ], program.programId);
 
+        console.log("pda = ", account.toBase58());
+
         const accountMeta = await program.account.metadata.fetch(account);
         const originalStatus = accountMeta.status;
 
@@ -89,17 +143,23 @@ describe("test that the whitelist program", () => {
 
             await program.rpc.updateRecord(3, {
                 accounts: {
+                    signer: [authority.publicKey],
                     record: account,
-                    subject: keypair.publicKey
-                }
+                    subject: keypair.publicKey,
+                },
+                signers: [authority]
             });
 
         } catch (exception) {
 
-            const error = exception.error;
+            console.log(exception);
 
-            assert.equal(error.errorCode.code, "UnknownStatus");
-            assert.equal(error.errorCode.number, "6000");
+
+            // console.log(exception);
+            //
+            // const error = exception.error;
+            //
+            // assert.equal(error.errorCode.code, "UnknownStatus");
 
         }
 
