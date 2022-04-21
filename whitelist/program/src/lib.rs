@@ -37,7 +37,6 @@ mod whitelist {
         require!(aml_status <= 2, ErrorCode::UnknownStatus);
         require!(kyc_status <= 2, ErrorCode::UnknownStatus);
 
-
         ctx.accounts.record.accreditation_status = accreditation_status;
         ctx.accounts.record.aml_status = aml_status;
         ctx.accounts.record.kyc_status = kyc_status;
@@ -75,12 +74,12 @@ pub struct UpdateRecord<'info> {
     /// the record is about and should have been created by the system account ensuring that it is
     /// an actual user account.
     pub subject: SystemAccount<'info>,
-
 }
 
 #[derive(Default)]
 #[account]
 pub struct Metadata {
+    /// bump seed used in deriving the pda for the status account
     pub bump: u8,
 
     /// Accreditation status of the user (0 = initial, 1 = approved, 2 = denied).
