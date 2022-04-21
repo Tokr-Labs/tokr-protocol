@@ -17,8 +17,9 @@ mod whitelist {
         bump: u8,
         _group: Pubkey,
     ) -> Result<()> {
+
         ctx.accounts.record.aml_status = 0;
-        ctx.accounts.record.accreditation_status = 0;
+        ctx.accounts.record.ia_status = 0;
         ctx.accounts.record.kyc_status = 0;
         ctx.accounts.record.bump = bump;
         ctx.accounts.record.authority = ctx.accounts.authority.key.clone();
@@ -26,31 +27,8 @@ mod whitelist {
         Ok(())
     }
 
-    /// Update a record of kyc/aml metadata for the user.
-    pub fn update_record(
-        ctx: Context<UpdateRecord>,
-        _bump: u8,
-        _group: Pubkey,
-        accreditation_status: u8,
-        aml_status: u8,
-        kyc_status: u8,
-    ) -> Result<()> {
-        let authority = &mut ctx.accounts.authority;
-        require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
-
-        require!(accreditation_status <= 2, ErrorCode::UnknownStatus);
-        require!(aml_status <= 2, ErrorCode::UnknownStatus);
-        require!(kyc_status <= 2, ErrorCode::UnknownStatus);
-
-        ctx.accounts.record.accreditation_status = accreditation_status;
-        ctx.accounts.record.aml_status = aml_status;
-        ctx.accounts.record.kyc_status = kyc_status;
-
-        Ok(())
-    }
-
     /// Update accreditation status of account
-    pub fn update_accreditation_status(
+    pub fn update_ia_status(
         ctx: Context<UpdateRecord>,
         _bump: u8,
         _group: Pubkey,
@@ -59,8 +37,8 @@ mod whitelist {
         let authority = &mut ctx.accounts.authority;
         require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
 
-        require!(status <= 2, ErrorCode::UnknownStatus);
-        ctx.accounts.record.accreditation_status = status;
+        require!(status <= 3, ErrorCode::UnknownStatus);
+        ctx.accounts.record.ia_status = status;
 
         Ok(())
     }
@@ -75,7 +53,7 @@ mod whitelist {
         let authority = &mut ctx.accounts.authority;
         require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
 
-        require!(status <= 2, ErrorCode::UnknownStatus);
+        require!(status <= 3, ErrorCode::UnknownStatus);
         ctx.accounts.record.aml_status = status;
 
         Ok(())
@@ -91,7 +69,7 @@ mod whitelist {
         let authority = &mut ctx.accounts.authority;
         require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
 
-        require!(status <= 2, ErrorCode::UnknownStatus);
+        require!(status <= 3, ErrorCode::UnknownStatus);
         ctx.accounts.record.kyc_status = status;
 
         Ok(())
@@ -166,13 +144,13 @@ pub struct Metadata {
     /// bump seed used in deriving the pda for the status account
     pub bump: u8,
 
-    /// Accreditation status of the user (0 = initial, 1 = approved, 2 = denied).
-    pub accreditation_status: u8,
+    /// Accreditation status of the user (0 == initial, 1 == started, 2 == approved, 3 == rejected).
+    pub ia_status: u8,
 
-    /// AML status of the user (0 = initial, 1 = approved, 2 = denied).
+    /// AML status of the user (0 == initial, 1 == started, 2 == approved, 3 == rejected).
     pub aml_status: u8,
 
-    /// KYC status of the user (0 = initial, 1 = approved, 2 = denied).
+    /// KYC status of the user (0 == initial, 1 == started, 2 == approved, 3 == rejected).
     pub kyc_status: u8,
 
     /// Account who has update authority over the account
