@@ -12,6 +12,7 @@ describe("test that the whitelist program", () => {
     let provider: AnchorProvider;
     let keypair: Keypair;
     let authority: Keypair;
+    let newAuthority: Keypair;
     let nonAuthority: Keypair;
     let groupKeypair: Keypair;
     let pdaPubkey: PublicKey;
@@ -38,6 +39,11 @@ describe("test that the whitelist program", () => {
         authority = anchor.web3.Keypair.generate();
         console.log("authority = ", authority.publicKey.toBase58());
         await provider.connection.requestAirdrop(authority.publicKey, 1000000000)
+
+        // make this account real
+        newAuthority = anchor.web3.Keypair.generate();
+        console.log("newAuthority = ", newAuthority.publicKey.toBase58());
+        await provider.connection.requestAirdrop(newAuthority.publicKey, 1000000000)
 
         // make this account real
         nonAuthority = anchor.web3.Keypair.generate();
@@ -215,5 +221,22 @@ describe("test that the whitelist program", () => {
 
     });
 
+    it("can transfer authority from one account to another", async () => {
+
+        await program.rpc.transferAuthority(pdaBump, groupKeypair.publicKey, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                transferFrom: authority.publicKey,
+                transferTo: newAuthority.publicKey
+            },
+            signers:[authority]
+        });
+
+        const  accountMeta = await program.account.metadata.fetch(pdaPubkey);
+
+        assert.equal(accountMeta.authority.toBase58(), newAuthority.publicKey.toBase58());
+
+    });
 
 });
