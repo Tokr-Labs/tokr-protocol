@@ -2,7 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import {AnchorProvider, Program} from "@project-serum/anchor";
 import {Whitelist} from "../../target/types/whitelist";
 import {assert} from "chai";
-import {Keypair, Transaction, TransactionInstruction} from "@solana/web3.js";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import * as fs from "fs";
 
 describe("test that the whitelist program", () => {
@@ -11,6 +11,7 @@ describe("test that the whitelist program", () => {
     let provider: AnchorProvider;
     let keypair: Keypair;
     let authority: Keypair;
+    let groupKeypair: Keypair;
 
     before(async () => {
 
@@ -31,22 +32,18 @@ describe("test that the whitelist program", () => {
         authority = anchor.web3.Keypair.generate();
         await provider.connection.requestAirdrop(authority.publicKey, 1000000000)
 
-    })
+        groupKeypair = anchor.web3.Keypair.generate();
 
-    beforeEach(() => {
-        console.log("authority = ", authority.publicKey.toBase58());
     })
 
     it("succeeds in creating a whitelist record for a user", async () => {
 
         const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-            Buffer.from('whitelist'),
-            provider.wallet.publicKey.toBytes()
+            groupKeypair.publicKey.toBytes(),
+            keypair.publicKey.toBytes()
         ], program.programId);
 
-        console.log("pda = ", account.toBase58(), bump);
-
-        const tx = await program.rpc.createRecord(bump, authority.publicKey, {
+        const tx = await program.rpc.createRecord(bump, groupKeypair.publicKey, {
             accounts: {
                 signer: keypair.publicKey,
                 record: account,
@@ -59,9 +56,10 @@ describe("test that the whitelist program", () => {
         const accountMeta = await program.account.metadata.fetch(account);
 
         assert.equal(accountInfo.owner.toBase58(), program.programId.toBase58());
-        assert.equal(accountMeta.status, 0);
+        assert.equal(accountMeta.statusA, 0);
+        assert.equal(accountMeta.statusB, 0);
+        assert.equal(accountMeta.statusC, 0);
         assert.equal(accountMeta.bump, bump);
-        assert.equal(accountMeta.authority.toBase58(), authority.publicKey.toBase58());
         assert.exists(tx);
 
     });
@@ -69,27 +67,28 @@ describe("test that the whitelist program", () => {
     it("is able to update an account's status", async () => {
 
         const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-            Buffer.from('whitelist'),
-            provider.wallet.publicKey.toBytes()
+            groupKeypair.publicKey.toBytes(),
+            keypair.publicKey.toBytes()
         ], program.programId);
 
-        console.log("pda = ", account.toBase58(), bump);
-
-        const tx = await program.rpc.updateRecord(1, {
+        const tx = await program.rpc.updateRecord(bump, groupKeypair.publicKey, 0, 1, 2, {
             accounts: {
                 record: account,
-                subject: keypair.publicKey,
-                signer: authority.publicKey
+                subject: keypair.publicKey
             },
-            signers:[authority],
         });
 
         const accountMeta = await program.account.metadata.fetch(account);
 
-        assert.equal(accountMeta.status, 1);
+        assert.equal(accountMeta.statusA, 0);
+        assert.equal(accountMeta.statusB, 1);
+        assert.equal(accountMeta.statusC, 2);
+        assert.exists(tx);
+
 
     });
 
+    /*
     it("fails to update an account if the signer is not the authority", async () => {
 
         const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
@@ -166,5 +165,6 @@ describe("test that the whitelist program", () => {
         assert.equal(accountMeta.status, originalStatus);
 
     });
+*/
 
 });

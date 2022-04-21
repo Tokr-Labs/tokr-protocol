@@ -3,13 +3,11 @@
 const {Command} = require("commander");
 const program = new Command();
 const anchor = require("@project-serum/anchor");
-const whitelist = require("../../target/idl/whitelist.json");
-const {Program} = require("@project-serum/anchor");
 const fs = require("fs");
-const exec = require("./utils/exec").exec;
 const loadKeypair = require("./utils/load-keypair").loadKeypair;
 
 const PROGRAM_ID = new anchor.web3.PublicKey("JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A");
+const GROUP_PUBKEY = new anchor.web3.PublicKey("87ZjYTenZmy9pjXnYH79mkX1tEKnkcY97asnGqQ5Mtdc");
 
 (async function main() {
 
@@ -24,14 +22,9 @@ const PROGRAM_ID = new anchor.web3.PublicKey("JDS6WitBF654whkcWz5i5HX1ixska8Je4a
             "-u, --user <string>",
             "Keypair file location of user who is going to have a record about.",
         )
-        .requiredOption(
-            "-a, --authority <string>",
-            "Keypair file location of authority",
-        )
         .action(async (options) => {
 
             let userKeypair = await loadKeypair(options.user);
-            let authorityKeypair = await loadKeypair(options.authority);
 
             try {
 
@@ -44,20 +37,21 @@ const PROGRAM_ID = new anchor.web3.PublicKey("JDS6WitBF654whkcWz5i5HX1ixska8Je4a
                 anchor.setProvider(anchor.AnchorProvider.env());
 
                 const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-                    Buffer.from('whitelist'),
+                    GROUP_PUBKEY.toBytes(),
                     userKeypair.publicKey.toBytes()
                 ], PROGRAM_ID);
 
                 const whitelist = anchor.workspace.Whitelist;
 
-                const tx = await whitelist.rpc.createRecord(bump, {
+                const tx = await whitelist.rpc.createRecord(bump, GROUP_PUBKEY, {
                     accounts: {
                         signer: userKeypair.publicKey,
                         record: account,
-                        systemProgram: anchor.web3.SystemProgram.programId
+                        systemProgram: anchor.web3.SystemProgram.programId,
                     },
-                    signers:[userKeypair]
-                })
+                    signers: [userKeypair],
+                });
+
 
                 console.log(tx);
 

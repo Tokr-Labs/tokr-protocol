@@ -4,7 +4,8 @@
   "scripts": {
     "create-token": "ts-node ./scripts/create-token.ts",
     "create-lending-market": "ts-node ./scripts/create-lending-market.ts",
-    "create-market-reserve": "ts-node ./scripts/create-market-reserve.ts"
+    "create-market-reserve": "ts-node ./scripts/create-market-reserve.ts",
+    "test": "anchor test"
   },
   "files": [
     "scripts/**"
