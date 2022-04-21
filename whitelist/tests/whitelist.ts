@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import {AnchorProvider, Program} from "@project-serum/anchor";
-import {Whitelist} from "../../target/types/whitelist";
+import {Whitelist, IDL} from "../../target/types/whitelist";
 import {assert} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import * as fs from "fs";
@@ -18,6 +18,8 @@ describe("test that the whitelist program", () => {
         anchor.setProvider(anchor.AnchorProvider.local());
         provider = anchor.AnchorProvider.local();
         program = anchor.workspace.Whitelist as Program<Whitelist>;
+
+
 
         let contents = fs.readFileSync(process.env.ANCHOR_WALLET);
         let parsed = String(contents)
@@ -56,9 +58,9 @@ describe("test that the whitelist program", () => {
         const accountMeta = await program.account.metadata.fetch(account);
 
         assert.equal(accountInfo.owner.toBase58(), program.programId.toBase58());
-        assert.equal(accountMeta.statusA, 0);
-        assert.equal(accountMeta.statusB, 0);
-        assert.equal(accountMeta.statusC, 0);
+        assert.equal(accountMeta.accreditationStatus, 0);
+        assert.equal(accountMeta.amlStatus, 0);
+        assert.equal(accountMeta.kycStatus, 0);
         assert.equal(accountMeta.bump, bump);
         assert.exists(tx);
 
@@ -71,19 +73,60 @@ describe("test that the whitelist program", () => {
             keypair.publicKey.toBytes()
         ], program.programId);
 
+
+
         const tx = await program.rpc.updateRecord(bump, groupKeypair.publicKey, 0, 1, 2, {
             accounts: {
                 record: account,
-                subject: keypair.publicKey
-            },
+                subject: keypair.publicKey,
+            }
         });
 
         const accountMeta = await program.account.metadata.fetch(account);
 
-        assert.equal(accountMeta.statusA, 0);
-        assert.equal(accountMeta.statusB, 1);
-        assert.equal(accountMeta.statusC, 2);
+        assert.equal(accountMeta.accreditationStatus, 0);
+        assert.equal(accountMeta.amlStatus, 1);
+        assert.equal(accountMeta.kycStatus, 2);
         assert.exists(tx);
+
+
+    });
+
+    it("is not able to update an account's status to unknown status", async () => {
+
+        const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
+            groupKeypair.publicKey.toBytes(),
+            keypair.publicKey.toBytes()
+        ], program.programId);
+
+        const  originalAccountMeta = await program.account.metadata.fetch(account);
+
+        let accreditationStatus = originalAccountMeta.accreditationStatus;
+        let amlStatus = originalAccountMeta.amlStatus;
+        let kycStatus = originalAccountMeta.kycStatus;
+
+        try {
+
+            await program.rpc.updateRecord(bump, groupKeypair.publicKey, 3, 1, 2, {
+                accounts: {
+                    record: account,
+                    subject: keypair.publicKey,
+                }
+            });
+
+        } catch (exception) {
+
+            const error = exception.error;
+
+            assert.equal(error.errorCode.code, "UnknownStatus");
+
+        }
+
+        const accountMeta = await program.account.metadata.fetch(account);
+
+        assert.equal(accountMeta.accreditationStatus, accreditationStatus);
+        assert.equal(accountMeta.amlStatus, amlStatus);
+        assert.equal(accountMeta.kycStatus, kycStatus);
 
 
     });
