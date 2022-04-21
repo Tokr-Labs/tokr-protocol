@@ -4,6 +4,7 @@ import {Whitelist, IDL} from "../../target/types/whitelist";
 import {assert} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import * as fs from "fs";
+import BN from "bn.js";
 
 describe("test that the whitelist program", () => {
 
@@ -11,15 +12,16 @@ describe("test that the whitelist program", () => {
     let provider: AnchorProvider;
     let keypair: Keypair;
     let authority: Keypair;
+    let nonAuthority: Keypair;
     let groupKeypair: Keypair;
+    let pdaPubkey: PublicKey;
+    let pdaBump: number
 
     before(async () => {
 
         anchor.setProvider(anchor.AnchorProvider.local());
         provider = anchor.AnchorProvider.local();
         program = anchor.workspace.Whitelist as Program<Whitelist>;
-
-
 
         let contents = fs.readFileSync(process.env.ANCHOR_WALLET);
         let parsed = String(contents)
@@ -30,59 +32,66 @@ describe("test that the whitelist program", () => {
 
         const uint8Array = Uint8Array.from(parsed);
         keypair = anchor.web3.Keypair.fromSecretKey(uint8Array);
+        console.log("keypair = ", keypair.publicKey.toBase58());
 
+        // make this account real
         authority = anchor.web3.Keypair.generate();
+        console.log("authority = ", authority.publicKey.toBase58());
         await provider.connection.requestAirdrop(authority.publicKey, 1000000000)
 
+        // make this account real
+        nonAuthority = anchor.web3.Keypair.generate();
+        await provider.connection.requestAirdrop(nonAuthority.publicKey, 1000000000)
+
+        // we'll be using this keypairs pubkey for part of the pda seeds
         groupKeypair = anchor.web3.Keypair.generate();
-
-    })
-
-    it("succeeds in creating a whitelist record for a user", async () => {
 
         const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
             groupKeypair.publicKey.toBytes(),
             keypair.publicKey.toBytes()
         ], program.programId);
 
-        const tx = await program.rpc.createRecord(bump, groupKeypair.publicKey, {
+        pdaPubkey = account;
+        pdaBump = bump;
+
+    })
+
+    it("succeeds in creating a whitelist record for a user", async () => {
+
+        const tx = await program.rpc.createRecord(pdaBump, groupKeypair.publicKey, {
             accounts: {
                 signer: keypair.publicKey,
-                record: account,
+                record: pdaPubkey,
                 systemProgram: anchor.web3.SystemProgram.programId,
+                authority: authority.publicKey
             },
             signers: [keypair],
         });
 
-        const accountInfo = await provider.connection.getAccountInfo(account);
-        const accountMeta = await program.account.metadata.fetch(account);
+        const accountInfo = await provider.connection.getAccountInfo(pdaPubkey);
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         assert.equal(accountInfo.owner.toBase58(), program.programId.toBase58());
         assert.equal(accountMeta.accreditationStatus, 0);
         assert.equal(accountMeta.amlStatus, 0);
         assert.equal(accountMeta.kycStatus, 0);
-        assert.equal(accountMeta.bump, bump);
+        assert.equal(accountMeta.bump, pdaBump);
         assert.exists(tx);
 
     });
 
     it("is able to update an account's status", async () => {
 
-        const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-            groupKeypair.publicKey.toBytes(),
-            keypair.publicKey.toBytes()
-        ], program.programId);
-
-
-
-        const tx = await program.rpc.updateRecord(bump, groupKeypair.publicKey, 0, 1, 2, {
+        const tx = await program.rpc.updateRecord(pdaBump, groupKeypair.publicKey, 0, 1, 2, {
             accounts: {
-                record: account,
+                record: pdaPubkey,
                 subject: keypair.publicKey,
-            }
+                authority: authority.publicKey
+            },
+            signers: [authority],
         });
 
-        const accountMeta = await program.account.metadata.fetch(account);
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         assert.equal(accountMeta.accreditationStatus, 0);
         assert.equal(accountMeta.amlStatus, 1);
@@ -92,14 +101,65 @@ describe("test that the whitelist program", () => {
 
     });
 
+    it("is able to update an account's accreditation status", async () => {
+
+        const tx = await program.rpc.updateAccreditationStatus(pdaBump, groupKeypair.publicKey, 1, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            },
+            signers: [authority],
+        });
+
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
+
+        assert.equal(accountMeta.accreditationStatus, 1);
+        assert.exists(tx);
+
+    });
+
+    it("is able to update an account's kyc status", async () => {
+
+        const tx = await program.rpc.updateKycStatus(pdaBump, groupKeypair.publicKey, 2, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            },
+            signers: [authority],
+        });
+
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
+
+        assert.equal(accountMeta.kycStatus, 2);
+        assert.exists(tx);
+
+
+    });
+
+    it("is able to update an account's aml status", async () => {
+
+        const tx = await program.rpc.updateAmlStatus(pdaBump, groupKeypair.publicKey, 1, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            },
+            signers: [authority],
+        });
+
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
+
+        assert.equal(accountMeta.amlStatus, 1);
+        assert.exists(tx);
+
+
+    });
+
     it("is not able to update an account's status to unknown status", async () => {
 
-        const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-            groupKeypair.publicKey.toBytes(),
-            keypair.publicKey.toBytes()
-        ], program.programId);
-
-        const  originalAccountMeta = await program.account.metadata.fetch(account);
+        const  originalAccountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         let accreditationStatus = originalAccountMeta.accreditationStatus;
         let amlStatus = originalAccountMeta.amlStatus;
@@ -107,11 +167,13 @@ describe("test that the whitelist program", () => {
 
         try {
 
-            await program.rpc.updateRecord(bump, groupKeypair.publicKey, 3, 1, 2, {
+            await program.rpc.updateRecord(pdaBump, groupKeypair.publicKey, 3, 1, 2, {
                 accounts: {
-                    record: account,
+                    record: pdaPubkey,
                     subject: keypair.publicKey,
-                }
+                    authority: authority.publicKey
+                },
+                signers:[authority]
             });
 
         } catch (exception) {
@@ -122,7 +184,7 @@ describe("test that the whitelist program", () => {
 
         }
 
-        const accountMeta = await program.account.metadata.fetch(account);
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         assert.equal(accountMeta.accreditationStatus, accreditationStatus);
         assert.equal(accountMeta.amlStatus, amlStatus);
@@ -131,83 +193,27 @@ describe("test that the whitelist program", () => {
 
     });
 
-    /*
-    it("fails to update an account if the signer is not the authority", async () => {
-
-        const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-            Buffer.from('whitelist'),
-            provider.wallet.publicKey.toBytes()
-        ], program.programId);
-
-        console.log("pda = ", account.toBase58(), bump);
-
-        const unknownKeypair = anchor.web3.Keypair.generate();
+    it("fails to update an account if the authority is not known", async () => {
 
         try {
 
-            const tx = await program.rpc.updateRecord(2, {
+            await program.rpc.updateRecord(pdaBump, groupKeypair.publicKey, 0, 1, 2, {
                 accounts: {
-                    record: account,
+                    record: pdaPubkey,
                     subject: keypair.publicKey,
-                    signer: unknownKeypair.publicKey
+                    authority: nonAuthority.publicKey
                 },
-                signers: [unknownKeypair],
+                signers:[nonAuthority]
             });
 
         } catch (exception) {
 
             const error = exception.error;
-
             assert.equal(error.errorCode.code, "NotAuthorized");
 
         }
 
-        const accountMeta = await program.account.metadata.fetch(account);
-
-        assert.equal(accountMeta.status, 1);
-
-
     });
 
-    it("will throw an error if a status is unknown", async () => {
-
-        const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
-            Buffer.from('whitelist'),
-            provider.wallet.publicKey.toBytes()
-        ], program.programId);
-
-        console.log("pda = ", account.toBase58());
-
-        const accountMeta = await program.account.metadata.fetch(account);
-        const originalStatus = accountMeta.status;
-
-        try {
-
-            await program.rpc.updateRecord(3, {
-                accounts: {
-                    signer: [authority.publicKey],
-                    record: account,
-                    subject: keypair.publicKey,
-                },
-                signers: [authority]
-            });
-
-        } catch (exception) {
-
-            console.log(exception);
-
-
-            // console.log(exception);
-            //
-            // const error = exception.error;
-            //
-            // assert.equal(error.errorCode.code, "UnknownStatus");
-
-        }
-
-        assert.equal(accountMeta.status, originalStatus);
-
-    });
-*/
 
 });

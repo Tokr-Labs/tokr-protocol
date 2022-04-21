@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use solana_program::pubkey::PUBKEY_BYTES;
 
 declare_id!("JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A");
 
@@ -20,6 +21,7 @@ mod whitelist {
         ctx.accounts.record.accreditation_status = 0;
         ctx.accounts.record.kyc_status = 0;
         ctx.accounts.record.bump = bump;
+        ctx.accounts.record.authority = ctx.accounts.authority.key.clone();
 
         Ok(())
     }
@@ -33,6 +35,9 @@ mod whitelist {
         aml_status: u8,
         kyc_status: u8,
     ) -> Result<()> {
+        let authority = &mut ctx.accounts.authority;
+        require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
+
         require!(accreditation_status <= 2, ErrorCode::UnknownStatus);
         require!(aml_status <= 2, ErrorCode::UnknownStatus);
         require!(kyc_status <= 2, ErrorCode::UnknownStatus);
@@ -40,6 +45,54 @@ mod whitelist {
         ctx.accounts.record.accreditation_status = accreditation_status;
         ctx.accounts.record.aml_status = aml_status;
         ctx.accounts.record.kyc_status = kyc_status;
+
+        Ok(())
+    }
+
+    /// Update accreditation status of account
+    pub fn update_accreditation_status(
+        ctx: Context<UpdateRecord>,
+        _bump: u8,
+        _group: Pubkey,
+        status: u8,
+    ) -> Result<()> {
+        let authority = &mut ctx.accounts.authority;
+        require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
+
+        require!(status <= 2, ErrorCode::UnknownStatus);
+        ctx.accounts.record.accreditation_status = status;
+
+        Ok(())
+    }
+
+    /// Update aml status of account
+    pub fn update_aml_status(
+        ctx: Context<UpdateRecord>,
+        _bump: u8,
+        _group: Pubkey,
+        status: u8,
+    ) -> Result<()> {
+        let authority = &mut ctx.accounts.authority;
+        require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
+
+        require!(status <= 2, ErrorCode::UnknownStatus);
+        ctx.accounts.record.aml_status = status;
+
+        Ok(())
+    }
+
+    /// Update kyc status of account
+    pub fn update_kyc_status(
+        ctx: Context<UpdateRecord>,
+        _bump: u8,
+        _group: Pubkey,
+        status: u8,
+    ) -> Result<()> {
+        let authority = &mut ctx.accounts.authority;
+        require!(ctx.accounts.record.authority.key() == authority.key.clone(), ErrorCode::NotAuthorized);
+
+        require!(status <= 2, ErrorCode::UnknownStatus);
+        ctx.accounts.record.kyc_status = status;
 
         Ok(())
     }
@@ -59,7 +112,7 @@ pub struct CreateRecord<'info> {
     pub record: Account<'info, Metadata>,
 
     pub system_program: Program<'info, System>,
-
+    pub authority: SystemAccount<'info>,
 }
 
 #[derive(Accounts)]
@@ -74,6 +127,8 @@ pub struct UpdateRecord<'info> {
     /// the record is about and should have been created by the system account ensuring that it is
     /// an actual user account.
     pub subject: SystemAccount<'info>,
+
+    pub authority: Signer<'info>,
 }
 
 #[derive(Default)]
@@ -91,14 +146,15 @@ pub struct Metadata {
     /// KYC status of the user (0 = initial, 1 = approved, 2 = denied).
     pub kyc_status: u8,
 
+    /// Account who has update authority over the account
+    authority: Pubkey,
 }
 
 impl Metadata {
     const LEN: usize = DISCRIMINATOR_LENGTH +
-        STATUS_LENGTH +
-        STATUS_LENGTH +
-        STATUS_LENGTH +
-        BUMP_LENGTH;
+        (STATUS_LENGTH * 3) +
+        BUMP_LENGTH +
+        PUBKEY_BYTES;
 }
 
 #[error_code]
