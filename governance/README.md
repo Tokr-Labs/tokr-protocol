@@ -1,3 +1,13 @@
+# Running locally
+
+```
+$ solana-test-validator [--reset]
+$ solana logs
+$ anchor build
+$ anchor deploy --provider.cluster localnet
+$ anchor airdrop 10 [DELEGATE_PUBLIC_KEY]
+```
+
 # SPL Governance
 
 SPL Governance is a program the chief purpose of which is to provide core building blocks and primitives to create

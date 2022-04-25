@@ -488,6 +488,11 @@ pub fn create_realm(
     min_community_weight_to_create_governance: u64,
     community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
 ) -> Instruction {
+
+    println!("create_realm println {}", program_id);
+    print!("create_realm print {}", program_id);
+
+
     let realm_address = get_realm_address(program_id, &name);
     let community_token_holding_address =
         get_governing_token_holding_address(program_id, &realm_address, community_token_mint);
