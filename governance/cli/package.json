@@ -1,0 +1,21 @@
+{
+  "name": "tokr-governance-cli",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "create-dao": "ts-node ./cli.ts create-realm --owner ~/.config/solana/id.json --delegate ~/solana-keys/peacemaker.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@project-serum/anchor": "^0.24.2",
+    "@solana/spl-token": "^0.2.0",
+    "bs58": "^5.0.0",
+    "commander": "^9.2.0"
+  },
+  "bin": {
+    "tokr-governance": "cli.ts"
+  }
+}
