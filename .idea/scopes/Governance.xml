@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Governance" pattern="file[tokr-protocol]:governance//*" />
+</component>

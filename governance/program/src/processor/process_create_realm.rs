@@ -1,12 +1,6 @@
 //! Program state processor
 
-use solana_program::{
-    account_info::{next_account_info, AccountInfo},
-    entrypoint::ProgramResult,
-    pubkey::Pubkey,
-    rent::Rent,
-    sysvar::Sysvar,
-};
+use solana_program::{account_info::{next_account_info, AccountInfo}, entrypoint::ProgramResult, msg, pubkey::Pubkey, rent::Rent, sysvar::Sysvar};
 use spl_governance_tools::account::create_and_serialize_account_signed;
 
 use crate::{
@@ -29,6 +23,7 @@ pub fn process_create_realm(
     name: String,
     config_args: RealmConfigArgs,
 ) -> ProgramResult {
+
     let account_info_iter = &mut accounts.iter();
 
     let realm_info = next_account_info(account_info_iter)?; // 0
@@ -51,7 +46,10 @@ pub fn process_create_realm(
     create_spl_token_account_signed(
         payer_info,
         governance_token_holding_info,
-        &get_governing_token_holding_address_seeds(realm_info.key, governance_token_mint_info.key),
+        &get_governing_token_holding_address_seeds(
+            realm_info.key,
+            governance_token_mint_info.key
+        ),
         governance_token_mint_info,
         realm_info,
         program_id,
@@ -62,6 +60,7 @@ pub fn process_create_realm(
     )?;
 
     let council_token_mint_address = if config_args.use_council_mint {
+
         let council_token_mint_info = next_account_info(account_info_iter)?; // 8
         let council_token_holding_info = next_account_info(account_info_iter)?; // 9
 
@@ -157,4 +156,5 @@ pub fn process_create_realm(
     )?;
 
     Ok(())
+
 }

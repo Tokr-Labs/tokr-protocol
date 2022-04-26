@@ -2649,7 +2649,7 @@ fn main() -> Result<(), Error> {
             command_create_account(&config, token, owner, account, bulk_signers)
         }
         ("create-multisig", Some(arg_matches)) => {
-            let minimum_signers = value_of::<u8>(arg_matches, "minimum_signers").unwrap();
+            let minimum_sicgners = value_of::<u8>(arg_matches, "minimum_signers").unwrap();
             let multisig_members =
                 pubkeys_of_multiple_signers(arg_matches, "multisig_member", &mut wallet_manager)
                     .unwrap_or_else(|e| {
