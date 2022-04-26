@@ -1,32 +1,28 @@
 import {spawn} from "child_process";
 import BN from "bn.js";
 import {
-    Keypair,
-    PublicKey,
-    Transaction,
-    TransactionInstruction,
     Connection,
+    Keypair,
+    LAMPORTS_PER_SOL,
+    PublicKey,
     sendAndConfirmTransaction,
     SystemProgram,
-    LAMPORTS_PER_SOL
+    Transaction,
+    TransactionInstruction
 } from "@solana/web3.js"
 
 import {
-    Mint,
-    createMintToInstruction,
     createAssociatedTokenAccountInstruction,
-    getAssociatedTokenAddress,
     createInitializeMintInstruction,
-    createInitializeAccountInstruction,
-    createAccount,
-    initializeAccountInstructionData, MintLayout
+    createMintToInstruction,
+    MintLayout
 } from "@solana/spl-token"
 
 import {
     GovernanceConfig,
-    VoteThresholdPercentage,
     MintMaxVoteWeightSource,
     RealmConfigArgs,
+    VoteThresholdPercentage,
     VoteTipping
 } from "../../js/src/governance/accounts"
 import {CreateRealmArgs} from "../../js/src/governance/instructions";
@@ -45,8 +41,7 @@ const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xW
 const GOVERNANCE_PROGRAM_SEED = 'governance';
 const SYSVAR_RENT_PUBKEY = new PublicKey('SysvarRent111111111111111111111111111111111');
 const SECONDS_PER_DAY = 86400;
-const SKIP_PREFLIGHT = false;
-const USDC_TOKEN = new PublicKey("91TqzrHZe6QotBk9ohR4cYmJEZ89ZNAYCc2Jp8Jbbmvg");
+const SKIP_PREFLIGHT = true;
 
 export const createDao = async (
     delegate: string,
@@ -63,6 +58,7 @@ export const createDao = async (
     console.log(`Owner Keypair: ${owner}`);
     console.log(`Cluster Endpoint: ${cluster}`);
     console.log(`DAO Name: ${name}`);
+    console.log(`USDC Mint PublicKey: ${usdcMint}`);
     console.log();
 
     await updateLocalConfig(owner, cluster);
@@ -87,25 +83,43 @@ export const createDao = async (
     console.log("Starting.");
     console.log();
 
-    console.log("Creating limited partner mint...")
-    await createMint(
+    let mintInstructions: TransactionInstruction[] = [];
+
+    await createMintInstructions(
+        mintInstructions,
         connection,
         limitedPartnerMintKeypair,
-        ownerKeypair, 0
+        ownerKeypair,
+        0
     )
 
-    console.log("Creating delegate mint...")
-    await createMint(
+    await createMintInstructions(
+        mintInstructions,
         connection,
         delegateMintKeypair,
-        ownerKeypair, 0
+        ownerKeypair,
+        0
     )
 
-    console.log("Creating distribution mint...")
-    await createMint(
+    await createMintInstructions(
+        mintInstructions,
         connection,
         distributionMintKeypair,
-        ownerKeypair, 0
+        ownerKeypair,
+        0
+    )
+
+    console.log("Creating mints...")
+
+    await executeMintInstructions(
+        connection,
+        mintInstructions,
+        [
+            limitedPartnerMintKeypair,
+            delegateMintKeypair,
+            distributionMintKeypair
+        ],
+        ownerKeypair
     )
 
     console.log("Creating delegate's delegate mint ATA...")
@@ -123,14 +137,6 @@ export const createDao = async (
         ownerKeypair,
         delegateMintKeypair.publicKey,
         delegateAtaPublicKey
-    )
-
-    console.log("Creating treasury accounts...")
-    await createUsdcTreasuryAccounts(
-        connection,
-        usdcMintPublicKey,
-        delegateMintKeypair.publicKey,
-        distributionMintKeypair.publicKey
     )
 
     console.log("Creating realm...")
@@ -153,8 +159,8 @@ export const createDao = async (
 
     console.log("Transferring mints to governance...")
     let {
-        communityMintGovernancePublicKey,
-        councilMintGovernancePublicKey,
+        limitedPartnerMintGovernancePublicKey,
+        delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
     } = await transferMintsToGovernance(
         connection,
@@ -165,12 +171,28 @@ export const createDao = async (
         distributionMintKeypair.publicKey
     )
 
+    console.log("Creating USDC ATA for distribution governance...")
+    const distributionUsdcAtaPublicKey = await createUsdTreasuryAccount(
+        connection,
+        ownerKeypair,
+        usdcMintPublicKey,
+        distributionMintGovernancePublicKey
+    )
+
+    console.log("Creating USDC ATA for limited partner governance...")
+    const limitedPartnerUsdcAtaPublicKey = await createUsdTreasuryAccount(
+        connection,
+        ownerKeypair,
+        usdcMintPublicKey,
+        limitedPartnerMintGovernancePublicKey
+    )
+
     console.log("Assign limited partner governance to realm...")
     await assignLimitedPartnerGovernanceToRealm(
         connection,
         ownerKeypair,
         realmPublicKey,
-        communityMintGovernancePublicKey
+        limitedPartnerMintGovernancePublicKey
     )
 
     console.log();
@@ -181,9 +203,11 @@ export const createDao = async (
     console.log(`Distribution Mint: ${distributionMintKeypair.publicKey.toBase58()}`);
     console.log(`Delegate's ATA: ${delegateAtaPublicKey.toBase58()}`);
     console.log(`Realm: ${realmPublicKey}`);
-    console.log(`Limited Partner Mint Governance: ${communityMintGovernancePublicKey}`);
+    console.log(`Limited Partner Mint Governance: ${limitedPartnerMintGovernancePublicKey}`);
     console.log(`Distribution Mint Governance: ${distributionMintGovernancePublicKey}`);
-    console.log(`Delegate Mint Governance: ${councilMintGovernancePublicKey}`);
+    console.log(`Delegate Mint Governance: ${delegateMintGovernancePublicKey}`);
+    console.log(`Distribution USDC ATA: ${distributionUsdcAtaPublicKey}`);
+    console.log(`Limited Partner USDC ATA: ${limitedPartnerUsdcAtaPublicKey}`);
     console.log();
 
     console.log("Complete.")
@@ -206,8 +230,8 @@ const updateLocalConfig = async (
 
 }
 
-
-const createMint = async (
+const createMintInstructions = async (
+    instructions: TransactionInstruction[],
     connection: Connection,
     mintKeypair: Keypair,
     ownerKeypair: Keypair,
@@ -232,16 +256,29 @@ const createMint = async (
         ownerKeypair.publicKey, null
     )
 
+    instructions.push(
+        createAccountTransactionInstruction,
+        createMintTransactionInstruction
+    )
+
+}
+
+const executeMintInstructions = async (
+    connection: Connection,
+    instructions: TransactionInstruction[],
+    mintKeypairs: Keypair[],
+    ownerKeypair: Keypair
+) => {
+
     const mintTransaction = new Transaction();
 
-    mintTransaction.add(createAccountTransactionInstruction)
-    mintTransaction.add(createMintTransactionInstruction)
+    mintTransaction.add(...instructions)
     mintTransaction.feePayer = ownerKeypair.publicKey;
 
     await sendAndConfirmTransaction(
         connection,
         mintTransaction,
-        [mintKeypair, ownerKeypair],
+        [...mintKeypairs, ownerKeypair],
         {
             skipPreflight: SKIP_PREFLIGHT
         }
@@ -404,38 +441,39 @@ const createRealm = async (
 
 }
 
-const createUsdcTreasuryAccounts = async (
+const createUsdTreasuryAccount = async (
     connection: Connection,
-    usdcMint: PublicKey,
-    delegateGovernance: PublicKey,
-    distributionGovernance: PublicKey,
+    ownerKeypair: Keypair,
+    usdcMintPublicKey: PublicKey,
+    governancePublicKey: PublicKey
 ) => {
 
-    // create 2 usdc accounts and ties them to the council
-    // pda for lp token account
+    const usdcAtaPublicKey = (await PublicKey.findProgramAddress(
+        [
+            governancePublicKey.toBuffer(),
+            TOKEN_PROGRAM_ID.toBuffer(),
+            usdcMintPublicKey.toBuffer(),
+        ],
+        ASSOCIATED_TOKEN_PROGRAM_ID
+    ))[0];
 
-    // withCreateAssociatedTokenAccount()
-    //
-    // const liquidityAtaPublicKey = (await PublicKey.findProgramAddress(
-    //     [
-    //         liquidityUsdcPublicKey.toBuffer(),
-    //         TOKEN_PROGRAM_ID.toBuffer(),
-    //         usdcMint.toBuffer(),
-    //     ],
-    //     ASSOCIATED_TOKEN_PROGRAM_ID
-    // ))[0];
-    //
-    // const distributionAtaPublicKey = (await PublicKey.findProgramAddress(
-    //     [
-    //         distributionUsdcPublicKey.toBuffer(),
-    //         TOKEN_PROGRAM_ID.toBuffer(),
-    //         governancePublicKey.toBuffer(),
-    //     ],
-    //     ASSOCIATED_TOKEN_PROGRAM_ID
-    // ))[0];
-    //
-    // console.log("liquidityAtaPublicKey", liquidityAtaPublicKey);
-    // console.log("distributionAtaPublicKey", distributionAtaPublicKey);
+    const transactionInstruction = createAssociatedTokenAccountInstruction(
+        ownerKeypair.publicKey,
+        usdcAtaPublicKey,
+        governancePublicKey,
+        usdcMintPublicKey
+    )
+
+    const tx = new Transaction();
+
+    tx.add(transactionInstruction);
+    tx.feePayer = ownerKeypair.publicKey;
+
+    await sendAndConfirmTransaction(connection, tx, [ownerKeypair], {
+        skipPreflight: SKIP_PREFLIGHT
+    })
+
+    return usdcAtaPublicKey;
 
 }
 
@@ -477,8 +515,8 @@ const transferMintsToGovernance = async (
     connection: Connection,
     ownerKeypair: Keypair,
     realmPublicKey: PublicKey,
-    councilMintPublicKey: PublicKey,
-    communityMintPublicKey: PublicKey,
+    delegateMintPublicKey: PublicKey,
+    limitedPartnerMintPublicKey: PublicKey,
     distributionMintPublicKey: PublicKey
 ) => {
 
@@ -486,7 +524,7 @@ const transferMintsToGovernance = async (
         [
             Buffer.from(GOVERNANCE_PROGRAM_SEED),
             realmPublicKey.toBuffer(),
-            councilMintPublicKey.toBuffer(),
+            delegateMintPublicKey.toBuffer(),
             ownerKeypair.publicKey.toBuffer(),
         ],
         GOVERNANCE_PROGRAM_ID,
@@ -509,12 +547,12 @@ const transferMintsToGovernance = async (
 
     const instructions: TransactionInstruction[] = []
 
-    const communityMintGovernancePublicKey = await withCreateMintGovernance(
+    const limitedPartnerMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
         GOVERNANCE_PROGRAM_ID,
         2, // why does program 2 work and not program 1
         realmPublicKey,
-        communityMintPublicKey,
+        limitedPartnerMintPublicKey,
         config,
         !!ownerKeypair.publicKey,
         ownerKeypair.publicKey,
@@ -523,12 +561,12 @@ const transferMintsToGovernance = async (
         ownerKeypair.publicKey
     )
 
-    const councilMintGovernancePublicKey = await withCreateMintGovernance(
+    const delegateMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
         GOVERNANCE_PROGRAM_ID,
         2,  // why does program 2 work and not program 1
         realmPublicKey,
-        councilMintPublicKey,
+        delegateMintPublicKey,
         config,
         !!ownerKeypair.publicKey,
         ownerKeypair.publicKey,
@@ -561,8 +599,8 @@ const transferMintsToGovernance = async (
     })
 
     return {
-        communityMintGovernancePublicKey,
-        councilMintGovernancePublicKey,
+        limitedPartnerMintGovernancePublicKey,
+        delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
     }
 

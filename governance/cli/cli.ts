@@ -13,7 +13,7 @@ const {createDao} = require("./commands/create-dao");
 
     program.command("create-dao")
         .description("Creates a DAO in accordance to the tokr-governance library.")
-        .option(
+        .requiredOption(
             "--owner <string>",
             "Keypair file location of user who is going to have a record about.",
         )
