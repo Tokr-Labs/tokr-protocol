@@ -12,17 +12,18 @@ import {
 } from "@solana/web3.js"
 
 import {
+    ASSOCIATED_TOKEN_PROGRAM_ID,
     createAssociatedTokenAccountInstruction,
     createInitializeMintInstruction,
     createMintToInstruction,
-    MintLayout
+    MintLayout,
+    TOKEN_PROGRAM_ID
 } from "@solana/spl-token"
 
 import {
     GovernanceConfig,
     MintMaxVoteWeightSource,
-    VoteThresholdPercentage,
-    VoteTipping
+    VoteThresholdPercentage
 } from "../../js/src/governance/accounts"
 import {withDepositGoverningTokens} from '../../js/src/governance/withDepositGoverningTokens'
 import {withCreateMintGovernance} from '../../js/src/governance/withCreateMintGovernance'
@@ -30,33 +31,37 @@ import {withSetRealmAuthority} from '../../js/src/governance/withSetRealmAuthori
 import {withCreateRealm} from '../../js/src/governance/withCreateRealm'
 import * as fs from "fs";
 import path from "path";
-import {sleep} from "@project-serum/common"
-
-const GOVERNANCE_PROGRAM_ID = new PublicKey('7cjMfQWdJ9Va2pjSZM3D9G2PGCwgWMzbgcaVymCtRVQZ');
-const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
-const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
-const GOVERNANCE_PROGRAM_SEED = 'governance';
-const SECONDS_PER_DAY = 86400;
-const SKIP_PREFLIGHT = false;
+import {readFileSync} from "fs";
+import {isNumber, isString} from "underscore"
+import * as process from "process";
 
 export const createDao = async (
-    delegate: string,
-    owner: string,
-    cluster: string,
-    name: string,
-    usdcMint: string
+    configFile: string,
 ) => {
+
+    const configStr = readFileSync(configFile, {encoding: "utf8"})
+    const config = JSON.parse(configStr);
+
+    if (!validateConfig(config)) {
+        console.error("Invalid JSON format detected.")
+        process.exit(1)
+    }
+
+    const cluster = config.cluster;
+    const owner = config.owner;
+    const delegate = config.delegate;
+    const name = config.name;
+    const governanceProgramId = config.governanceProgramId;
+    const usdcMint = config.usdcMint;
+    const governanceConfig = config.governance;
 
     console.log();
     console.log("Input:")
     console.log();
-    console.log(`Delegate Keypair: ${delegate}`);
-    console.log(`Owner Keypair: ${owner}`);
-    console.log(`Cluster Endpoint: ${cluster}`);
-    console.log(`DAO Name: ${name}`);
-    console.log(`USDC Mint PublicKey: ${usdcMint}`);
+    console.log(config)
     console.log();
 
+    console.log("Updating local solana configuration...")
     await updateLocalConfig(owner, cluster);
 
     const connection = new Connection(cluster, {
@@ -65,6 +70,7 @@ export const createDao = async (
 
     const ownerKeypair = await loadKeypair(owner);
     const delegateKeypair = await loadKeypair(delegate);
+    const governanceProgramIdPublicKey = new PublicKey(governanceProgramId);
     const usdcMintPublicKey = new PublicKey(usdcMint);
     const limitedPartnerMintKeypair = Keypair.generate();
     const delegateMintKeypair = Keypair.generate();
@@ -143,6 +149,7 @@ export const createDao = async (
     console.log("Creating realm...")
     const realmPublicKey = await createRealm(
         connection,
+        governanceProgramIdPublicKey,
         ownerKeypair,
         delegateMintKeypair.publicKey,
         limitedPartnerMintKeypair.publicKey,
@@ -152,6 +159,7 @@ export const createDao = async (
     console.log("Depositing delegate's delegate token for governance...")
     await depositDelegateCouncilTokenInGovernance(
         connection,
+        governanceProgramIdPublicKey,
         delegateKeypair,
         realmPublicKey,
         delegateAtaPublicKey,
@@ -165,6 +173,8 @@ export const createDao = async (
         distributionMintGovernancePublicKey
     } = await transferMintsToGovernance(
         connection,
+        governanceProgramIdPublicKey,
+        governanceConfig,
         ownerKeypair,
         realmPublicKey,
         delegateMintKeypair.publicKey,
@@ -176,6 +186,7 @@ export const createDao = async (
     console.log("Assign limited partner governance to realm...")
     await assignLimitedPartnerGovernanceToRealm(
         connection,
+        governanceProgramIdPublicKey,
         ownerKeypair,
         realmPublicKey,
         limitedPartnerMintGovernancePublicKey
@@ -222,8 +233,6 @@ const updateLocalConfig = async (
     ownerKeyPair: string,
     cluster: string
 ) => {
-
-    console.log("Updating local solana configuration...")
 
     await exec(`
         solana config set 
@@ -282,9 +291,6 @@ const executeMintInstructions = async (
         connection,
         mintTransaction,
         [...mintKeypairs, ownerKeypair],
-        {
-            skipPreflight: SKIP_PREFLIGHT
-        }
     )
 
     return true
@@ -318,9 +324,6 @@ const createDelegateAssociatedTokenAccount = async (
         connection,
         ataTransaction,
         [ownerKeypair],
-        {
-            skipPreflight: SKIP_PREFLIGHT
-        }
     )
 
 }
@@ -348,15 +351,13 @@ const mintDelegateTokenForDelegate = async (
         connection,
         mintToTransaction,
         [ownerKeypair],
-        {
-            skipPreflight: SKIP_PREFLIGHT
-        }
     )
 
 }
 
 const createRealm = async (
     connection: Connection,
+    governanceProgramId: PublicKey,
     ownerKeypair: Keypair,
     councilMintPublicKey: PublicKey,
     communityMintPublicKey: PublicKey,
@@ -369,7 +370,7 @@ const createRealm = async (
 
     const realmAddress = await withCreateRealm(
         transactionInstructions,
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
         2,
         name,
         ownerKeypair.publicKey,
@@ -380,82 +381,12 @@ const createRealm = async (
         minCommunityWeightToCreateGovernance
     )
 
-    // const configArgs = new RealmConfigArgs({
-    //     useCouncilMint: true,
-    //     minCommunityTokensToCreateGovernance: minCommunityWeightToCreateGovernance,
-    //     communityMintMaxVoteWeightSource: MintMaxVoteWeightSource.FULL_SUPPLY_FRACTION,
-    //     useCommunityVoterWeightAddin: false,
-    //     useMaxCommunityVoterWeightAddin: false,
-    // });
-    //
-    // const args = new CreateRealmArgs({configArgs, name});
-    // const data = Buffer.from(serialize(getGovernanceSchema(2), args));
-    //
-    // const [realmAddress] = await PublicKey.findProgramAddress(
-    //     [
-    //         Buffer.from(GOVERNANCE_PROGRAM_SEED),
-    //         Buffer.from(args.name)
-    //     ],
-    //     GOVERNANCE_PROGRAM_ID,
-    // );
-    //
-    // const [communityTokenHoldingAddress] = await PublicKey.findProgramAddress(
-    //     [
-    //         Buffer.from(GOVERNANCE_PROGRAM_SEED),
-    //         realmAddress.toBuffer(),
-    //         communityMintPublicKey.toBuffer(),
-    //     ],
-    //     GOVERNANCE_PROGRAM_ID,
-    // );
-    //
-    // const [councilTokenHoldingAddress] = await PublicKey.findProgramAddress(
-    //     [
-    //         Buffer.from(GOVERNANCE_PROGRAM_SEED),
-    //         realmAddress.toBuffer(),
-    //         councilMintPublicKey.toBuffer(),
-    //     ],
-    //     GOVERNANCE_PROGRAM_ID,
-    // );
-    //
-    // let keys = [
-    //     // 0. `[writable]` Governance Realm account. PDA seeds:['governance',name]
-    //     {pubkey: realmAddress, isSigner: false, isWritable: true},
-    //     // 1. `[]` Realm authority
-    //     {pubkey: ownerKeypair.publicKey, isSigner: false, isWritable: false},
-    //     // 2. `[]` limited partnerToken Mint
-    //     {pubkey: communityMintPublicKey, isSigner: false, isWritable: false},
-    //     // 3. `[writable]` limited partnerToken Holding account. PDA seeds: ['governance',realm,community_mint]
-    //     {pubkey: communityTokenHoldingAddress, isSigner: false, isWritable: true},
-    //     // 4. `[signer]` Payer
-    //     {pubkey: ownerKeypair.publicKey, isSigner: true, isWritable: true},
-    //     // 5. `[]` System
-    //     {pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false},
-    //     // 6. `[]` SPL Token
-    //     {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
-    //     // 7. `[]` Sysvar Rent
-    //     {pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false},
-    //     // 8. `[]` Council Token Mint - optional
-    //     {pubkey: councilMintPublicKey, isSigner: false, isWritable: false},
-    //     // 9. `[writable]` Council Token Holding account - optional unless council is used. PDA seeds: ['governance',realm,council_mint]
-    //     {pubkey: councilTokenHoldingAddress, isSigner: false, isWritable: true}
-    // ];
-    //
-    // const txi = new TransactionInstruction({
-    //     keys,
-    //     programId: GOVERNANCE_PROGRAM_ID,
-    //     data,
-    // })
-
     const tx = new Transaction();
 
     tx.add(...transactionInstructions);
     tx.feePayer = ownerKeypair.publicKey;
 
-
-    await sendAndConfirmTransaction(connection, tx, [ownerKeypair], {
-        skipPreflight: SKIP_PREFLIGHT,
-        commitment: "processed"
-    })
+    await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
     return realmAddress
 
@@ -489,9 +420,7 @@ const createUsdTreasuryAccount = async (
     tx.add(transactionInstruction);
     tx.feePayer = ownerKeypair.publicKey;
 
-    await sendAndConfirmTransaction(connection, tx, [ownerKeypair], {
-        skipPreflight: SKIP_PREFLIGHT
-    })
+    await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
     return usdcAtaPublicKey;
 
@@ -499,6 +428,7 @@ const createUsdTreasuryAccount = async (
 
 const depositDelegateCouncilTokenInGovernance = async (
     connection: Connection,
+    governanceProgramId: PublicKey,
     delegateKeypair: Keypair,
     realmPublicKey: PublicKey,
     delegateAtaPublicKey: PublicKey,
@@ -509,7 +439,7 @@ const depositDelegateCouncilTokenInGovernance = async (
 
     await withDepositGoverningTokens(
         instruction,
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
         2, // why does program 2 work and not program 1
         realmPublicKey,
         delegateAtaPublicKey,
@@ -525,14 +455,14 @@ const depositDelegateCouncilTokenInGovernance = async (
     tx.add(...instruction);
     tx.feePayer = delegateKeypair.publicKey;
 
-    await sendAndConfirmTransaction(connection, tx, [delegateKeypair], {
-        skipPreflight: SKIP_PREFLIGHT
-    })
+    await sendAndConfirmTransaction(connection, tx, [delegateKeypair])
 
 }
 
 const transferMintsToGovernance = async (
     connection: Connection,
+    governanceProgramId: PublicKey,
+    governanceConfig: any,
     ownerKeypair: Keypair,
     realmPublicKey: PublicKey,
     delegateMintPublicKey: PublicKey,
@@ -542,34 +472,33 @@ const transferMintsToGovernance = async (
 
     const [tokenOwnerRecordAddress] = await PublicKey.findProgramAddress(
         [
-            Buffer.from(GOVERNANCE_PROGRAM_SEED),
+            governanceProgramId.toBuffer(),
             realmPublicKey.toBuffer(),
             delegateMintPublicKey.toBuffer(),
             ownerKeypair.publicKey.toBuffer(),
         ],
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
     );
+
 
     // Put limited partner and council mints under the realm governance with default config
     const config = new GovernanceConfig({
         voteThresholdPercentage: new VoteThresholdPercentage({
-            value: 100,
+            value: governanceConfig.voteThresholdPercentage,
         }),
-        minCommunityTokensToCreateProposal: new BN(10000),
-        // Do not use instruction hold up time
-        minInstructionHoldUpTime: 0,
-        // max voting time 3 days
-        maxVotingTime: 3 * SECONDS_PER_DAY,
-        voteTipping: VoteTipping.Strict,
-        proposalCoolOffTime: 0,
-        minCouncilTokensToCreateProposal: new BN(1),
+        minCommunityTokensToCreateProposal: new BN(governanceConfig.minCommunityTokensToCreateProposal),
+        minInstructionHoldUpTime: governanceConfig.minInstructionHoldUpTime,
+        maxVotingTime: governanceConfig.maxVotingTime,
+        voteTipping: governanceConfig.voteTipping,
+        proposalCoolOffTime: governanceConfig.proposalCoolOffTime,
+        minCouncilTokensToCreateProposal: new BN(governanceConfig.minCouncilTokensToCreateProposal),
     });
 
     const instructions: TransactionInstruction[] = []
 
     const limitedPartnerMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
         2, // why does program 2 work and not program 1
         realmPublicKey,
         limitedPartnerMintPublicKey,
@@ -583,7 +512,7 @@ const transferMintsToGovernance = async (
 
     const delegateMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
         2,  // why does program 2 work and not program 1
         realmPublicKey,
         delegateMintPublicKey,
@@ -597,7 +526,7 @@ const transferMintsToGovernance = async (
 
     const distributionMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
         2,  // why does program 2 work and not program 1
         realmPublicKey,
         distributionMintPublicKey,
@@ -614,9 +543,7 @@ const transferMintsToGovernance = async (
     tx.add(...instructions);
     tx.feePayer = ownerKeypair.publicKey;
 
-    await sendAndConfirmTransaction(connection, tx, [ownerKeypair], {
-        skipPreflight: SKIP_PREFLIGHT
-    })
+    await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
     return {
         limitedPartnerMintGovernancePublicKey,
@@ -628,6 +555,7 @@ const transferMintsToGovernance = async (
 
 const assignLimitedPartnerGovernanceToRealm = async (
     connection: Connection,
+    governanceProgramId: PublicKey,
     ownerKeypair: Keypair,
     realmPublicKey: PublicKey,
     communityMintGovernancePublicKey: PublicKey
@@ -637,7 +565,7 @@ const assignLimitedPartnerGovernanceToRealm = async (
 
     withSetRealmAuthority(
         instructions,
-        GOVERNANCE_PROGRAM_ID,
+        governanceProgramId,
         2,
         realmPublicKey,
         ownerKeypair.publicKey,
@@ -650,9 +578,7 @@ const assignLimitedPartnerGovernanceToRealm = async (
     tx.add(...instructions);
     tx.feePayer = ownerKeypair.publicKey;
 
-    await sendAndConfirmTransaction(connection, tx, [ownerKeypair], {
-        skipPreflight: SKIP_PREFLIGHT
-    })
+    await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
 }
 
@@ -707,7 +633,11 @@ async function exec(command: string, {
 
 async function loadKeypair(fileRef: string) {
 
-    const filePath = path.join(fileRef);
+    let filePath = fileRef;
+
+    if (filePath[0] === '~') {
+        filePath = path.join(process.env.HOME!, filePath.slice(1));
+    }
 
     let contents = fs.readFileSync(`${filePath}`);
 
@@ -720,5 +650,25 @@ async function loadKeypair(fileRef: string) {
     const uint8Array = Uint8Array.from(parsed);
 
     return Keypair.fromSecretKey(uint8Array);
+
+}
+
+const validateConfig = (config: any) => {
+
+    return !!(
+        isString(config.cluster) &&
+        isString(config.owner) &&
+        isString(config.delegate) &&
+        isString(config.name) &&
+        isString(config.governanceProgramId) &&
+        isString(config.usdcMint) &&
+        isNumber(config.governance.voteThresholdPercentage) &&
+        isNumber(config.governance.minCommunityTokensToCreateProposal) &&
+        isNumber(config.governance.minInstructionHoldUpTime) &&
+        isNumber(config.governance.maxVotingTime) &&
+        isNumber(config.governance.voteTipping) &&
+        isNumber(config.governance.proposalCoolOffTime) &&
+        isNumber(config.governance.minCouncilTokensToCreateProposal)
+    );
 
 }

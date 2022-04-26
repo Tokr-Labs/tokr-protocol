@@ -17,12 +17,14 @@
     "@solana/spl-token": "^0.2.0",
     "bn.js": "^5.2.0",
     "bs58": "^5.0.0",
-    "commander": "^9.2.0"
+    "commander": "^9.2.0",
+    "underscore": "^1.13.3"
   },
   "bin": {
     "tokr-governance": "cli.js"
   },
   "devDependencies": {
-    "@types/bn.js": "^5.1.0"
+    "@types/bn.js": "^5.1.0",
+    "@types/underscore": "^1.11.4"
   }
 }
