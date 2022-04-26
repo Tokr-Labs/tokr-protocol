@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "create-dao": "ts-node ./cli.ts create-realm --owner ~/.config/solana/id.json --delegate ~/solana-keys/peacemaker.json"
+    "build": "tsc ./**/*.ts"
   },
   "keywords": [],
   "author": "",
