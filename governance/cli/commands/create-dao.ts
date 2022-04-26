@@ -21,27 +21,23 @@ import {
 import {
     GovernanceConfig,
     MintMaxVoteWeightSource,
-    RealmConfigArgs,
     VoteThresholdPercentage,
     VoteTipping
 } from "../../js/src/governance/accounts"
-import {CreateRealmArgs} from "../../js/src/governance/instructions";
-import {getGovernanceSchema} from "../../js/src/governance/serialisation";
 import {withDepositGoverningTokens} from '../../js/src/governance/withDepositGoverningTokens'
 import {withCreateMintGovernance} from '../../js/src/governance/withCreateMintGovernance'
 import {withSetRealmAuthority} from '../../js/src/governance/withSetRealmAuthority'
-import {serialize} from 'borsh';
+import {withCreateRealm} from '../../js/src/governance/withCreateRealm'
 import * as fs from "fs";
 import path from "path";
+import {sleep} from "@project-serum/common"
 
-const SYSTEM_PROGRAM_ID = new PublicKey('11111111111111111111111111111111');
 const GOVERNANCE_PROGRAM_ID = new PublicKey('7cjMfQWdJ9Va2pjSZM3D9G2PGCwgWMzbgcaVymCtRVQZ');
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL")
 const GOVERNANCE_PROGRAM_SEED = 'governance';
-const SYSVAR_RENT_PUBKEY = new PublicKey('SysvarRent111111111111111111111111111111111');
 const SECONDS_PER_DAY = 86400;
-const SKIP_PREFLIGHT = true;
+const SKIP_PREFLIGHT = false;
 
 export const createDao = async (
     delegate: string,
@@ -63,7 +59,10 @@ export const createDao = async (
 
     await updateLocalConfig(owner, cluster);
 
-    const connection = new Connection(cluster)
+    const connection = new Connection(cluster, {
+        commitment: "confirmed"
+    })
+
     const ownerKeypair = await loadKeypair(owner);
     const delegateKeypair = await loadKeypair(delegate);
     const usdcMintPublicKey = new PublicKey(usdcMint);
@@ -80,7 +79,7 @@ export const createDao = async (
         ASSOCIATED_TOKEN_PROGRAM_ID
     ))[0];
 
-    console.log("Starting.");
+    console.log("Starting 123.");
     console.log();
 
     let mintInstructions: TransactionInstruction[] = [];
@@ -171,6 +170,15 @@ export const createDao = async (
         distributionMintKeypair.publicKey
     )
 
+
+    console.log("Assign limited partner governance to realm...")
+    await assignLimitedPartnerGovernanceToRealm(
+        connection,
+        ownerKeypair,
+        realmPublicKey,
+        limitedPartnerMintGovernancePublicKey
+    )
+
     console.log("Creating USDC ATA for distribution governance...")
     const distributionUsdcAtaPublicKey = await createUsdTreasuryAccount(
         connection,
@@ -187,13 +195,6 @@ export const createDao = async (
         limitedPartnerMintGovernancePublicKey
     )
 
-    console.log("Assign limited partner governance to realm...")
-    await assignLimitedPartnerGovernanceToRealm(
-        connection,
-        ownerKeypair,
-        realmPublicKey,
-        limitedPartnerMintGovernancePublicKey
-    )
 
     console.log();
     console.log("Output:")
@@ -360,81 +361,98 @@ const createRealm = async (
     name: string,
 ) => {
 
+    let transactionInstructions: TransactionInstruction[] = []
+
     const minCommunityWeightToCreateGovernance = new BN(LAMPORTS_PER_SOL * 1000000);
 
-    const configArgs = new RealmConfigArgs({
-        useCouncilMint: true,
-        minCommunityTokensToCreateGovernance: minCommunityWeightToCreateGovernance,
-        communityMintMaxVoteWeightSource: MintMaxVoteWeightSource.FULL_SUPPLY_FRACTION,
-        useCommunityVoterWeightAddin: false,
-        useMaxCommunityVoterWeightAddin: false,
-    });
-
-    const args = new CreateRealmArgs({configArgs, name});
-    const data = Buffer.from(serialize(getGovernanceSchema(2), args));
-
-    const [realmAddress] = await PublicKey.findProgramAddress(
-        [
-            Buffer.from(GOVERNANCE_PROGRAM_SEED),
-            Buffer.from(args.name)
-        ],
+    const realmAddress = await withCreateRealm(
+        transactionInstructions,
         GOVERNANCE_PROGRAM_ID,
-    );
+        2,
+        name,
+        ownerKeypair.publicKey,
+        communityMintPublicKey,
+        ownerKeypair.publicKey,
+        councilMintPublicKey,
+        MintMaxVoteWeightSource.FULL_SUPPLY_FRACTION,
+        minCommunityWeightToCreateGovernance
+    )
 
-    const [communityTokenHoldingAddress] = await PublicKey.findProgramAddress(
-        [
-            Buffer.from(GOVERNANCE_PROGRAM_SEED),
-            realmAddress.toBuffer(),
-            communityMintPublicKey.toBuffer(),
-        ],
-        GOVERNANCE_PROGRAM_ID,
-    );
-
-    const [councilTokenHoldingAddress] = await PublicKey.findProgramAddress(
-        [
-            Buffer.from(GOVERNANCE_PROGRAM_SEED),
-            realmAddress.toBuffer(),
-            councilMintPublicKey.toBuffer(),
-        ],
-        GOVERNANCE_PROGRAM_ID,
-    );
-
-    let keys = [
-        // 0. `[writable]` Governance Realm account. PDA seeds:['governance',name]
-        {pubkey: realmAddress, isSigner: false, isWritable: true},
-        // 1. `[]` Realm authority
-        {pubkey: ownerKeypair.publicKey, isSigner: false, isWritable: false},
-        // 2. `[]` limited partnerToken Mint
-        {pubkey: communityMintPublicKey, isSigner: false, isWritable: false},
-        // 3. `[writable]` limited partnerToken Holding account. PDA seeds: ['governance',realm,community_mint]
-        {pubkey: communityTokenHoldingAddress, isSigner: false, isWritable: true},
-        // 4. `[signer]` Payer
-        {pubkey: ownerKeypair.publicKey, isSigner: true, isWritable: true},
-        // 5. `[]` System
-        {pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false},
-        // 6. `[]` SPL Token
-        {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
-        // 7. `[]` Sysvar Rent
-        {pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false},
-        // 8. `[]` Council Token Mint - optional
-        {pubkey: councilMintPublicKey, isSigner: false, isWritable: false},
-        // 9. `[writable]` Council Token Holding account - optional unless council is used. PDA seeds: ['governance',realm,council_mint]
-        {pubkey: councilTokenHoldingAddress, isSigner: false, isWritable: true}
-    ];
-
-    const txi = new TransactionInstruction({
-        keys,
-        programId: GOVERNANCE_PROGRAM_ID,
-        data,
-    })
+    // const configArgs = new RealmConfigArgs({
+    //     useCouncilMint: true,
+    //     minCommunityTokensToCreateGovernance: minCommunityWeightToCreateGovernance,
+    //     communityMintMaxVoteWeightSource: MintMaxVoteWeightSource.FULL_SUPPLY_FRACTION,
+    //     useCommunityVoterWeightAddin: false,
+    //     useMaxCommunityVoterWeightAddin: false,
+    // });
+    //
+    // const args = new CreateRealmArgs({configArgs, name});
+    // const data = Buffer.from(serialize(getGovernanceSchema(2), args));
+    //
+    // const [realmAddress] = await PublicKey.findProgramAddress(
+    //     [
+    //         Buffer.from(GOVERNANCE_PROGRAM_SEED),
+    //         Buffer.from(args.name)
+    //     ],
+    //     GOVERNANCE_PROGRAM_ID,
+    // );
+    //
+    // const [communityTokenHoldingAddress] = await PublicKey.findProgramAddress(
+    //     [
+    //         Buffer.from(GOVERNANCE_PROGRAM_SEED),
+    //         realmAddress.toBuffer(),
+    //         communityMintPublicKey.toBuffer(),
+    //     ],
+    //     GOVERNANCE_PROGRAM_ID,
+    // );
+    //
+    // const [councilTokenHoldingAddress] = await PublicKey.findProgramAddress(
+    //     [
+    //         Buffer.from(GOVERNANCE_PROGRAM_SEED),
+    //         realmAddress.toBuffer(),
+    //         councilMintPublicKey.toBuffer(),
+    //     ],
+    //     GOVERNANCE_PROGRAM_ID,
+    // );
+    //
+    // let keys = [
+    //     // 0. `[writable]` Governance Realm account. PDA seeds:['governance',name]
+    //     {pubkey: realmAddress, isSigner: false, isWritable: true},
+    //     // 1. `[]` Realm authority
+    //     {pubkey: ownerKeypair.publicKey, isSigner: false, isWritable: false},
+    //     // 2. `[]` limited partnerToken Mint
+    //     {pubkey: communityMintPublicKey, isSigner: false, isWritable: false},
+    //     // 3. `[writable]` limited partnerToken Holding account. PDA seeds: ['governance',realm,community_mint]
+    //     {pubkey: communityTokenHoldingAddress, isSigner: false, isWritable: true},
+    //     // 4. `[signer]` Payer
+    //     {pubkey: ownerKeypair.publicKey, isSigner: true, isWritable: true},
+    //     // 5. `[]` System
+    //     {pubkey: SYSTEM_PROGRAM_ID, isSigner: false, isWritable: false},
+    //     // 6. `[]` SPL Token
+    //     {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
+    //     // 7. `[]` Sysvar Rent
+    //     {pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false},
+    //     // 8. `[]` Council Token Mint - optional
+    //     {pubkey: councilMintPublicKey, isSigner: false, isWritable: false},
+    //     // 9. `[writable]` Council Token Holding account - optional unless council is used. PDA seeds: ['governance',realm,council_mint]
+    //     {pubkey: councilTokenHoldingAddress, isSigner: false, isWritable: true}
+    // ];
+    //
+    // const txi = new TransactionInstruction({
+    //     keys,
+    //     programId: GOVERNANCE_PROGRAM_ID,
+    //     data,
+    // })
 
     const tx = new Transaction();
 
-    tx.add(txi);
+    tx.add(...transactionInstructions);
     tx.feePayer = ownerKeypair.publicKey;
 
+
     await sendAndConfirmTransaction(connection, tx, [ownerKeypair], {
-        skipPreflight: SKIP_PREFLIGHT
+        skipPreflight: SKIP_PREFLIGHT,
+        commitment: "processed"
     })
 
     return realmAddress

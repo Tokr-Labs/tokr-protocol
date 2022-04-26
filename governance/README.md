@@ -16,7 +16,7 @@ $ tokr create-spl-token --amount 1000000 // create USDC Token mint
 $ solana logs
 $ anchor build
 $ anchor deploy --provider.cluster localnet
-$ anchor airdrop 10 [DELEGATE_PUBLIC_KEY]
+$ solana airdrop 10 [DELEGATE_PUBLIC_KEY]
 $ tokr-governance \
     create-dao \
     --owner ~/.config/solana/id.json \

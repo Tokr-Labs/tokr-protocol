@@ -4,6 +4,10 @@ const {Command} = require("commander");
 const program = new Command();
 const {createDao} = require("./commands/create-dao");
 
+process.on('unhandledRejection', function(error) {
+    console.log(error);
+});
+
 (async function main() {
 
     program
