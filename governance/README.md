@@ -2,6 +2,7 @@
 
 ```
 $ solana-test-validator [--reset]
+$ tokr create-spl-token --amount 1000000 // create USDC Token mint
 $ solana logs
 $ anchor build
 $ anchor deploy --provider.cluster localnet
