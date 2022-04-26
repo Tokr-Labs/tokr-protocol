@@ -84,6 +84,7 @@ export const createDao = async (
 
     let mintInstructions: TransactionInstruction[] = [];
 
+    console.log("Creating mint instructions for lp...")
     await createMintInstructions(
         mintInstructions,
         connection,
@@ -92,6 +93,7 @@ export const createDao = async (
         0
     )
 
+    console.log("Creating mint instructions for delegate...")
     await createMintInstructions(
         mintInstructions,
         connection,
@@ -100,6 +102,7 @@ export const createDao = async (
         0
     )
 
+    console.log("Creating mint instructions for distribution...")
     await createMintInstructions(
         mintInstructions,
         connection,
@@ -109,7 +112,6 @@ export const createDao = async (
     )
 
     console.log("Creating mints...")
-
     await executeMintInstructions(
         connection,
         mintInstructions,
