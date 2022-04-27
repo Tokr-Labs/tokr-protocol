@@ -1,0 +1,12 @@
+[package]
+name = "identity_verification"
+
+[workspace]
+members = ["program"]
+
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "yarn run mocha -t 1000000 tests/"

@@ -1,3 +1,0 @@
-<component name="DependencyValidationManager">
-  <scope name="Token Lending" pattern="file[tokr-protocol]:token-lending//*" />
-</component>

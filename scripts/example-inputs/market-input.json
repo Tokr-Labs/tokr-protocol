@@ -1,6 +1,0 @@
-{
-  "ownerKeyPair": "./keys/owner-041222325.json",
-  "lendingKeyPair": "./keys/lending-041222325.json",
-  "tokenLendingCli": "./target/debug/spl-token-lending",
-  "tokenLendingExe": "./target/deploy/spl_token_lending.so"
-}
