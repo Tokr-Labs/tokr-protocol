@@ -39,6 +39,7 @@ const rpcEndpoint = clusterApiUrl('devnet');
 
 const connection = new Connection(rpcEndpoint, 'recent');
 
+// @ts-ignore
 test('createRealmWithGovernanceAndProposal', async () => {
   // Arrange
   const wallet = Keypair.generate();
@@ -205,6 +206,7 @@ test('createRealmWithGovernanceAndProposal', async () => {
 
   // Assert
   const realm = await getRealm(connection, realmPk);
+  // @ts-ignore
   expect(realm.account.name).toBe(name);
 
   const results = await getTokenOwnerRecordsByOwner(
@@ -212,8 +214,9 @@ test('createRealmWithGovernanceAndProposal', async () => {
     programId,
     walletPk,
   );
-
+  // @ts-ignore
   expect(results.length).toBe(1);
+  // @ts-ignore
   expect(results[0].account.governingTokenOwner).toEqual(walletPk);
 });
 
