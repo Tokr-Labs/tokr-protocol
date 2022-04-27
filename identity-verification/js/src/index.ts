@@ -1,6 +1,4 @@
-import {Program} from "@project-serum/anchor"
-import {IdentityVerification, IDL} from "./idl/identity_verification";
-import {AccountMeta, PublicKey, TransactionInstruction, SystemProgram} from "@solana/web3.js";
+import {AccountMeta, PublicKey, SystemProgram, TransactionInstruction} from "@solana/web3.js";
 
 /**
  * Creates a record instruction given the arguments
@@ -10,17 +8,16 @@ import {AccountMeta, PublicKey, TransactionInstruction, SystemProgram} from "@so
  */
 export const createRecordInstruction = async(signer: PublicKey, group: PublicKey, authority: PublicKey) => {
 
-    const idl = require("./idl/identity_verification.json");
-    const program = new Program<IdentityVerification>(IDL, idl.metadata.address)
+    const programId = new PublicKey("BijwizXGRMaAu9dYotXhavQpvjKgyDbxGFben4kozDue");
     const systemProgramId = SystemProgram.programId;
 
-    const record: PublicKey = PublicKey.findProgramAddressSync(
+    const [record, bump] = await PublicKey.findProgramAddress(
         [
             signer.toBuffer(),
             group.toBuffer()
         ],
-        program.programId
-    )[0];
+        programId
+    );
 
     const keys: AccountMeta[] = [
         { pubkey: signer, isWritable: true, isSigner: true },
@@ -30,7 +27,7 @@ export const createRecordInstruction = async(signer: PublicKey, group: PublicKey
     ]
 
     return new TransactionInstruction({
-        programId: program.programId,
+        programId: programId,
         data: undefined,
         keys: keys
     })
