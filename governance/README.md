@@ -1,3 +1,30 @@
+# Install CLI
+
+```
+$ cd cli
+$ npm i
+$ npm link
+$ tokr-governance
+```
+
+# Running locally
+
+```
+$ solana-test-validator [--reset]
+$ solana config set --url localhost
+$ tokr create-spl-token --amount 1000000 // create USDC Token mint
+$ solana logs
+$ anchor build
+$ anchor deploy --provider.cluster localnet
+$ solana airdrop 10 [DELEGATE_PUBLIC_KEY]
+$ tokr-governance \
+    create-dao \
+    --owner ~/.config/solana/id.json \
+    --delegate ~/solana-keys/delegate.json \
+    --name abc \
+    --usdcMint [USDC_MINT_PUBKEY]
+```
+
 # SPL Governance
 
 SPL Governance is a program the chief purpose of which is to provide core building blocks and primitives to create
