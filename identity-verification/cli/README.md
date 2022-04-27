@@ -7,6 +7,6 @@ $ npm link
 This will link the package to your machine and you can then run:
 
 ```
-$ tokr-whitelist
+$ tokr-idv
 ```
 

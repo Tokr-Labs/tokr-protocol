@@ -1,5 +1,5 @@
 {
-  "name": "tokr-whitelist-cli",
+  "name": "tokr-identity-verification",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -15,6 +15,6 @@
     "commander": "^9.2.0"
   },
   "bin": {
-    "tokr-whitelist": "./cli.js"
+    "tokr-idv": "./cli.js"
   }
 }

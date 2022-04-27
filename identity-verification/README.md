@@ -12,7 +12,7 @@ $ anchor deploy --provider.cluster localnet
 This will build the anchor project for deployment of the npm package. You should run this from the root directory:
 
 ```
-$ anchor build --idl <protocol_dir>/whitelist/js/src/idl/ --idl-ts <protocol_dir>/whitelist/js/src/idl     
+$ anchor build --idl <protocol_dir>/identity_verification/js/src/idl/ --idl-ts <protocol_dir>/identity_verification/js/src/idl     
 ```
 
 **NOTE** - It seems that you have to provide an absolute file path for the above. relative file paths fail and create directories instead of the actual files.

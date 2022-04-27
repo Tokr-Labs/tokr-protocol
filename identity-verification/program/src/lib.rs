@@ -8,7 +8,7 @@ const STATUS_LENGTH: usize = 1;
 const BUMP_LENGTH: usize = 1;
 
 #[program]
-mod whitelist {
+mod identity_verification {
     use super::*;
 
     /// Create a record of kyc/aml metadata for the user.

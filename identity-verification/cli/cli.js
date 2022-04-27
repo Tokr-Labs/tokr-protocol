@@ -13,19 +13,19 @@ const GROUP_PUBKEY = new anchor.web3.PublicKey("87ZjYTenZmy9pjXnYH79mkX1tEKnkcY9
 (async function main() {
 
     program
-        .name("tokr-whitelist")
-        .description("CLI to manage whitelists offline")
+        .name("tokr-identity-verification")
+        .description("CLI to manage identity verification offline")
         .version("0.1.0");
 
     program.command("create-record")
-        .description("Creates a whitelist record for a user and sets its authority.")
+        .description("Creates a identity verification record for a user and sets its authority.")
         .requiredOption(
             "-u, --user <string>",
             "Keypair file location of user who is going to have a record about.",
         )
         .requiredOption(
             "-a, --authority <string>",
-            "Keypair file location of account that will have authority over the whitelist account.",
+            "Keypair file location of account that will have authority over the identity-verification account.",
         )
         .action(async (options) => {
 
@@ -47,9 +47,9 @@ const GROUP_PUBKEY = new anchor.web3.PublicKey("87ZjYTenZmy9pjXnYH79mkX1tEKnkcY9
                     userKeypair.publicKey.toBytes()
                 ], PROGRAM_ID);
 
-                const whitelist = anchor.workspace.Whitelist;
+                const identityVerification = anchor.workspace.IdentityVerification;
 
-                const tx = await whitelist.rpc.createRecord(bump, GROUP_PUBKEY, {
+                const tx = await identityVerification.rpc.createRecord(bump, GROUP_PUBKEY, {
                     accounts: {
                         signer: userKeypair.publicKey,
                         record: account,
@@ -94,9 +94,9 @@ const GROUP_PUBKEY = new anchor.web3.PublicKey("87ZjYTenZmy9pjXnYH79mkX1tEKnkcY9
                     userKeypair.publicKey.toBytes()
                 ], PROGRAM_ID);
 
-                const whitelist = anchor.workspace.Whitelist;
+                const identityVerification = anchor.workspace.IdentityVerification;
 
-                const meta = await whitelist.account.metadata.fetch(account);
+                const meta = await identityVerification.account.metadata.fetch(account);
 
                 console.log("Meta: ");
                 console.log(meta);

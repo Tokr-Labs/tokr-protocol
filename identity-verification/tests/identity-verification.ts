@@ -1,14 +1,13 @@
 import * as anchor from "@project-serum/anchor";
 import {AnchorProvider, Program} from "@project-serum/anchor";
-import {Whitelist, IDL} from "../../target/types/whitelist";
+import {IdentityVerification, IDL} from "../../target/types/identity_verification";
 import {assert} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import * as fs from "fs";
-import {Status} from "../js/status"
 
-describe("test that the whitelist program", () => {
+describe("test that the identity-verification program", () => {
 
-    let program: Program<Whitelist>;
+    let program: Program<IdentityVerification>;
     let provider: AnchorProvider;
     let keypair: Keypair;
     let authority: Keypair;
@@ -22,7 +21,7 @@ describe("test that the whitelist program", () => {
 
         anchor.setProvider(anchor.AnchorProvider.local());
         provider = anchor.AnchorProvider.local();
-        program = anchor.workspace.Whitelist as Program<Whitelist>;
+        program = anchor.workspace.IdentityVerification as Program<IdentityVerification>;
 
         let contents = fs.readFileSync(process.env.ANCHOR_WALLET);
         let parsed = String(contents)
@@ -62,7 +61,7 @@ describe("test that the whitelist program", () => {
 
     })
 
-    it("succeeds in creating a whitelist record for a user", async () => {
+    it("succeeds in creating a identity-verification record for a user", async () => {
 
         const tx = await program.rpc.createRecord(pdaBump, groupKeypair.publicKey, {
             accounts: {
@@ -78,9 +77,9 @@ describe("test that the whitelist program", () => {
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         assert.equal(accountInfo.owner.toBase58(), program.programId.toBase58());
-        assert.equal(accountMeta.iaStatus, Status.initial);
-        assert.equal(accountMeta.amlStatus, Status.initial);
-        assert.equal(accountMeta.kycStatus, Status.initial);
+        assert.equal(accountMeta.iaStatus, 0);
+        assert.equal(accountMeta.amlStatus, 0);
+        assert.equal(accountMeta.kycStatus, 0);
         assert.equal(accountMeta.bump, pdaBump);
         assert.exists(tx);
 
@@ -88,7 +87,7 @@ describe("test that the whitelist program", () => {
 
     it("is able to update an account's accreditation status", async () => {
 
-        const tx = await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, Status.rejected, {
+        const tx = await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, 3, {
             accounts: {
                 record: pdaPubkey,
                 subject: keypair.publicKey,
@@ -99,14 +98,14 @@ describe("test that the whitelist program", () => {
 
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.iaStatus, Status.rejected);
+        assert.equal(accountMeta.iaStatus, 3);
         assert.exists(tx);
 
     });
 
     it("is able to update an account's kyc status", async () => {
 
-        const tx = await program.rpc.updateKycStatus(pdaBump, groupKeypair.publicKey, Status.approved, {
+        const tx = await program.rpc.updateKycStatus(pdaBump, groupKeypair.publicKey, 2, {
             accounts: {
                 record: pdaPubkey,
                 subject: keypair.publicKey,
@@ -117,7 +116,7 @@ describe("test that the whitelist program", () => {
 
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.kycStatus, Status.approved);
+        assert.equal(accountMeta.kycStatus, 2);
         assert.exists(tx);
 
 
@@ -125,7 +124,7 @@ describe("test that the whitelist program", () => {
 
     it("is able to update an account's aml status", async () => {
 
-        const tx = await program.rpc.updateAmlStatus(pdaBump, groupKeypair.publicKey, Status.started, {
+        const tx = await program.rpc.updateAmlStatus(pdaBump, groupKeypair.publicKey, 1, {
             accounts: {
                 record: pdaPubkey,
                 subject: keypair.publicKey,
@@ -136,7 +135,7 @@ describe("test that the whitelist program", () => {
 
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.amlStatus, Status.started);
+        assert.equal(accountMeta.amlStatus, 1);
         assert.exists(tx);
 
 
@@ -144,19 +143,19 @@ describe("test that the whitelist program", () => {
 
     it("is not able to update an account's status to unknown status", async () => {
 
-        const  originalAccountMeta = await program.account.metadata.fetch(pdaPubkey);
+        const originalAccountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         let accreditationStatus = originalAccountMeta.iaStatus;
 
         try {
 
-            await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, Status.unknown, {
+            await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, 4, {
                 accounts: {
                     record: pdaPubkey,
                     subject: keypair.publicKey,
                     authority: authority.publicKey
                 },
-                signers:[authority]
+                signers: [authority]
             });
 
         } catch (exception) {
@@ -178,13 +177,13 @@ describe("test that the whitelist program", () => {
 
         try {
 
-            await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, Status.initial, {
+            await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, 1, {
                 accounts: {
                     record: pdaPubkey,
                     subject: keypair.publicKey,
                     authority: nonAuthority.publicKey
                 },
-                signers:[nonAuthority]
+                signers: [nonAuthority]
             });
 
         } catch (exception) {
@@ -205,10 +204,10 @@ describe("test that the whitelist program", () => {
                 transferFrom: authority.publicKey,
                 transferTo: newAuthority.publicKey
             },
-            signers:[authority]
+            signers: [authority]
         });
 
-        const  accountMeta = await program.account.metadata.fetch(pdaPubkey);
+        const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
         assert.equal(accountMeta.authority.toBase58(), newAuthority.publicKey.toBase58());
 
