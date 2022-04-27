@@ -36,6 +36,7 @@ members = [
   "utils/cgen",
   "utils/test-client",
   "token-lending/flash_loan_receiver",
+  "whitelist/program",
 ]
 exclude = [
   "farms/farm-client",

@@ -1,0 +1,20 @@
+{
+  "name": "tokr-whitelist-cli",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@project-serum/anchor": "^0.24.2",
+    "bs58": "^5.0.0",
+    "commander": "^9.2.0"
+  },
+  "bin": {
+    "tokr-whitelist": "./cli.js"
+  }
+}

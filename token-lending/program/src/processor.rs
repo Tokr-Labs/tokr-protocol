@@ -1959,45 +1959,67 @@ fn spl_token_burn(params: TokenBurnParams<'_, '_>) -> ProgramResult {
 }
 
 struct TokenInitializeMintParams<'a: 'b, 'b> {
+    /// CHECK: unsafe
     mint: AccountInfo<'a>,
+    /// CHECK: unsafe
     rent: AccountInfo<'a>,
     authority: &'b Pubkey,
     decimals: u8,
+    /// CHECK: unsafe
     token_program: AccountInfo<'a>,
 }
 
 struct TokenInitializeAccountParams<'a> {
+    /// CHECK: unsafe
     account: AccountInfo<'a>,
+    /// CHECK: unsafe
     mint: AccountInfo<'a>,
+    /// CHECK: unsafe
     owner: AccountInfo<'a>,
+    /// CHECK: unsafe
     rent: AccountInfo<'a>,
+    /// CHECK: unsafe
     token_program: AccountInfo<'a>,
 }
 
 struct TokenTransferParams<'a: 'b, 'b> {
+    /// CHECK: unsafe
     source: AccountInfo<'a>,
+    /// CHECK: unsafe
     destination: AccountInfo<'a>,
+    /// CHECK: unsafe
     amount: u64,
+    /// CHECK: unsafe
     authority: AccountInfo<'a>,
+    /// CHECK: unsafe
     authority_signer_seeds: &'b [&'b [u8]],
+    /// CHECK: unsafe
     token_program: AccountInfo<'a>,
 }
 
 struct TokenMintToParams<'a: 'b, 'b> {
+    /// CHECK: unsafe
     mint: AccountInfo<'a>,
+    /// CHECK: unsafe
     destination: AccountInfo<'a>,
     amount: u64,
+    /// CHECK: unsafe
     authority: AccountInfo<'a>,
     authority_signer_seeds: &'b [&'b [u8]],
+    /// CHECK: unsafe
     token_program: AccountInfo<'a>,
 }
 
 struct TokenBurnParams<'a: 'b, 'b> {
+    /// CHECK: unsafe
     mint: AccountInfo<'a>,
+    /// CHECK: unsafe
     source: AccountInfo<'a>,
     amount: u64,
+    /// CHECK: unsafe
     authority: AccountInfo<'a>,
     authority_signer_seeds: &'b [&'b [u8]],
+    /// CHECK: unsafe
     token_program: AccountInfo<'a>,
 }
 

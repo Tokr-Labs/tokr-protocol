@@ -1,21 +1,27 @@
 anchor_version = "0.20.1"
-solana_version = "1.10.8"
+solana_version = "1.9.17"
 
 [workspace]
 members = [
-  "governance/program",
-#  "memo/program",
-#  "stake-pool/program",
-#  "token/program",
-#  "token/program-2022",
+  "whitelist/program",
+  "governance/program"
 ]
 
 [provider]
-cluster = "mainnet"
+cluster = "devnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.mainnet]
+spl_governance = "GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw"
+whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
+
+[programs.devnet]
+whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
 spl_governance = "7cjMfQWdJ9Va2pjSZM3D9G2PGCwgWMzbgcaVymCtRVQZ"
-spl_stake_pool = "SPoo1Ku8WFXoNDMHPsrGSTSG1Y47rzgn41SLUNakuHy"
-spl_token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-spl_token_2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+[programs.localnet]
+whitelist = "JDS6WitBF654whkcWz5i5HX1ixska8Je4ahw7XYS7h5A"
+spl_governance = "7cjMfQWdJ9Va2pjSZM3D9G2PGCwgWMzbgcaVymCtRVQZ"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 ./whitelist/tests/**/*.ts"
