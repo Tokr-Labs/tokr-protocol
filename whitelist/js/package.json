@@ -1,0 +1,11 @@
+{
+  "name": "tokr-whitelist-cli",
+  "version": "0.1.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@project-serum/anchor": "^0.24.2"
+  }
+}

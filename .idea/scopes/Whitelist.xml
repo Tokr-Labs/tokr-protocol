@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Whitelist" pattern="file[tokr-protocol]:whitelist//*||file:target" />
+</component>
