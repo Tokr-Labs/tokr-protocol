@@ -1,5 +1,12 @@
 # tokr-protocol
 
+## Setup
+
+```
+$ npm install
+
+```
+
 ## Building the Protocol Programs
 
 ```

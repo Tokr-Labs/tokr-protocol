@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="Identity Verification" pattern="file[tokr-protocol]:identity-verification//*||file:target" />
+</component>

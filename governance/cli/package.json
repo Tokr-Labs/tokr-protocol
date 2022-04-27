@@ -4,8 +4,7 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p ./tsconfig.json",
-    "postinstall": "npm run build"
+    "build": "tsc -p ./tsconfig.json"
   },
   "keywords": [],
   "author": "",
