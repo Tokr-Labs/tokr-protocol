@@ -1,35 +1,42 @@
-import {AccountMeta, PublicKey, SystemProgram, TransactionInstruction} from "@solana/web3.js";
+import {Connection, PublicKey, SystemProgram} from "@solana/web3.js";
+import {Program} from '@project-serum/anchor';
+import {IdentityVerification, IDL} from "./identity_verification";
 
 /**
- * Creates a record instruction given the arguments
- * @param signer {PublicKey} The signer of the transaction
- * @param group {PublicKey} The group identifier used in determining the PDA
- * @param authority {PublicKey} The public key over the account that has update authority
+ * Create Record Instruction
+ * @param signer
+ * @param group
+ * @param authority
  */
-export const createRecordInstruction = async(signer: PublicKey, group: PublicKey, authority: PublicKey) => {
+export const createRecordInstruction = async (
+    connection: Connection,
+    signer: PublicKey,
+    group: PublicKey,
+    authority: PublicKey
+) => {
 
     const programId = new PublicKey("BijwizXGRMaAu9dYotXhavQpvjKgyDbxGFben4kozDue");
-    const systemProgramId = SystemProgram.programId;
+    const program = new Program<IdentityVerification>(IDL, programId, {
+        connection: connection
+    });
 
     const [record, bump] = await PublicKey.findProgramAddress(
         [
+            group.toBuffer(),
             signer.toBuffer(),
-            group.toBuffer()
         ],
         programId
     );
 
-    const keys: AccountMeta[] = [
-        { pubkey: signer, isWritable: true, isSigner: true },
-        { pubkey: record, isWritable: true, isSigner: false },
-        { pubkey: systemProgramId, isWritable: false, isSigner: false },
-        { pubkey: authority, isWritable: false, isSigner: false }
-    ]
+    let txi = program.instruction.createRecord(bump, group, {
+        accounts: {
+            signer: signer,
+            record: record,
+            systemProgram: SystemProgram.programId,
+            authority: authority
+        },
+    });
 
-    return new TransactionInstruction({
-        programId: programId,
-        data: undefined,
-        keys: keys
-    })
+    return txi
 
 }

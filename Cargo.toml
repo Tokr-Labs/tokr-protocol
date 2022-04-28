@@ -9,7 +9,8 @@ members = [
     "identity-verification/program",
 ]
 
-exclude = []
+exclude = [
+]
 
 [profile.dev]
 split-debuginfo = "unpacked"

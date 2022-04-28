@@ -1,7 +1,8 @@
 use anchor_lang::prelude::*;
 use solana_program::pubkey::PUBKEY_BYTES;
 
-declare_id!("F7H1DX24anamFXeS6nNZ8nHEAtpQZAjFo9PSF9aUzwxv");
+
+declare_id!("BijwizXGRMaAu9dYotXhavQpvjKgyDbxGFben4kozDue");
 
 const DISCRIMINATOR_LENGTH: usize = 8;
 const STATUS_LENGTH: usize = 1;
@@ -96,6 +97,7 @@ mod identity_verification {
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct CreateRecord<'info> {
+
     /// Assigns the account as the signer of the transaction
     #[account(mut)]
     pub signer: Signer<'info>,

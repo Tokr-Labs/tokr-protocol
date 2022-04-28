@@ -10,23 +10,55 @@ Running npm install will install all packages throughout the repo. It will also 
 $ npm install
 ```
 
-## Build
+## Building Programs
+
+Running the following command will build all programs referenced in the `Anchor.toml` file in the root directory.
 
 ```
 $ anchor build
 ```
 
-## Deploy
+## Deploying Programs
+
+Deploying programs is a bit tricky right now for Anchor programs. Everytime the target directory is deleted or someone new joins the team the locally built programs will have different IDs. WIP to write scripts that make this much easier and there is a new PR to anchor for adding the ability to pass a keypair rather than using the generated ones. These instructions will likely change as soon as that functionality is available through the Anchor CLI.
+
+### Deploy to devnet
+```
+$ anchor deploy
+```
+
+### Deploy to devnet or mainnet
+
+Deployment should only have to happen once, unless there is a reason to create a new version of the program and keep the old one running. 
+**CAUTION** These steps are very important for the first deployment:
+
+1. Run anchor build
+2. Replace the contents of `target/deploy/identity_verification-keypair.json` with the contents of our production version of the keypair `idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD.json` or `CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd.json` for mainnet and devnet respectively.
+3. Replace the contents of `target/deploy/spl_governance-keypair.json` with the contents of our production version of the keypair `govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr.json` or `5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9.json` for mainnet and devnet respectively.
 
 ```
-$ anchor deploy [--provider.cluster localnet|devnet|mainnet]
+$ anchor build
+$ anchor deploy --provider.cluster [mainnet | devnet]
 ```
 
-## Upgrade
+## Upgrading Programs
+
+### Mainnet and devnet
+
+Once the programs are initially deployed we'll want to keep the same program ids so we'll need to make sure we only run upgrade in this scenario.
+
+**Devnet**
 
 ```
-$ solana address -k target/deploy/[PROGRAME_NAME]-keypair.json
-$ anchor upgrade [--provider.cluster localnet|devnet|mainnet] --program-id [PROGRAM_ID] target/deploy/[PROGRAM_NAME].so
+$ anchor upgrade --provider.cluster devnet --program-id CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd ./target/deploy/identity_verification.so
+$ anchor upgrade --provider.cluster devnet --program-id 5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9 ./target/deploy/identity_verification.so
+```
+
+**Mainnet**
+
+```
+$ anchor upgrade --provider.cluster mainnet --program-id idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD ./target/deploy/identity_verification.so
+$ anchor upgrade --provider.cluster mainnet --program-id govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr ./target/deploy/identity_verification.so
 ```
 
 ## Running the programs locally

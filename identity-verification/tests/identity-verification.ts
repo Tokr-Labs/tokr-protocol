@@ -1,9 +1,10 @@
 import * as anchor from "@project-serum/anchor";
 import {AnchorProvider, Program} from "@project-serum/anchor";
-import {IdentityVerification, IDL} from "../../target/types/identity_verification";
+import {IdentityVerification} from "../../target/types/identity_verification";
 import {assert} from "chai";
-import {Keypair, PublicKey} from "@solana/web3.js";
+import {Keypair, PublicKey, Transaction} from "@solana/web3.js";
 import * as fs from "fs";
+
 
 describe("test that the identity-verification program", () => {
 
@@ -63,15 +64,35 @@ describe("test that the identity-verification program", () => {
 
     it("succeeds in creating a identity-verification record for a user", async () => {
 
-        const tx = await program.rpc.createRecord(pdaBump, groupKeypair.publicKey, {
+        const txi = program.instruction.createRecord(pdaBump, groupKeypair.publicKey, {
             accounts: {
                 signer: keypair.publicKey,
                 record: pdaPubkey,
                 systemProgram: anchor.web3.SystemProgram.programId,
                 authority: authority.publicKey
-            },
-            signers: [keypair],
+            }
         });
+
+        console.log(txi.data.byteLength);
+        console.log(Uint8Array.from(txi.data));
+
+        const tx = new Transaction()
+        tx.add(txi);
+
+
+
+        await anchor.web3.sendAndConfirmTransaction(provider.connection, tx, [keypair])
+
+        // const tx = await program.rpc.createRecord(pdaBump, groupKeypair.publicKey, {
+        //     accounts: {
+        //         signer: keypair.publicKey,
+        //         record: pdaPubkey,
+        //         systemProgram: anchor.web3.SystemProgram.programId,
+        //         authority: authority.publicKey
+        //     },
+        //     signers: [keypair],
+        // });
+
 
         const accountInfo = await provider.connection.getAccountInfo(pdaPubkey);
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
@@ -83,7 +104,8 @@ describe("test that the identity-verification program", () => {
         assert.equal(accountMeta.bump, pdaBump);
         assert.exists(tx);
 
-    });
+    })
+    ;
 
     it("is able to update an account's accreditation status", async () => {
 
