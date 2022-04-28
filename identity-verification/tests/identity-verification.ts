@@ -105,7 +105,6 @@ describe("test that the identity-verification program", () => {
         assert.exists(tx);
 
     })
-    ;
 
     it("is able to update an account's accreditation status", async () => {
 
