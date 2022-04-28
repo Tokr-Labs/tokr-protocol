@@ -1,6 +1,6 @@
 {
   "name": "@tokr-labs/identity-verification",
-  "version": "0.2.10",
+  "version": "0.2.14",
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -20,8 +20,6 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.22.0",
-    "@solana/spl-token": "^0.2.0",
-    "@solana/wallet-adapter-react": "^0.15.4",
     "@project-serum/anchor": "^0.24.2"
   },
   "devDependencies": {

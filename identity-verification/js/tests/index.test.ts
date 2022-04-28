@@ -7,7 +7,9 @@ test("'createRecordInstruction' returns a record instruction", async () => {
     const signer = Keypair.generate();
     const group = Keypair.generate();
     const authority = Keypair.generate();
-    const connection = new Connection("http://locahost:8899")
+    const programId = Keypair.generate();
+    const connection = new Connection("http://localhost:8899")
+
     const tx = await createRecordInstruction(
         connection,
         signer.publicKey,

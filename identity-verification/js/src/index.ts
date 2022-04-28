@@ -2,6 +2,16 @@ import {Connection, Keypair, PublicKey, SystemProgram} from "@solana/web3.js";
 import {Program} from '@project-serum/anchor';
 import {IdentityVerification, IDL} from "./identity_verification";
 
+const getProgramId = (connection: Connection) => {
+
+    if (connection.rpcEndpoint.search(/dev/gi)) {
+        return new PublicKey("5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9")
+    } else {
+        return new PublicKey("idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD")
+    }
+
+}
+
 /**
  * Statuses associated with kyc, aml and accreditation
  */
@@ -22,22 +32,28 @@ export enum Status {
  */
 export const createRecordInstruction = async (
     connection: Connection,
-    programId: PublicKey,
     signer: PublicKey,
     group: PublicKey,
-    authority: PublicKey
+    authority: PublicKey,
+    programId?: PublicKey
 ) => {
 
-    const program = new Program<IdentityVerification>(IDL, programId, {
-        connection: connection
-    });
+    const _programId = programId ?? getProgramId(connection);
+
+    const program = new Program<IdentityVerification>(
+        IDL,
+        _programId,
+        {
+            connection: connection
+        }
+    );
 
     const [record, bump] = await PublicKey.findProgramAddress(
         [
             group.toBuffer(),
             signer.toBuffer(),
         ],
-        programId
+        _programId
     );
 
     let txi = program.instruction.createRecord(bump, group, {
@@ -60,14 +76,16 @@ export const createRecordInstruction = async (
  * @param user The user of whom the record is about.
  * @param group The public key of the group this record belongs to.
  */
-export const getRecord = async(
+export const getRecord = async (
     connection: Connection,
-    programId: PublicKey,
     user: PublicKey,
-    group: PublicKey
+    group: PublicKey,
+    programId: PublicKey
 ) => {
 
-    const program = new Program<IdentityVerification>(IDL, programId, {
+    const _programId = programId ?? getProgramId(connection);
+
+    const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
 
@@ -76,7 +94,7 @@ export const getRecord = async(
             group.toBuffer(),
             user.toBuffer(),
         ],
-        programId
+        _programId
     );
 
     return await program.account.metadata.fetch(record);
@@ -94,18 +112,20 @@ export const getRecord = async(
  */
 export const updateIaStatus = async (
     connection: Connection,
-    programId: PublicKey,
     user: PublicKey,
     group: PublicKey,
     signer: Keypair,
-    status: Status
+    status: Status,
+    programId: PublicKey
 ) => {
 
     if ((typeof window !== "undefined" && !window.process?.hasOwnProperty("type"))) {
-        throw new Error("This method is not supported in the browser")    
+        throw new Error("This method is not supported in the browser")
     }
 
-    const program = new Program<IdentityVerification>(IDL, programId, {
+    const _programId = programId ?? getProgramId(connection);
+
+    const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
 
@@ -114,7 +134,7 @@ export const updateIaStatus = async (
             group.toBuffer(),
             user.toBuffer(),
         ],
-        programId
+        _programId
     );
 
     const tx = await program.rpc.updateIaStatus(bump, group, status, {
@@ -141,18 +161,20 @@ export const updateIaStatus = async (
  */
 export const updateKycStatus = async (
     connection: Connection,
-    programId: PublicKey,
     user: PublicKey,
     group: PublicKey,
     signer: Keypair,
-    status: Status
+    status: Status,
+    programId?: PublicKey
 ) => {
 
     if ((typeof window !== "undefined" && !window.process?.hasOwnProperty("type"))) {
         throw new Error("This method is not supported in the browser")
     }
-    
-    const program = new Program<IdentityVerification>(IDL, programId, {
+
+    const _programId = programId ?? getProgramId(connection);
+
+    const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
 
@@ -161,7 +183,7 @@ export const updateKycStatus = async (
             group.toBuffer(),
             user.toBuffer(),
         ],
-        programId
+        _programId
     );
 
     const tx = await program.rpc.updateKycStatus(bump, group, status, {
@@ -188,18 +210,20 @@ export const updateKycStatus = async (
  */
 export const updateAmlStatus = async (
     connection: Connection,
-    programId: PublicKey,
     user: PublicKey,
     group: PublicKey,
     signer: Keypair,
-    status: Status
+    status: Status,
+    programId?: PublicKey
 ) => {
 
     if ((typeof window !== "undefined" && !window.process?.hasOwnProperty("type"))) {
         throw new Error("This method is not supported in the browser")
     }
-    
-    const program = new Program<IdentityVerification>(IDL, programId, {
+
+    const _programId = programId ?? getProgramId(connection);
+
+    const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
 
@@ -208,7 +232,7 @@ export const updateAmlStatus = async (
             group.toBuffer(),
             user.toBuffer(),
         ],
-        programId
+        _programId
     );
 
     const tx = await program.rpc.updateAmlStatus(bump, group, status, {
@@ -225,7 +249,7 @@ export const updateAmlStatus = async (
 }
 
 /**
- * 
+ *
  * @param connection
  * @param programId The PublicKey of the on-chain identity verification program.
  * @param user The user of whom the record is about.
@@ -235,18 +259,20 @@ export const updateAmlStatus = async (
  */
 export const transferAuthority = async (
     connection: Connection,
-    programId: PublicKey,
     user: PublicKey,
     group: PublicKey,
     currentAuthority: Keypair,
-    newAuthority: PublicKey
+    newAuthority: PublicKey,
+    programId: PublicKey
 ) => {
 
     if ((typeof window !== "undefined" && !window.process?.hasOwnProperty("type"))) {
         throw new Error("This method is not supported in the browser")
     }
 
-    const program = new Program<IdentityVerification>(IDL, programId, {
+    const _programId = programId ?? getProgramId(connection);
+
+    const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
 
@@ -255,7 +281,7 @@ export const transferAuthority = async (
             group.toBuffer(),
             user.toBuffer(),
         ],
-        programId
+        _programId
     );
 
     const tx = await program.rpc.transferAuthority(bump, group, {
