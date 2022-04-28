@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use solana_program::pubkey::PUBKEY_BYTES;
 
-declare_id!("CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd");
+declare_id!("5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9");
 
 const DISCRIMINATOR_LENGTH: usize = 8;
 const STATUS_LENGTH: usize = 1;

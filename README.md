@@ -22,6 +22,8 @@ $ anchor build
 
 Deploying programs is a bit tricky right now for Anchor programs. Everytime the target directory is deleted or someone new joins the team the locally built programs will have different IDs. WIP to write scripts that make this much easier and there is a new PR to anchor for adding the ability to pass a keypair rather than using the generated ones. These instructions will likely change as soon as that functionality is available through the Anchor CLI.
 
+**IMPORTANT** Deploying to different environments you will need to update the program id in `lib.rs` by replacing the base58 key declared at the top of the file with the correct id for the environment being deployed to. After updating this variable you will need to run `anchor build` before deploying.
+
 ### Deploy to devnet
 ```
 $ anchor deploy
@@ -42,6 +44,8 @@ $ anchor deploy --provider.cluster [mainnet | devnet]
 ```
 
 ## Upgrading Programs
+
+**IMPORTANT** Upgrading programs on different environments you will need to update the program id in `lib.rs` by replacing the base58 key declared at the top of the file with the correct id for the environment being deployed to. After updating this variable you will need to run `anchor build` before upgrading.
 
 ### Mainnet and devnet
 

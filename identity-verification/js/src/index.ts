@@ -80,7 +80,7 @@ export const getRecord = async (
     connection: Connection,
     user: PublicKey,
     group: PublicKey,
-    programId: PublicKey
+    programId?: PublicKey
 ) => {
 
     const _programId = programId ?? getProgramId(connection);
@@ -116,7 +116,7 @@ export const updateIaStatus = async (
     group: PublicKey,
     signer: Keypair,
     status: Status,
-    programId: PublicKey
+    programId?: PublicKey
 ) => {
 
     if ((typeof window !== "undefined" && !window.process?.hasOwnProperty("type"))) {
@@ -263,7 +263,7 @@ export const transferAuthority = async (
     group: PublicKey,
     currentAuthority: Keypair,
     newAuthority: PublicKey,
-    programId: PublicKey
+    programId?: PublicKey
 ) => {
 
     if ((typeof window !== "undefined" && !window.process?.hasOwnProperty("type"))) {
