@@ -5,7 +5,6 @@ import {assert} from "chai";
 import {Keypair, PublicKey, Transaction} from "@solana/web3.js";
 import * as fs from "fs";
 
-
 describe("test that the identity-verification program", () => {
 
     let program: Program<IdentityVerification>;

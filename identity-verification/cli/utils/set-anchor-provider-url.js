@@ -12,19 +12,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.loadKeypair = void 0;
+exports.setAnchorProviderUrl = void 0;
+const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
-const web3_js_1 = require("@solana/web3.js");
-function loadKeypair(fileRef) {
+function setAnchorProviderUrl() {
     return __awaiter(this, void 0, void 0, function* () {
-        let contents = yield fs_1.default.readFileSync(fileRef);
-        let parsed = String(contents)
-            .replace("[", "")
-            .replace("]", "")
-            .split(",")
-            .map((item) => Number(item));
-        const uint8Array = Uint8Array.from(parsed);
-        return web3_js_1.Keypair.fromSecretKey(uint8Array);
+        const cwd = process.cwd();
+        // hijack cwd so that it returns the correct location
+        process.cwd = () => {
+            return path_1.default.resolve(cwd, "../../");
+        };
+        // @ts-ignore
+        const content = fs_1.default.readFileSync(process.env.CONFIG.toString());
+        const config = content.toString();
+        let rpcUrl = config.match(".*(?:json_rpc_url: )(.*)")[1];
+        rpcUrl = rpcUrl.replace(/(")+/gi, "");
+        process.env.ANCHOR_PROVIDER_URL = rpcUrl;
     });
 }
-exports.loadKeypair = loadKeypair;
+exports.setAnchorProviderUrl = setAnchorProviderUrl;

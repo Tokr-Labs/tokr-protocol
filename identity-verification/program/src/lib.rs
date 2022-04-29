@@ -1,7 +1,9 @@
 use anchor_lang::prelude::*;
 use solana_program::pubkey::PUBKEY_BYTES;
 
-declare_id!("5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9");
+// declare_id!("idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD"); // mainnet
+// declare_id!("5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9"); // devnet
+declare_id!("8XBSroNGoAUXJ8NFFxWtBYJPxSYxRmvtK3HhtkGAzPTt"); // localnet
 
 const DISCRIMINATOR_LENGTH: usize = 8;
 const STATUS_LENGTH: usize = 1;
@@ -17,7 +19,6 @@ mod identity_verification {
         bump: u8,
         _group: Pubkey,
     ) -> Result<()> {
-
         ctx.accounts.record.aml_status = 0;
         ctx.accounts.record.ia_status = 0;
         ctx.accounts.record.kyc_status = 0;
@@ -80,7 +81,6 @@ mod identity_verification {
         _bump: u8,
         _group: Pubkey,
     ) -> Result<()> {
-
         let transfer_from = &mut ctx.accounts.transfer_from;
         let transfer_to = &mut ctx.accounts.transfer_to;
 
@@ -89,14 +89,12 @@ mod identity_verification {
         ctx.accounts.record.authority = transfer_to.key.clone();
 
         Ok(())
-
     }
 }
 
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct CreateRecord<'info> {
-
     /// Assigns the account as the signer of the transaction
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -130,7 +128,6 @@ pub struct UpdateRecord<'info> {
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct TransferAuthority<'info> {
-
     #[account(mut, seeds = [group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, Metadata>,
     pub subject: SystemAccount<'info>,

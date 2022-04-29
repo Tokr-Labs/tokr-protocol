@@ -1,5 +1,14 @@
-import {Connection, Keypair, PublicKey, SystemProgram} from "@solana/web3.js";
-import {Program} from '@project-serum/anchor';
+import {
+    ConfirmOptions,
+    Connection,
+    Keypair,
+    PublicKey,
+    Signer,
+    SystemProgram,
+    Transaction,
+    TransactionSignature
+} from "@solana/web3.js";
+import {Program, web3} from '@project-serum/anchor';
 import {IdentityVerification, IDL} from "./identity_verification";
 
 const getProgramId = (connection: Connection) => {
@@ -62,7 +71,7 @@ export const createRecordInstruction = async (
             record: record,
             systemProgram: SystemProgram.programId,
             authority: authority
-        },
+        }
     });
 
     return txi
@@ -129,6 +138,10 @@ export const updateIaStatus = async (
         connection: connection
     });
 
+    program.provider.sendAndConfirm = function (tx: Transaction, signers?: Signer[], opts?: ConfirmOptions): Promise<TransactionSignature> {
+        return web3.sendAndConfirmTransaction(connection, tx, signers!, opts)
+    }
+
     const [record, bump] = await PublicKey.findProgramAddress(
         [
             group.toBuffer(),
@@ -177,6 +190,10 @@ export const updateKycStatus = async (
     const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
+
+    program.provider.sendAndConfirm = function (tx: Transaction, signers?: Signer[], opts?: ConfirmOptions): Promise<TransactionSignature> {
+        return web3.sendAndConfirmTransaction(connection, tx, signers!, opts)
+    }
 
     const [record, bump] = await PublicKey.findProgramAddress(
         [
@@ -227,6 +244,10 @@ export const updateAmlStatus = async (
         connection: connection
     });
 
+    program.provider.sendAndConfirm = function (tx: Transaction, signers?: Signer[], opts?: ConfirmOptions): Promise<TransactionSignature> {
+        return web3.sendAndConfirmTransaction(connection, tx, signers!, opts)
+    }
+
     const [record, bump] = await PublicKey.findProgramAddress(
         [
             group.toBuffer(),
@@ -275,6 +296,10 @@ export const transferAuthority = async (
     const program = new Program<IdentityVerification>(IDL, _programId, {
         connection: connection
     });
+
+    program.provider.sendAndConfirm = function (tx: Transaction, signers?: Signer[], opts?: ConfirmOptions): Promise<TransactionSignature> {
+        return web3.sendAndConfirmTransaction(connection, tx, signers!, opts)
+    }
 
     const [record, bump] = await PublicKey.findProgramAddress(
         [

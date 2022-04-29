@@ -1,20 +1,20 @@
 {
-  "name": "tokr-identity-verification",
+  "name": "tokr-idv-cli",
   "version": "0.1.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc -p ./tsconfig.json"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@project-serum/anchor": "^0.24.2",
+    "@solana/web3.js": "^1.41.3",
     "bs58": "^5.0.0",
     "commander": "^9.2.0"
   },
   "bin": {
-    "tokr-idv": "./cli.js"
+    "tokr-idv": "cli.js"
+  },
+  "devDependencies": {
+    "@types/bs58": "^4.0.1"
   }
 }
