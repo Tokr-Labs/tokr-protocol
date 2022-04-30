@@ -7,6 +7,8 @@ import {removeUser} from "./commands/remove-user";
 import {getCluster} from "./utils/get-cluster";
 import {getLocalnetProgramId} from "./utils/get-localnet-program-id";
 import {resolveHome} from "./utils/resolve-home";
+import {deleteList} from "./commands/delete-list";
+import {createList} from "./commands/create-list";
 
 async function getProgramId(): Promise<string> {
 
@@ -38,19 +40,45 @@ async function getProgramId(): Promise<string> {
         .description("CLI to manage an on-chain permissioned list.")
         .version("0.1.0");
 
-    program.command("add-user")
-        .description("Adds a user to a permissioned list.")
+    program.command("create-list")
+        .description("Creates a list.")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
             "Signer keypair of the transaction.",
         )
-        .requiredOption(
-            "-u, --user <public-key>",
-            "The user to add to the permissioned list.",
+        .option(
+            `-p, --program <public-key>, ${programId}`,
+            "Public key of the on-chain permissioned list program.",
+        )
+        .action(async (opts) => {
+
+            let options = opts
+
+            if (!options.signer) {
+                options.signer = resolveHome("~/.config/solana/id.json")
+            }
+
+            if (!options.program) {
+                options.program = programId
+            }
+
+            try {
+                await createList(options)
+            } catch (error) {
+                console.error(error)
+            }
+
+        });
+
+    program.command("delete-list")
+        .description("Creates a list.")
+        .option(
+            "-s, --signer <keypair>, '~/.config/solana/id.json'",
+            "Signer keypair of the transaction.",
         )
         .option(
             `-l, --list <public-key>, '${defaultListId}'`,
-            "Public key of the list to add the user to.",
+            "Public key of the list to delete.",
         )
         .option(
             `-p, --program <public-key>, ${programId}`,
@@ -65,7 +93,41 @@ async function getProgramId(): Promise<string> {
             }
 
             if (!options.list) {
-                options.list = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj"
+                options.list = defaultListId
+            }
+
+            if (!options.program) {
+                options.program = programId
+            }
+
+            try {
+                await deleteList(options)
+            } catch (error) {
+                console.error(error)
+            }
+
+        });
+
+    program.command("add-user")
+        .description("Adds a user to a permissioned list.")
+        .option(
+            "-s, --signer <keypair>, '~/.config/solana/id.json'",
+            "Signer keypair of the transaction.",
+        )
+        .requiredOption(
+            "-u, --user <public-key>",
+            "The user to add to the permissioned list.",
+        )
+        .option(
+            `-p, --program <public-key>, ${programId}`,
+            "Public key of the on-chain permissioned list program.",
+        )
+        .action(async (opts) => {
+
+            let options = opts
+
+            if (!options.signer) {
+                options.signer = resolveHome("~/.config/solana/id.json")
             }
 
             if (!options.program) {
@@ -87,10 +149,6 @@ async function getProgramId(): Promise<string> {
             "Public key of user who is being checked if on the list.",
         )
         .option(
-            `-l, --list <public-key>, '${defaultListId}'`,
-            "Public key of the list to remove the user from.",
-        )
-        .option(
             `-p, --program <public-key>, ${programId}`,
             "Public key of the on-chain permissioned list program.",
         )
@@ -98,9 +156,7 @@ async function getProgramId(): Promise<string> {
 
             let options = opts
 
-            if (!options.list) {
-                options.list = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj"
-            }
+            options.signer = resolveHome("~/.config/solana/id.json")
 
             if (!options.program) {
                 options.program = programId
@@ -125,10 +181,6 @@ async function getProgramId(): Promise<string> {
             "Public key of the user who should be removed from the list.",
         )
         .option(
-            `-l, --list <public-key>, '${defaultListId}'`,
-            "Public key of the list to remove the user from.",
-        )
-        .option(
             `-p, --program <public-key>, ${programId}`,
             "Public key of the on-chain permissioned list program.",
         )
@@ -138,10 +190,6 @@ async function getProgramId(): Promise<string> {
 
             if (!options.signer) {
                 options.signer = resolveHome("~/.config/solana/id.json")
-            }
-
-            if (!options.list) {
-                options.list = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj"
             }
 
             if (!options.program) {

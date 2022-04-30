@@ -17,6 +17,8 @@ const remove_user_1 = require("./commands/remove-user");
 const get_cluster_1 = require("./utils/get-cluster");
 const get_localnet_program_id_1 = require("./utils/get-localnet-program-id");
 const resolve_home_1 = require("./utils/resolve-home");
+const delete_list_1 = require("./commands/delete-list");
+const create_list_1 = require("./commands/create-list");
 function getProgramId() {
     return __awaiter(this, void 0, void 0, function* () {
         const cluster = yield (0, get_cluster_1.getCluster)();
@@ -42,11 +44,29 @@ function getProgramId() {
             .name("tokr-permissioned-list")
             .description("CLI to manage an on-chain permissioned list.")
             .version("0.1.0");
-        program.command("add-user")
-            .description("Adds a user to a permissioned list.")
+        program.command("create-list")
+            .description("Creates a list.")
             .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
-            .requiredOption("-u, --user <public-key>", "The user to add to the permissioned list.")
-            .option(`-l, --list <public-key>, '${defaultListId}'`, "Public key of the list to add the user to.")
+            .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
+            .action((opts) => __awaiter(this, void 0, void 0, function* () {
+            let options = opts;
+            if (!options.signer) {
+                options.signer = (0, resolve_home_1.resolveHome)("~/.config/solana/id.json");
+            }
+            if (!options.program) {
+                options.program = programId;
+            }
+            try {
+                yield (0, create_list_1.createList)(options);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }));
+        program.command("delete-list")
+            .description("Creates a list.")
+            .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
+            .option(`-l, --list <public-key>, '${defaultListId}'`, "Public key of the list to delete.")
             .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
             .action((opts) => __awaiter(this, void 0, void 0, function* () {
             let options = opts;
@@ -54,7 +74,27 @@ function getProgramId() {
                 options.signer = (0, resolve_home_1.resolveHome)("~/.config/solana/id.json");
             }
             if (!options.list) {
-                options.list = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj";
+                options.list = defaultListId;
+            }
+            if (!options.program) {
+                options.program = programId;
+            }
+            try {
+                yield (0, delete_list_1.deleteList)(options);
+            }
+            catch (error) {
+                console.error(error);
+            }
+        }));
+        program.command("add-user")
+            .description("Adds a user to a permissioned list.")
+            .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
+            .requiredOption("-u, --user <public-key>", "The user to add to the permissioned list.")
+            .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
+            .action((opts) => __awaiter(this, void 0, void 0, function* () {
+            let options = opts;
+            if (!options.signer) {
+                options.signer = (0, resolve_home_1.resolveHome)("~/.config/solana/id.json");
             }
             if (!options.program) {
                 options.program = programId;
@@ -69,13 +109,10 @@ function getProgramId() {
         program.command("check-list")
             .description("Checks if the given user is on a specific permissioned list.")
             .requiredOption("-u, --user <public-key>", "Public key of user who is being checked if on the list.")
-            .option(`-l, --list <public-key>, '${defaultListId}'`, "Public key of the list to remove the user from.")
             .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
             .action((opts) => __awaiter(this, void 0, void 0, function* () {
             let options = opts;
-            if (!options.list) {
-                options.list = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj";
-            }
+            options.signer = (0, resolve_home_1.resolveHome)("~/.config/solana/id.json");
             if (!options.program) {
                 options.program = programId;
             }
@@ -90,15 +127,11 @@ function getProgramId() {
             .description("")
             .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
             .requiredOption("-u, --user <public-key>", "Public key of the user who should be removed from the list.")
-            .option(`-l, --list <public-key>, '${defaultListId}'`, "Public key of the list to remove the user from.")
             .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
             .action((opts) => __awaiter(this, void 0, void 0, function* () {
             let options = opts;
             if (!options.signer) {
                 options.signer = (0, resolve_home_1.resolveHome)("~/.config/solana/id.json");
-            }
-            if (!options.list) {
-                options.list = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj";
             }
             if (!options.program) {
                 options.program = programId;

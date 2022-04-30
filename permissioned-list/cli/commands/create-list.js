@@ -31,42 +31,33 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeUser = void 0;
-const web3_js_1 = require("@solana/web3.js");
+exports.createList = void 0;
 const load_keypair_1 = require("../utils/load-keypair");
-const process_1 = __importDefault(require("process"));
-const get_rpc_url_1 = require("../utils/get-rpc-url");
+const web3_js_1 = require("@solana/web3.js");
 const anchor = __importStar(require("@project-serum/anchor"));
-function removeUser(options, approve) {
+const process = __importStar(require("process"));
+const get_rpc_url_1 = require("../utils/get-rpc-url");
+function createList(options) {
     return __awaiter(this, void 0, void 0, function* () {
         const signerKeypair = yield (0, load_keypair_1.loadKeypair)(options.signer);
-        const userPublicKey = new web3_js_1.PublicKey(options.user);
-        process_1.default.env.ANCHOR_PROVIDER_URL = yield (0, get_rpc_url_1.getRpcUrl)();
+        process.env.ANCHOR_PROVIDER_URL = yield (0, get_rpc_url_1.getRpcUrl)();
         const program = anchor.workspace.PermissionedList;
-        const [listPdaPublicKey] = yield web3_js_1.PublicKey.findProgramAddress([
+        const [listPda] = yield web3_js_1.PublicKey.findProgramAddress([
             Buffer.from("list", "utf-8"),
             signerKeypair.publicKey.toBytes()
         ], program.programId);
-        const [entryPdaPubkey] = yield web3_js_1.PublicKey.findProgramAddress([
-            listPdaPublicKey.toBytes(),
-            userPublicKey.toBytes()
-        ], program.programId);
-        console.log(`Removing user '${userPublicKey.toBase58()}' from list '${listPdaPublicKey.toBase58()}'...`);
-        const signature = yield program.rpc.removeUser({
+        console.log(`Creating list '${listPda.toBase58()}'...`);
+        const signature = yield program.rpc.createList({
             accounts: {
                 signer: signerKeypair.publicKey,
-                list: listPdaPublicKey,
-                entry: entryPdaPubkey,
-                user: userPublicKey
+                list: listPda,
+                systemProgram: anchor.web3.SystemProgram.programId
             },
             signers: [signerKeypair]
         });
         console.log("Signature: ", signature);
-        process_1.default.exit(1);
+        process.exit(1);
     });
 }
-exports.removeUser = removeUser;
+exports.createList = createList;
