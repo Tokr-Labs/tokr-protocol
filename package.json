@@ -21,7 +21,6 @@
     },
     "testPathIgnorePatterns": [
       "/governance/",
-      "/identity-verification/",
       "/node_modules/"
     ],
     "testMatch": [

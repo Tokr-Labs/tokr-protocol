@@ -1,7 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import {AnchorProvider, Program} from "@project-serum/anchor";
 import {IdentityVerification} from "../../target/types/identity_verification";
-import {assert} from "chai";
 import {Keypair, PublicKey, Transaction} from "@solana/web3.js";
 import * as fs from "fs";
 
@@ -17,13 +16,13 @@ describe("test that the identity-verification program", () => {
     let pdaPubkey: PublicKey;
     let pdaBump: number
 
-    before(async () => {
+    beforeAll(async () => {
 
         anchor.setProvider(anchor.AnchorProvider.local());
         provider = anchor.AnchorProvider.local();
         program = anchor.workspace.IdentityVerification as Program<IdentityVerification>;
 
-        let contents = fs.readFileSync(process.env.ANCHOR_WALLET);
+        let contents = fs.readFileSync(process.env.ANCHOR_WALLET!);
         let parsed = String(contents)
             .replace("[", "")
             .replace("]", "")
@@ -32,16 +31,13 @@ describe("test that the identity-verification program", () => {
 
         const uint8Array = Uint8Array.from(parsed);
         keypair = anchor.web3.Keypair.fromSecretKey(uint8Array);
-        console.log("keypair = ", keypair.publicKey.toBase58());
 
         // make this account real
         authority = anchor.web3.Keypair.generate();
-        console.log("authority = ", authority.publicKey.toBase58());
         await provider.connection.requestAirdrop(authority.publicKey, 1000000000)
 
         // make this account real
         newAuthority = anchor.web3.Keypair.generate();
-        console.log("newAuthority = ", newAuthority.publicKey.toBase58());
         await provider.connection.requestAirdrop(newAuthority.publicKey, 1000000000)
 
         // make this account real
@@ -61,7 +57,9 @@ describe("test that the identity-verification program", () => {
 
     })
 
-    it("succeeds in creating a identity-verification record for a user", async () => {
+    test("succeeds in creating a identity-verification record for a user", async () => {
+
+        expect.assertions(6);
 
         const txi = program.instruction.createRecord(pdaBump, groupKeypair.publicKey, {
             accounts: {
@@ -72,40 +70,28 @@ describe("test that the identity-verification program", () => {
             }
         });
 
-        console.log(txi.data.byteLength);
-        console.log(Uint8Array.from(txi.data));
-
         const tx = new Transaction()
         tx.add(txi);
 
+        const sig = await anchor.web3.sendAndConfirmTransaction(provider.connection, tx, [keypair])
 
-
-        await anchor.web3.sendAndConfirmTransaction(provider.connection, tx, [keypair])
-
-        // const tx = await program.rpc.createRecord(pdaBump, groupKeypair.publicKey, {
-        //     accounts: {
-        //         signer: keypair.publicKey,
-        //         record: pdaPubkey,
-        //         systemProgram: anchor.web3.SystemProgram.programId,
-        //         authority: authority.publicKey
-        //     },
-        //     signers: [keypair],
-        // });
-
+        await provider.connection.confirmTransaction(sig);
 
         const accountInfo = await provider.connection.getAccountInfo(pdaPubkey);
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountInfo.owner.toBase58(), program.programId.toBase58());
-        assert.equal(accountMeta.iaStatus, 0);
-        assert.equal(accountMeta.amlStatus, 0);
-        assert.equal(accountMeta.kycStatus, 0);
-        assert.equal(accountMeta.bump, pdaBump);
-        assert.exists(tx);
+        expect(accountInfo!.owner.toBase58()).toEqual(program.programId.toBase58());
+        expect(accountMeta.iaStatus).toEqual(0);
+        expect(accountMeta.amlStatus).toEqual(0);
+        expect(accountMeta.kycStatus).toEqual(0);
+        expect(accountMeta.bump).toEqual(pdaBump);
+        expect(tx).toBeDefined();
 
     })
 
-    it("is able to update an account's accreditation status", async () => {
+    test("is able to update an account's accreditation status", async () => {
+
+        expect.assertions(2);
 
         const tx = await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, 3, {
             accounts: {
@@ -116,14 +102,18 @@ describe("test that the identity-verification program", () => {
             signers: [authority],
         });
 
+        await provider.connection.confirmTransaction(tx);
+
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.iaStatus, 3);
-        assert.exists(tx);
+        expect(accountMeta.iaStatus).toEqual(3);
+        expect(tx).toBeDefined();
 
     });
 
-    it("is able to update an account's kyc status", async () => {
+    test("is able to update an account's kyc status", async () => {
+
+        expect.assertions(2);
 
         const tx = await program.rpc.updateKycStatus(pdaBump, groupKeypair.publicKey, 2, {
             accounts: {
@@ -134,15 +124,19 @@ describe("test that the identity-verification program", () => {
             signers: [authority],
         });
 
+        await provider.connection.confirmTransaction(tx);
+
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.kycStatus, 2);
-        assert.exists(tx);
+        expect(accountMeta.kycStatus).toEqual(2);
+        expect(tx).toBeDefined();
 
 
     });
 
-    it("is able to update an account's aml status", async () => {
+    test("is able to update an account's aml status", async () => {
+
+        expect.assertions(2);
 
         const tx = await program.rpc.updateAmlStatus(pdaBump, groupKeypair.publicKey, 1, {
             accounts: {
@@ -153,15 +147,19 @@ describe("test that the identity-verification program", () => {
             signers: [authority],
         });
 
+        await provider.connection.confirmTransaction(tx);
+
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.amlStatus, 1);
-        assert.exists(tx);
+        expect(accountMeta.amlStatus).toEqual(1);
+        expect(tx).toBeDefined();
 
 
     });
 
-    it("is not able to update an account's status to unknown status", async () => {
+    test("is not able to update an account's status to unknown status", async () => {
+
+        expect.assertions(2);
 
         const originalAccountMeta = await program.account.metadata.fetch(pdaPubkey);
 
@@ -178,22 +176,22 @@ describe("test that the identity-verification program", () => {
                 signers: [authority]
             });
 
-        } catch (exception) {
+        } catch (error) {
 
-            const error = exception.error;
-
-            assert.equal(error.errorCode.code, "UnknownStatus");
+            expect(error).toBeDefined()
 
         }
 
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.iaStatus, accreditationStatus);
+        expect(accountMeta.iaStatus).toEqual(accreditationStatus);
 
 
     });
 
-    it("fails to update an account if the authority is not known", async () => {
+    test("fails to update an account if the authority is not known", async () => {
+
+        expect.assertions(1);
 
         try {
 
@@ -206,18 +204,19 @@ describe("test that the identity-verification program", () => {
                 signers: [nonAuthority]
             });
 
-        } catch (exception) {
+        } catch (error) {
 
-            const error = exception.error;
-            assert.equal(error.errorCode.code, "NotAuthorized");
+            expect(error).toBeDefined()
 
         }
 
     });
 
-    it("can transfer authority from one account to another", async () => {
+    test("can transfer authority from one account to another", async () => {
 
-        await program.rpc.transferAuthority(pdaBump, groupKeypair.publicKey, {
+        expect.assertions(1);
+
+        const tx = await program.rpc.transferAuthority(pdaBump, groupKeypair.publicKey, {
             accounts: {
                 record: pdaPubkey,
                 subject: keypair.publicKey,
@@ -227,9 +226,11 @@ describe("test that the identity-verification program", () => {
             signers: [authority]
         });
 
+        await provider.connection.confirmTransaction(tx);
+
         const accountMeta = await program.account.metadata.fetch(pdaPubkey);
 
-        assert.equal(accountMeta.authority.toBase58(), newAuthority.publicKey.toBase58());
+        expect(accountMeta.authority.toBase58()).toEqual(newAuthority.publicKey.toBase58());
 
     });
 

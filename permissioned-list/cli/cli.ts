@@ -6,7 +6,6 @@ import {checkList} from "./commands/check-list";
 import {removeUser} from "./commands/remove-user";
 import {getCluster} from "./utils/get-cluster";
 import {getLocalnetProgramId} from "./utils/get-localnet-program-id";
-import * as path from "path";
 import {resolveHome} from "./utils/resolve-home";
 
 async function getProgramId(): Promise<string> {
@@ -46,7 +45,7 @@ async function getProgramId(): Promise<string> {
             "Signer keypair of the transaction.",
         )
         .requiredOption(
-            "-u, --user <keypair>",
+            "-u, --user <public-key>",
             "The user to add to the permissioned list.",
         )
         .option(

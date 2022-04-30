@@ -8,55 +8,125 @@ declare_id!("BUWzgULd7yHyCzSuq7CVSb4HVMMpvpo2Z9cAyPVsXG5k"); // localnet
 mod permissioned_list {
     use super::*;
 
-    /// Create a record of kyc/aml metadata for the user.
-    pub fn add_user(
-        ctx: Context<AddUser>,
-        _bump: u8,
-        _group: Pubkey,
+    pub fn create_list(
+        ctx: Context<CreateList>
     ) -> Result<()> {
-        let pda = &mut ctx.accounts.pda;
+        let list = &mut ctx.accounts.list;
+        let signer = &mut ctx.accounts.signer;
 
-        pda.authority = ctx.accounts.signer.key.clone();
+        list.authority = signer.key.clone();
 
         Ok(())
     }
 
-    /// Update accreditation status of account
-    pub fn remove_user(
-        ctx: Context<RemoveUser>,
-        _bump: u8,
-        _group: Pubkey,
+    pub fn delete_list(
+        ctx: Context<DeleteList>
     ) -> Result<()> {
-        require!(ctx.accounts.pda.authority.key() == ctx.accounts.signer.key.clone(), ErrorCode::NotAuthorized);
+        let list = &mut ctx.accounts.list;
+        let signer = &mut ctx.accounts.signer;
+
+        require!(list.authority == signer.key.clone(), ErrorCode::NotAuthorized);
+        Ok(())
+    }
+
+    pub fn add_user(
+        ctx: Context<AddUser>
+    ) -> Result<()> {
+        let list = &mut ctx.accounts.list;
+        let signer = &mut ctx.accounts.signer;
+
+        require!(list.authority == signer.key.clone(), ErrorCode::NotAuthorized);
+
+        Ok(())
+    }
+
+    pub fn remove_user(
+        ctx: Context<RemoveUser>
+    ) -> Result<()> {
+        let list = &mut ctx.accounts.list;
+        let signer = &mut ctx.accounts.signer;
+
+        require!(list.authority == signer.key.clone(), ErrorCode::NotAuthorized);
+
         Ok(())
     }
 }
 
 #[derive(Accounts)]
-#[instruction(bump: u8, group: Pubkey)]
+pub struct CreateList<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(
+    init,
+    seeds = [b"list", signer.key.as_ref()], bump,
+    payer = signer,
+    space = 8 + 32
+    )]
+    pub list: Account<'info, ListMetadata>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct DeleteList<'info> {
+    #[account(mut)]
+    pub signer: Signer<'info>,
+    #[account(
+    mut,
+    close = signer,
+    seeds = [b"list", signer.key.as_ref()], bump,
+    )]
+    pub list: Account<'info, ListMetadata>,
+}
+
+#[derive(Accounts)]
 pub struct AddUser<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
-    #[account(init, seeds = [group.as_ref(), user.key.as_ref()], bump, payer = signer, space = 8 + 32)]
-    pub pda: Account<'info, Metadata>,
-    pub system_program: Program<'info, System>,
+    #[account(
+    mut,
+    seeds = [b"list", signer.key.as_ref()], bump
+    )]
+    pub list: Account<'info, ListMetadata>,
+    #[account(
+    init,
+    seeds = [list.key().as_ref(), user.key.as_ref()], bump,
+    payer = signer,
+    space = 8
+    )]
+    pub entry: Account<'info, EntryMetadata>,
+    #[account(mut)]
     pub user: SystemAccount<'info>,
+    pub system_program: Program<'info, System>,
 }
 
 #[derive(Accounts)]
-#[instruction(bump: u8, group: Pubkey)]
 pub struct RemoveUser<'info> {
+    #[account(mut)]
     pub signer: Signer<'info>,
-    #[account(mut, close = signer, seeds = [group.as_ref(), user.key.as_ref()], bump)]
-    pub pda: Account<'info, Metadata>,
+    #[account(
+        mut,
+        seeds = [b"list", signer.key.as_ref()], bump
+    )]
+    pub list: Account<'info, ListMetadata>,
+    #[account(
+        mut,
+        close = signer,
+        seeds = [list.key().as_ref(), user.key.as_ref()], bump,
+    )]
+    pub entry: Account<'info, EntryMetadata>,
+    #[account(mut)]
     pub user: SystemAccount<'info>,
 }
 
 #[derive(Default)]
 #[account]
-pub struct Metadata {
-    authority: Pubkey
+pub struct ListMetadata {
+    authority: Pubkey,
 }
+
+#[derive(Default)]
+#[account]
+pub struct EntryMetadata {}
 
 #[error_code]
 pub enum ErrorCode {

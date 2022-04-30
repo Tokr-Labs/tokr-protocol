@@ -14,11 +14,17 @@ const execSync = require("child_process").execSync;
     // install identity-verification cli packages
     execSync('npm install', { cwd: "identity-verification/cli", stdio: "inherit" })
 
+    // install permissioned list cli packages
+    execSync('npm install', { cwd: "permissioned-list/cli", stdio: "inherit" })
+
     // link governance cli
     execSync('npm run build && npm link', { cwd: "governance/cli", stdio: "inherit" })
 
     // link identity-verification cli
-    execSync('npm link', { cwd: "identity-verification/cli", stdio: "inherit" })
+    execSync('npm run build && npm link', { cwd: "identity-verification/cli", stdio: "inherit" })
+
+    // link permissioned-list cli
+    execSync('npm run build && npm link', { cwd: "permissioned-list/cli", stdio: "inherit" })
 
 })();
 
