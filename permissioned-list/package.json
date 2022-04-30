@@ -1,5 +1,5 @@
 {
-  "name": "identity-verification",
+  "name": "permissioned-list",
   "version": "0.1.0",
   "devDependencies": {
     "@project-serum/anchor": "^0.24.2",

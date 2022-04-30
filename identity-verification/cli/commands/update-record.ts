@@ -1,7 +1,6 @@
 import {loadKeypair} from "../utils/load-keypair";
 import fs from "fs";
 import {Commitment, Connection, Keypair, PublicKey} from "@solana/web3.js";
-
 import {getRecord, Status, updateAmlStatus, updateIaStatus, updateKycStatus} from "../../js/src/index"
 
 export async function updateRecord(options: any, approve: boolean) {

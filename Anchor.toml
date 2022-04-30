@@ -4,7 +4,8 @@ solana_version = "1.9.17"
 [workspace]
 members = [
   "identity-verification/program",
-  "governance/program"
+  "governance/program",
+  "permissioned-list/program"
 ]
 
 [provider]
@@ -14,10 +15,12 @@ wallet = "~/.config/solana/id.json"
 [programs.mainnet]
 spl_governance = "govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr"
 identity_verification = "idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD"
+permissioned_list = "permXeEzAzbSbtDS6CZxodr6iP3fP8B8Gvid1vXMpvM"
 
 [programs.devnet]
 spl_governance = "CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd"
 identity_verification = "5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9"
+permissioned_list = "Hwh92WNAfui11wsSEgkyowFEkG3Kb6ALTQrTTQSxfL26"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 ./identity-verification/tests/**/*.ts"
+test = "npx jest --detectOpenHandles --forceExit --noStackTrace"
