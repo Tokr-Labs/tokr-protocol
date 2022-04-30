@@ -1,6 +1,9 @@
 {
   "name": "tokr-protocol",
   "version": "1.0.0",
+  "scripts": {
+    "postinstall": "node ./scripts/post-install.js"
+  },
   "devDependencies": {
     "@types/jest": "^27.4.1",
     "@types/node": "17.0.30",
