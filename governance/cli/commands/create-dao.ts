@@ -15,8 +15,8 @@ import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
     createAssociatedTokenAccountInstruction,
     createInitializeMintInstruction,
-    createMintToInstruction,
-    MintLayout,
+    createMintToInstruction, getOrCreateAssociatedTokenAccount,
+    MintLayout, mintTo,
     TOKEN_PROGRAM_ID
 } from "@solana/spl-token"
 
@@ -53,6 +53,7 @@ export const createDao = async (
     const name = config.name;
     const governanceProgramId = config.governanceProgramId;
     const usdcMint = config.usdcMint;
+    const maxLpTokenSupply = config.maxLpTokenSupply;
     const governanceConfig = config.governance;
 
     console.log();
@@ -144,6 +145,15 @@ export const createDao = async (
         delegateAtaPublicKey
     )
 
+    console.log("Minting max supply of LP tokens...")
+    await mintMaxLpTokens(
+        connection,
+        ownerKeypair,
+        limitedPartnerMintKeypair.publicKey,
+        ownerKeypair.publicKey,
+        maxLpTokenSupply
+    )
+
     console.log("Creating realm...")
     const realmPublicKey = await createRealm(
         connection,
@@ -206,7 +216,7 @@ export const createDao = async (
         limitedPartnerMintGovernancePublicKey
     )
 
-    console.log("Creating LP Token treasury account under Delegate Governance")
+    console.log("Creating LP Token treasury account under Delegate Governance...")
     const treasuryStockTreasuryPubkey = await createTreasuryAccount(
         connection,
         ownerKeypair,
@@ -361,6 +371,32 @@ const mintDelegateTokenForDelegate = async (
         connection,
         mintToTransaction,
         [ownerKeypair],
+    )
+
+}
+
+const mintMaxLpTokens = async (
+    connection: Connection,
+    payer: Keypair,
+    mint: PublicKey,
+    owner: PublicKey,
+    amount: number
+) => {
+
+    const ownerAta = await getOrCreateAssociatedTokenAccount(
+        connection,
+        payer,
+        mint,
+        owner
+    )
+
+    await mintTo(
+        connection,
+        payer,
+        mint,
+        ownerAta.address,
+        owner,
+        amount
     )
 
 }
