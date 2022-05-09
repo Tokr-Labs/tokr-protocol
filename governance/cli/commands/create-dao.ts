@@ -13,25 +13,27 @@ import {
 
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
+    AuthorityType,
     createAssociatedTokenAccountInstruction,
     createInitializeMintInstruction,
-    createMintToInstruction, getOrCreateAssociatedTokenAccount,
-    MintLayout, mintTo,
-    TOKEN_PROGRAM_ID
+    createMintToInstruction,
+    getOrCreateAssociatedTokenAccount,
+    MintLayout,
+    mintTo,
+    setAuthority,
+    TOKEN_PROGRAM_ID,
+    transfer
 } from "@solana/spl-token"
 
-import {
-    GovernanceConfig,
-    MintMaxVoteWeightSource,
-    VoteThresholdPercentage
-} from "../../js/src/governance/accounts"
+import {GovernanceConfig, MintMaxVoteWeightSource, VoteThresholdPercentage} from "../../js/src/governance/accounts"
 import {withDepositGoverningTokens} from '../../js/src/governance/withDepositGoverningTokens'
 import {withCreateMintGovernance} from '../../js/src/governance/withCreateMintGovernance'
 import {withSetRealmAuthority} from '../../js/src/governance/withSetRealmAuthority'
+import {withCreateGovernance} from '../../js/src/governance/withCreateGovernance'
 import {withCreateRealm} from '../../js/src/governance/withCreateRealm'
 import * as fs from "fs";
-import path from "path";
 import {readFileSync} from "fs";
+import path from "path";
 import {isNumber, isString} from "underscore"
 import * as process from "process";
 
@@ -146,12 +148,22 @@ export const createDao = async (
     )
 
     console.log("Minting max supply of LP tokens...")
-    await mintMaxLpTokens(
+    const ownerAta = await mintMaxLpTokens(
         connection,
         ownerKeypair,
         limitedPartnerMintKeypair.publicKey,
         ownerKeypair.publicKey,
         maxLpTokenSupply
+    )
+
+    console.log("Disabling LP token mint authority...")
+    await setAuthority(
+        connection,
+        ownerKeypair,
+        limitedPartnerMintKeypair.publicKey,
+        ownerKeypair,
+        AuthorityType.MintTokens,
+        null
     )
 
     console.log("Creating realm...")
@@ -174,12 +186,12 @@ export const createDao = async (
         delegateMintKeypair.publicKey
     )
 
-    console.log("Transferring mints to governance...")
+    console.log("Creating governances...")
     let {
-        limitedPartnerMintGovernancePublicKey,
+        limitedPartnerGovernancePublicKey,
         delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
-    } = await transferMintsToGovernance(
+    } = await createGovernances(
         connection,
         governanceProgramIdPublicKey,
         governanceConfig,
@@ -191,16 +203,32 @@ export const createDao = async (
     )
 
 
-    console.log("Assign LP governance to realm...")
-    await assignLimitedPartnerGovernanceToRealm(
+    console.log("Setting LP governance as realm authority...")
+    await setLimitedPartnerGovernanceAsRealmAuthority(
         connection,
         governanceProgramIdPublicKey,
         ownerKeypair,
         realmPublicKey,
-        limitedPartnerMintGovernancePublicKey
+        limitedPartnerGovernancePublicKey
     )
 
-    console.log("Creating USDC treasury account under Distribution governance...")
+    console.log("Creating Capital Supply (USDC) treasury account under LP governance...")
+    const capitalSupplyTreasuryPubkey = await createTreasuryAccount(
+        connection,
+        ownerKeypair,
+        usdcMintPublicKey,
+        limitedPartnerGovernancePublicKey
+    )
+
+    console.log("Creating Treasury Stock (LP Token) treasury account under Delegate Governance...")
+    const treasuryStockTreasuryPubkey = await createTreasuryAccount(
+        connection,
+        ownerKeypair,
+        limitedPartnerMintKeypair.publicKey,
+        delegateMintGovernancePublicKey
+    )
+
+    console.log("Creating Distribution (USDC) treasury account under Distribution governance...")
     const distributionTreasuryPubkey = await createTreasuryAccount(
         connection,
         ownerKeypair,
@@ -208,20 +236,14 @@ export const createDao = async (
         distributionMintGovernancePublicKey
     )
 
-    console.log("Creating USDC treasury account under LP governance...")
-    const capitalSupplyTreasuryPubkey = await createTreasuryAccount(
+    console.log("Transferring LP tokens to Treasury Stock account...")
+    await transfer(
         connection,
         ownerKeypair,
-        usdcMintPublicKey,
-        limitedPartnerMintGovernancePublicKey
-    )
-
-    console.log("Creating LP Token treasury account under Delegate Governance...")
-    const treasuryStockTreasuryPubkey = await createTreasuryAccount(
-        connection,
+        ownerAta,
+        treasuryStockTreasuryPubkey,
         ownerKeypair,
-        limitedPartnerMintKeypair.publicKey,
-        delegateMintGovernancePublicKey
+        maxLpTokenSupply
     )
 
 
@@ -236,7 +258,7 @@ export const createDao = async (
     console.log(`Delegate Token Mint: ${delegateMintKeypair.publicKey.toBase58()}`);
     console.log(`Distribution Token Mint: ${distributionMintKeypair.publicKey.toBase58()}`);
     console.log()
-    console.log(`LP Mint Governance: ${limitedPartnerMintGovernancePublicKey}`);
+    console.log(`LP Governance: ${limitedPartnerGovernancePublicKey}`);
     console.log(`Delegate Mint Governance: ${delegateMintGovernancePublicKey}`);
     console.log(`Distribution Mint Governance: ${distributionMintGovernancePublicKey}`);
     console.log()
@@ -399,6 +421,8 @@ const mintMaxLpTokens = async (
         amount
     )
 
+    return ownerAta.address
+
 }
 
 const createRealm = async (
@@ -505,7 +529,7 @@ const depositDelegateCouncilTokenInGovernance = async (
 
 }
 
-const transferMintsToGovernance = async (
+const createGovernances = async (
     connection: Connection,
     governanceProgramId: PublicKey,
     governanceConfig: any,
@@ -542,15 +566,13 @@ const transferMintsToGovernance = async (
 
     const instructions: TransactionInstruction[] = []
 
-    const limitedPartnerMintGovernancePublicKey = await withCreateMintGovernance(
+    const limitedPartnerGovernancePublicKey = await withCreateGovernance(
         instructions,
         governanceProgramId,
-        2, // why does program 2 work and not program 1
+        2,
         realmPublicKey,
-        limitedPartnerMintPublicKey,
+        undefined,
         config,
-        !!ownerKeypair.publicKey,
-        ownerKeypair.publicKey,
         tokenOwnerRecordAddress,
         ownerKeypair.publicKey,
         ownerKeypair.publicKey
@@ -592,14 +614,14 @@ const transferMintsToGovernance = async (
     await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
     return {
-        limitedPartnerMintGovernancePublicKey,
+        limitedPartnerGovernancePublicKey,
         delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
     }
 
 }
 
-const assignLimitedPartnerGovernanceToRealm = async (
+const setLimitedPartnerGovernanceAsRealmAuthority = async (
     connection: Connection,
     governanceProgramId: PublicKey,
     ownerKeypair: Keypair,
