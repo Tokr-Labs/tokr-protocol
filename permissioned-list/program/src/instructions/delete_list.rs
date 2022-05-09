@@ -10,6 +10,7 @@ pub fn delete_list(
     let signer = &mut ctx.accounts.signer;
 
     require!(list.authority == signer.key.clone(), ErrorCode::NotAuthorized);
+
     Ok(())
 }
 
