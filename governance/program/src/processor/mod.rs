@@ -26,6 +26,7 @@ mod process_set_realm_config;
 mod process_sign_off_proposal;
 mod process_update_program_metadata;
 mod process_withdraw_governing_tokens;
+mod process_deposit_capital;
 
 use crate::instruction::GovernanceInstruction;
 
@@ -68,9 +69,6 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     input: &[u8],
 ) -> ProgramResult {
-
-
-
 
     msg!("VERSION:{:?}", env!("CARGO_PKG_VERSION"));
 
@@ -189,18 +187,15 @@ pub fn process_instruction(
             hold_up_time,
             instructions,
         ),
-
         GovernanceInstruction::RemoveTransaction {} => {
             process_remove_transaction(program_id, accounts)
         }
         GovernanceInstruction::ExecuteTransaction {} => {
             process_execute_transaction(program_id, accounts)
         }
-
         GovernanceInstruction::SetGovernanceConfig { config } => {
             process_set_governance_config(program_id, accounts, config)
         }
-
         GovernanceInstruction::FlagTransactionError {} => {
             process_flag_transaction_error(program_id, accounts)
         }
@@ -218,6 +213,10 @@ pub fn process_instruction(
         }
         GovernanceInstruction::CreateNativeTreasury {} => {
             process_create_native_treasury(program_id, accounts)
+        }
+
+        GovernanceInstruction::DepositCaptial { amount } => {
+            process_deposit_capital(program_id, accounts, amount)
         }
     }
 }

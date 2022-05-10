@@ -132,6 +132,7 @@ pub fn transfer_spl_tokens_signed<'a>(
     amount: u64,
     spl_token_info: &AccountInfo<'a>,
 ) -> ProgramResult {
+
     let (authority_address, bump_seed) = Pubkey::find_program_address(authority_seeds, program_id);
 
     if authority_address != *authority_info.key {
