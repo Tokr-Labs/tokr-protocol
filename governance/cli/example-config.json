@@ -5,6 +5,7 @@
   "name": "Realm 2",
   "governanceProgramId": "7cjMfQWdJ9Va2pjSZM3D9G2PGCwgWMzbgcaVymCtRVQZ",
   "usdcMint": "4vLoappqntEvnxT1uSATbjt1nPMG2q6HjhHVgyuxxAaW",
+  "maxLpTokenSupply": 1000000,
   "governance": {
     "voteThresholdPercentage": 100,
     "minCommunityTokensToCreateProposal": 10000000,
