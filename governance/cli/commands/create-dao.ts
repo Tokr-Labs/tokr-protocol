@@ -13,25 +13,27 @@ import {
 
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
+    AuthorityType,
     createAssociatedTokenAccountInstruction,
     createInitializeMintInstruction,
     createMintToInstruction,
+    getOrCreateAssociatedTokenAccount,
     MintLayout,
-    TOKEN_PROGRAM_ID
+    mintTo,
+    setAuthority,
+    TOKEN_PROGRAM_ID,
+    transfer
 } from "@solana/spl-token"
 
-import {
-    GovernanceConfig,
-    MintMaxVoteWeightSource,
-    VoteThresholdPercentage
-} from "../../js/src/governance/accounts"
+import {GovernanceConfig, MintMaxVoteWeightSource, VoteThresholdPercentage} from "../../js/src/governance/accounts"
 import {withDepositGoverningTokens} from '../../js/src/governance/withDepositGoverningTokens'
 import {withCreateMintGovernance} from '../../js/src/governance/withCreateMintGovernance'
 import {withSetRealmAuthority} from '../../js/src/governance/withSetRealmAuthority'
+import {withCreateGovernance} from '../../js/src/governance/withCreateGovernance'
 import {withCreateRealm} from '../../js/src/governance/withCreateRealm'
 import * as fs from "fs";
-import path from "path";
 import {readFileSync} from "fs";
+import path from "path";
 import {isNumber, isString} from "underscore"
 import * as process from "process";
 
@@ -53,6 +55,7 @@ export const createDao = async (
     const name = config.name;
     const governanceProgramId = config.governanceProgramId;
     const usdcMint = config.usdcMint;
+    const maxLpTokenSupply = config.maxLpTokenSupply;
     const governanceConfig = config.governance;
 
     console.log();
@@ -76,15 +79,6 @@ export const createDao = async (
     const limitedPartnerMintKeypair = Keypair.generate();
     const delegateMintKeypair = Keypair.generate();
     const distributionMintKeypair = Keypair.generate();
-
-    const delegateAtaPublicKey = (await PublicKey.findProgramAddress(
-        [
-            delegateKeypair.publicKey.toBuffer(),
-            TOKEN_PROGRAM_ID.toBuffer(),
-            delegateMintKeypair.publicKey.toBuffer(),
-        ],
-        ASSOCIATED_TOKEN_PROGRAM_ID
-    ))[0];
 
     let mintInstructions: TransactionInstruction[] = [];
 
@@ -115,7 +109,7 @@ export const createDao = async (
         0
     )
 
-    console.log("Creating mints...")
+    console.log("Executing mint instructions...")
     await executeMintInstructions(
         connection,
         mintInstructions,
@@ -127,21 +121,31 @@ export const createDao = async (
         ownerKeypair
     )
 
-    console.log("Creating delegate's Delegate Token ATA...")
-    await createDelegateAssociatedTokenAccount(
-        connection,
-        ownerKeypair,
-        delegateKeypair,
-        delegateAtaPublicKey,
-        delegateMintKeypair.publicKey
-    )
-
-    console.log("Minting 1 Delegate Token for delegate...")
+    console.log("Minting 1 Delegate Token to delegate...")
     await mintDelegateTokenForDelegate(
         connection,
         ownerKeypair,
         delegateMintKeypair.publicKey,
-        delegateAtaPublicKey
+        delegateKeypair
+    )
+
+    console.log("Minting max supply of LP tokens...")
+    const ownerAta = await mintMaxLpTokens(
+        connection,
+        ownerKeypair,
+        limitedPartnerMintKeypair.publicKey,
+        ownerKeypair.publicKey,
+        maxLpTokenSupply
+    )
+
+    console.log("Disabling LP token mint authority...")
+    await setAuthority(
+        connection,
+        ownerKeypair,
+        limitedPartnerMintKeypair.publicKey,
+        ownerKeypair,
+        AuthorityType.MintTokens,
+        null
     )
 
     console.log("Creating realm...")
@@ -154,22 +158,22 @@ export const createDao = async (
         name
     )
 
-    console.log("Depositing delegate's Delegate Token to governance...")
+    console.log("Depositing delegate's Delegate Token to realm...")
     await depositDelegateCouncilTokenInGovernance(
         connection,
         governanceProgramIdPublicKey,
         delegateKeypair,
+        ownerKeypair,
         realmPublicKey,
-        delegateAtaPublicKey,
         delegateMintKeypair.publicKey
     )
 
-    console.log("Transferring mints to governance...")
+    console.log("Creating governances...")
     let {
-        limitedPartnerMintGovernancePublicKey,
+        limitedPartnerGovernancePublicKey,
         delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
-    } = await transferMintsToGovernance(
+    } = await createGovernances(
         connection,
         governanceProgramIdPublicKey,
         governanceConfig,
@@ -181,16 +185,32 @@ export const createDao = async (
     )
 
 
-    console.log("Assign LP governance to realm...")
-    await assignLimitedPartnerGovernanceToRealm(
+    console.log("Setting LP governance as realm authority...")
+    await setLimitedPartnerGovernanceAsRealmAuthority(
         connection,
         governanceProgramIdPublicKey,
         ownerKeypair,
         realmPublicKey,
-        limitedPartnerMintGovernancePublicKey
+        limitedPartnerGovernancePublicKey
     )
 
-    console.log("Creating USDC treasury account under Distribution governance...")
+    console.log("Creating Capital Supply (USDC) treasury account under LP governance...")
+    const capitalSupplyTreasuryPubkey = await createTreasuryAccount(
+        connection,
+        ownerKeypair,
+        usdcMintPublicKey,
+        limitedPartnerGovernancePublicKey
+    )
+
+    console.log("Creating Treasury Stock (LP Token) treasury account under Delegate Governance...")
+    const treasuryStockTreasuryPubkey = await createTreasuryAccount(
+        connection,
+        ownerKeypair,
+        limitedPartnerMintKeypair.publicKey,
+        delegateMintGovernancePublicKey
+    )
+
+    console.log("Creating Distribution (USDC) treasury account under Distribution governance...")
     const distributionTreasuryPubkey = await createTreasuryAccount(
         connection,
         ownerKeypair,
@@ -198,20 +218,14 @@ export const createDao = async (
         distributionMintGovernancePublicKey
     )
 
-    console.log("Creating USDC treasury account under LP governance...")
-    const capitalSupplyTreasuryPubkey = await createTreasuryAccount(
+    console.log("Transferring LP tokens to Treasury Stock account...")
+    await transfer(
         connection,
         ownerKeypair,
-        usdcMintPublicKey,
-        limitedPartnerMintGovernancePublicKey
-    )
-
-    console.log("Creating LP Token treasury account under Delegate Governance")
-    const treasuryStockTreasuryPubkey = await createTreasuryAccount(
-        connection,
+        ownerAta,
+        treasuryStockTreasuryPubkey,
         ownerKeypair,
-        limitedPartnerMintKeypair.publicKey,
-        delegateMintGovernancePublicKey
+        maxLpTokenSupply
     )
 
 
@@ -220,13 +234,12 @@ export const createDao = async (
     console.log("OUTPUT:")
     console.log();
     console.log(`Realm: ${realmPublicKey}`);
-    console.log(`Delegate's ATA: ${delegateAtaPublicKey.toBase58()}`);
     console.log()
     console.log(`LP Token Mint: ${limitedPartnerMintKeypair.publicKey.toBase58()}`);
     console.log(`Delegate Token Mint: ${delegateMintKeypair.publicKey.toBase58()}`);
     console.log(`Distribution Token Mint: ${distributionMintKeypair.publicKey.toBase58()}`);
     console.log()
-    console.log(`LP Mint Governance: ${limitedPartnerMintGovernancePublicKey}`);
+    console.log(`LP Governance: ${limitedPartnerGovernancePublicKey}`);
     console.log(`Delegate Mint Governance: ${delegateMintGovernancePublicKey}`);
     console.log(`Distribution Mint Governance: ${distributionMintGovernancePublicKey}`);
     console.log()
@@ -307,47 +320,23 @@ const executeMintInstructions = async (
 
 }
 
-const createDelegateAssociatedTokenAccount = async (
-    connection: Connection,
-    ownerKeypair: Keypair,
-    delegateKeypair: Keypair,
-    delegateAtaPublicKey: PublicKey,
-    councilMintAddress: PublicKey
-) => {
-
-    const ataTransactionInstruction = createAssociatedTokenAccountInstruction(
-        ownerKeypair.publicKey,
-        delegateAtaPublicKey,
-        delegateKeypair.publicKey,
-        councilMintAddress,
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID
-    )
-
-    const ataTransaction = new Transaction()
-
-    // ataTransaction.add(createAccountTransactionInstruction)
-    ataTransaction.add(ataTransactionInstruction)
-    ataTransaction.feePayer = ownerKeypair.publicKey;
-
-    await sendAndConfirmTransaction(
-        connection,
-        ataTransaction,
-        [ownerKeypair],
-    )
-
-}
-
 const mintDelegateTokenForDelegate = async (
     connection: Connection,
     ownerKeypair: Keypair,
-    councilMintPubkey: PublicKey,
-    delegateAtaPubKey: PublicKey
+    delegateMintPublicKey: PublicKey,
+    delegateKeypair: Keypair
 ) => {
 
+    const delegateAta = await getOrCreateAssociatedTokenAccount(
+        connection,
+        ownerKeypair,
+        delegateMintPublicKey,
+        delegateKeypair.publicKey
+    )
+
     const mintToTransactionInstruction = createMintToInstruction(
-        councilMintPubkey,
-        delegateAtaPubKey,
+        delegateMintPublicKey,
+        delegateAta.address,
         ownerKeypair.publicKey,
         1
     )
@@ -362,6 +351,34 @@ const mintDelegateTokenForDelegate = async (
         mintToTransaction,
         [ownerKeypair],
     )
+
+}
+
+const mintMaxLpTokens = async (
+    connection: Connection,
+    payer: Keypair,
+    mint: PublicKey,
+    owner: PublicKey,
+    amount: number
+) => {
+
+    const ownerAta = await getOrCreateAssociatedTokenAccount(
+        connection,
+        payer,
+        mint,
+        owner
+    )
+
+    await mintTo(
+        connection,
+        payer,
+        mint,
+        ownerAta.address,
+        owner,
+        amount
+    )
+
+    return ownerAta.address
 
 }
 
@@ -440,20 +457,27 @@ const depositDelegateCouncilTokenInGovernance = async (
     connection: Connection,
     governanceProgramId: PublicKey,
     delegateKeypair: Keypair,
+    ownerKeypair: Keypair,
     realmPublicKey: PublicKey,
-    delegateAtaPublicKey: PublicKey,
-    councilMintPublicKey: PublicKey,
+    delegateMintPublicKey: PublicKey,
 ) => {
 
     let instruction: TransactionInstruction[] = [];
+
+    const delegateAta = await getOrCreateAssociatedTokenAccount(
+        connection,
+        ownerKeypair,
+        delegateMintPublicKey,
+        delegateKeypair.publicKey
+    )
 
     await withDepositGoverningTokens(
         instruction,
         governanceProgramId,
         2, // why does program 2 work and not program 1
         realmPublicKey,
-        delegateAtaPublicKey,
-        councilMintPublicKey,
+        delegateAta.address,
+        delegateMintPublicKey,
         delegateKeypair.publicKey,
         delegateKeypair.publicKey,
         delegateKeypair.publicKey,
@@ -469,7 +493,7 @@ const depositDelegateCouncilTokenInGovernance = async (
 
 }
 
-const transferMintsToGovernance = async (
+const createGovernances = async (
     connection: Connection,
     governanceProgramId: PublicKey,
     governanceConfig: any,
@@ -506,15 +530,13 @@ const transferMintsToGovernance = async (
 
     const instructions: TransactionInstruction[] = []
 
-    const limitedPartnerMintGovernancePublicKey = await withCreateMintGovernance(
+    const limitedPartnerGovernancePublicKey = await withCreateGovernance(
         instructions,
         governanceProgramId,
-        2, // why does program 2 work and not program 1
+        2,
         realmPublicKey,
-        limitedPartnerMintPublicKey,
+        undefined,
         config,
-        !!ownerKeypair.publicKey,
-        ownerKeypair.publicKey,
         tokenOwnerRecordAddress,
         ownerKeypair.publicKey,
         ownerKeypair.publicKey
@@ -556,14 +578,14 @@ const transferMintsToGovernance = async (
     await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
     return {
-        limitedPartnerMintGovernancePublicKey,
+        limitedPartnerGovernancePublicKey,
         delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
     }
 
 }
 
-const assignLimitedPartnerGovernanceToRealm = async (
+const setLimitedPartnerGovernanceAsRealmAuthority = async (
     connection: Connection,
     governanceProgramId: PublicKey,
     ownerKeypair: Keypair,
