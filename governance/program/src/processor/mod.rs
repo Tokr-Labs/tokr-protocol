@@ -56,6 +56,7 @@ use process_set_realm_config::*;
 use process_sign_off_proposal::*;
 use process_update_program_metadata::*;
 use process_withdraw_governing_tokens::*;
+use process_deposit_capital::*;
 
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, msg,

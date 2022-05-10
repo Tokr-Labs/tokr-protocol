@@ -471,7 +471,7 @@ pub enum GovernanceInstruction {
     ///  3. `[]` System
     CreateNativeTreasury,
 
-    /// Deposits captial (USDC) to Governance Realm and distributes LP tokens
+    /// Deposits capital (USDC) to Governance Realm and distributes LP tokens
     ///
     ///  0.  `[]` Governance Realm account
     ///  1.  `[writable]` USDC Holding account. PDA seeds: [governance, usdc_token_mint]

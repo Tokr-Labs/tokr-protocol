@@ -34,8 +34,26 @@ pub fn process_deposit_capital(
 
     let account_info_iter = &mut accounts.iter();
 
-    /*
     let realm_info = next_account_info(account_info_iter)?; // 0
+    let usdc_token_holding_account = next_account_info(account_info_iter)?; // 0
+    let usdc_token_source = next_account_info(account_info_iter)?; // 0
+    let usdc_token_owner = next_account_info(account_info_iter)?; // 0
+
+    /*
+    ///  0.  `[]` Governance Realm account
+    ///  1.  `[writable]` USDC Holding account. PDA seeds: [governance, usdc_token_mint]
+    ///  2.  `[writable]` USDC Source account. USDC tokens from the account will be transferred to the Holding account
+    ///  3.  `[signer]` USDC Source Token Owner account
+    ///  4.  `[signer]` USDC Token Transfer Authority
+    ///  5.  `[signer]` LP Token Transfer authority
+    ///  6.  `[writable]` LP Token Destination account. LP token account for USDC source account holder.
+    ///  7.  `[signer]` Payer
+    ///  8.  `[]` System
+    ///  9.  `[]` SPL Token
+    ///  10. `[]` Sysvar Rent
+     */
+
+    /*
     let governing_token_holding_info = next_account_info(account_info_iter)?; // 1
     let governing_token_source_info = next_account_info(account_info_iter)?; // 2
     let governing_token_owner_info = next_account_info(account_info_iter)?; // 3
@@ -74,25 +92,25 @@ pub fn process_deposit_capital(
         ]
     )?;
 
-    transfer_spl_tokens_signed(
-        governing_token_holding_info,
-        governing_token_destination_info,
-        realm_info,
-        &get_realm_address_seeds(&realm_data.name),
-        program_id,
-        token_owner_record_data.governing_token_deposit_amount,
-        spl_token_info,
-    )?;
-
-    transfer_spl_tokens_signed(
-        governing_token_holding_info,
-        governing_token_destination_info,
-        realm_info,
-        &get_realm_address_seeds(&realm_data.name),
-        program_id,
-        token_owner_record_data.governing_token_deposit_amount,
-        spl_token_info,
-    )?;
+    // transfer_spl_tokens_signed(
+    //     governing_token_holding_info,
+    //     governing_token_destination_info,
+    //     realm_info,
+    //     &get_realm_address_seeds(&realm_data.name),
+    //     program_id,
+    //     token_owner_record_data.governing_token_deposit_amount,
+    //     spl_token_info,
+    // )?;
+    //
+    // transfer_spl_tokens_signed(
+    //     governing_token_holding_info,
+    //     governing_token_destination_info,
+    //     realm_info,
+    //     &get_realm_address_seeds(&realm_data.name),
+    //     program_id,
+    //     token_owner_record_data.governing_token_deposit_amount,
+    //     spl_token_info,
+    // )?;
 
     /*
     let realm_info = next_account_info(account_info_iter)?; // 0

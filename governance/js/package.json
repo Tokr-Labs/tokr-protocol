@@ -35,6 +35,7 @@
     "esbuild": "^0.14.11",
     "esbuild-jest": "^0.5.0",
     "jest": "^27.4.7",
+    "random-word-slugs": "^0.1.6",
     "typescript": "^4.5.4"
   },
   "jest": {
