@@ -21,12 +21,7 @@ use crate::{
     tools::bpf_loader_upgradeable::get_program_data_address,
 };
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{
-    bpf_loader_upgradeable,
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-    system_program, sysvar,
-};
+use solana_program::{bpf_loader_upgradeable, instruction::{AccountMeta, Instruction}, msg, pubkey::Pubkey, system_program, sysvar};
 
 /// Instructions supported by the Governance program
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
@@ -227,8 +222,9 @@ pub enum GovernanceInstruction {
     ///   3. `[signer]` Governance Authority (Token Owner or Governance Delegate)
     ///   4. `[writable]` ProposalTransaction, account. PDA seeds: ['governance',proposal,index]
     ///   5. `[signer]` Payer
-    ///   6. `[]` System program
-    ///   7. `[]` Rent sysvar
+    ///   6. `[]` Token Program
+    ///   7. `[]` System program
+    ///   8. `[]` Rent sysvar
     InsertTransaction {
         #[allow(dead_code)]
         /// The index of the option the transaction is for
@@ -471,23 +467,21 @@ pub enum GovernanceInstruction {
     ///  3. `[]` System
     CreateNativeTreasury,
 
-    /// Deposits capital (USDC) to Governance Realm and distributes LP tokens
+    /// Deposits capital tokens into capital treasury and distribute community governance tokens
     ///
-    ///  0.  `[]` Governance Realm account
-    ///  1.  `[writable]` USDC Holding account. PDA seeds: [governance, usdc_token_mint]
-    ///  2.  `[writable]` USDC Source account. USDC tokens from the account will be transferred to the Holding account
-    ///  3.  `[signer]` USDC Source Token Owner account
-    ///  4.  `[signer]` USDC Token Transfer Authority
-    ///  5.  `[signer]` LP Token Transfer authority
-    ///  6.  `[writable]` LP Token Destination account. LP token account for USDC source account holder.
-    ///  7.  `[signer]` Payer
-    ///  8.  `[]` System
-    ///  9.  `[]` SPL Token
-    ///  10. `[]` Sysvar Rent
-    DepositCaptial {
-        /// The amount to capital to deposit into the realm
+    /// 0. `[]` Realm account
+    /// 1. `[]` Governance account
+    /// 2. `[signer]` Authority
+    /// 3. `[writable]` Token Account
+    /// 4. `[writable]` Vault Token Account
+    /// 5. `[]` Token Mint
+    /// 6. `[]` Token Program
+    /// 7. `[]` Associated Token Program
+    /// 8. `[]` System
+    DepositCapital {
+        /// The amount to capital tokens to deposit into the capital treasury
         #[allow(dead_code)]
-        amount: u64,
+        amount: u64
     },
 
 }
@@ -508,7 +502,6 @@ pub fn create_realm(
     min_community_weight_to_create_governance: u64,
     community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
 ) -> Instruction {
-
     println!("create_realm println {}", program_id);
     print!("create_realm print {}", program_id);
 
@@ -1554,58 +1547,36 @@ pub fn create_native_treasury(
     }
 }
 
-
 /// Creates DepositCapital instruction
 #[allow(clippy::too_many_arguments)]
 pub fn deposit_capital(
     program_id: &Pubkey,
     // Accounts
     realm: &Pubkey,
-    usdc_source_account: &Pubkey,
-    usdc_source_owner: &Pubkey,
-    usdc_token_transfer_authority: &Pubkey,
-    lp_token_transfer_authority: &Pubkey,
-    payer: &Pubkey,
+    governance: &Pubkey,
+    authority: &Pubkey,
+    token_account: &Pubkey,
+    vault: &Pubkey,
+    token_mint: &Pubkey,
+    token_program: &Pubkey,
+    associated_token_program: &Pubkey,
     // Args
     amount: u64,
-    usdc_token_mint: &Pubkey,
-    lp_token_address: &Pubkey,
 ) -> Instruction {
 
-
-    // i think this would just be where to deposit the lp tokens to. I think this would just be a simple ata,
-    // but since we dont have a mint I am not sure how we would accomplish this?
-    let lp_token_owner_address = Pubkey::find_program_address(&[&[]], spl_token::id());
-
-    // the account that the usdc with be transfered into (on the realm side)
-    let usdc_token_holding_address = get_usdc_holding_address(program_id, realm, usdc_token_mint);
-
-    // the account where the lp tokens will be transfered from (on the realm side)
-    let lp_token_holding_address = get_governing_token_holding_address(program_id, realm, governing_token_mint);
-
     let accounts = vec![
-        // the realm address
-        AccountMeta::new_readonly(*realm, false),
-        // where we'll be transfering usdc to
-        AccountMeta::new(usdc_token_holding_address, false),
-        // where we'll be transfering usdc from
-        AccountMeta::new(*usdc_source_account, false),
-        // the owner of where we'll be transfering usdc from
-        AccountMeta::new_readonly(*usdc_source_owner, true),
-        // transfer authority for the usdc transfer
-        AccountMeta::new_readonly(*usdc_token_transfer_authority, true),
-        // transfer authority for the lp token transfer
-        AccountMeta::new_readonly(*lp_token_transfer_authority, true),
-
-        AccountMeta::new(*lp_token_owner_address, false), // pda
-        // payer of fees
-        AccountMeta::new(*payer, true),
-        //
-        AccountMeta::new_readonly(system_program::id(), false),
-        AccountMeta::new_readonly(spl_token::id(), false),
+        AccountMeta::new_readonly(*realm, false), // 0
+        AccountMeta::new_readonly(*governance, false), // 1
+        AccountMeta::new_readonly(*authority, true), // 2
+        AccountMeta::new(*token_account, false), // 3
+        AccountMeta::new(*vault, false), // 4
+        AccountMeta::new_readonly(*token_mint, false), // 5
+        AccountMeta::new_readonly(*token_program, false), // 6
+        AccountMeta::new_readonly(*associated_token_program, false), // 7
+        AccountMeta::new_readonly(system_program::id(), false), // 8
     ];
 
-    let instruction = GovernanceInstruction::DepositCaptial { amount };
+    let instruction = GovernanceInstruction::DepositCapital { amount };
 
     Instruction {
         program_id: *program_id,

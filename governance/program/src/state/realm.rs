@@ -381,8 +381,27 @@ pub fn get_governing_token_holding_address(
         &get_governing_token_holding_address_seeds(realm, governing_token_mint),
         program_id,
     )
-    .0
+        .0
 }
+
+/// Returns Capital Treasury PDA address from governance and mint
+pub fn get_capital_token_holding_address(
+    token_program_id: &Pubkey,
+    associated_token_program_id: &Pubkey,
+    governance: &Pubkey,
+    capital_token_mint: &Pubkey,
+) -> Pubkey {
+
+    Pubkey::find_program_address(
+        &[
+            governance.as_ref(),
+            token_program_id.as_ref(),
+            capital_token_mint.as_ref()
+        ],
+        associated_token_program_id,
+    ).0
+}
+
 
 /// Asserts given realm config args are correct
 pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(), ProgramError> {
@@ -393,7 +412,7 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
             }
         }
         MintMaxVoteWeightSource::Absolute(_) => {
-            return Err(GovernanceError::MintMaxVoteWeightSourceNotSupported.into())
+            return Err(GovernanceError::MintMaxVoteWeightSourceNotSupported.into());
         }
     }
 
@@ -402,11 +421,29 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
 
 #[cfg(test)]
 mod test {
-
     use crate::instruction::GovernanceInstruction;
     use solana_program::borsh::try_from_slice_unchecked;
-
     use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_get_capital_token_holding_address() {
+
+        let realm = Pubkey::from_str("BbAuiXPYT3mC2YPj8HgrrhhBHPESxRkNemwvkg7DMGoc").unwrap();
+        let capital_token_mint = Pubkey::from_str("3yFztHVjMawUZpEd1gckQHy4FH19ZbdS1h2SZmFKzcPj").unwrap();
+        let token_program_id = Pubkey::from_str("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA").unwrap();
+        let associated_token_program_id = Pubkey::from_str("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL").unwrap();
+        let governance = Pubkey::from_str("3iPwCJHfNeWfZpce53gRet9oqpxzjEJF7CTmnX9U9EeK").unwrap();
+
+        let pk = get_capital_token_holding_address(
+            &token_program_id,
+            &associated_token_program_id,
+            &governance,
+            &capital_token_mint,
+        );
+
+        assert_eq!(pk.to_string(), "JDtYuu8JX2ssWaN3kxcZ2xbA2Xq3JURYEfKpnYcW8U8K");
+    }
 
     #[test]
     fn test_max_size() {
@@ -480,7 +517,7 @@ mod test {
                 use_council_mint: true,
                 min_community_weight_to_create_governance: 100,
                 community_mint_max_vote_weight_source:
-                    MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
+                MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
                 use_community_voter_weight_addin: false,
                 use_max_community_voter_weight_addin: false,
             },

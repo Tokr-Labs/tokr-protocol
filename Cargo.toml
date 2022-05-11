@@ -1,11 +1,6 @@
 [workspace]
 members = [
-    "governance/addin-mock/program",
-    "governance/addin-api",
     "governance/program",
-    "governance/test-sdk",
-    "governance/tools",
-    "governance/chat/program",
     "identity-verification/program",
     "permissioned-list/program"
 ]

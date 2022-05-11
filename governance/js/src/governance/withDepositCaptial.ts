@@ -1,60 +1,50 @@
-import {PublicKey, TransactionInstruction} from '@solana/web3.js';
-import {getGovernanceSchema} from './serialisation';
-import {serialize} from 'borsh';
+import {LAMPORTS_PER_SOL, PublicKey, TransactionInstruction} from '@solana/web3.js';
 import BN from 'bn.js';
-import {SYSTEM_PROGRAM_ID} from '../tools/sdk/runtime';
-import {TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID} from '../tools/sdk/splToken';
 import {DepositCapitalArgs} from "./instructions";
-import {GOVERNANCE_PROGRAM_SEED} from "./accounts";
+import {serialize} from 'borsh';
+import {ASSOCIATED_TOKEN_PROGRAM_ID, SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID} from "../tools";
+import {getGovernanceSchema} from "./serialisation";
 
 export const withDepositCapital = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
     realm: PublicKey,
-    usdcTokenSource: PublicKey,
-    usdcTokenMint: PublicKey,
-    lpTokenMint: PublicKey,
-    usdcTokenOwner: PublicKey,
-    usdcTransferAuthority: PublicKey,
-    lpTransferAuthority: PublicKey,
-    payer: PublicKey,
-    amount: BN,
+    governance: PublicKey,
+    authority: PublicKey,
+    tokenAccount: PublicKey,
+    tokenMint: PublicKey,
+    amount: number,
 ) => {
 
-    const args = new DepositCapitalArgs({amount});
+    // instructions.push(ata transaction instruction)
+
+    // @TODO: Need to figure out how to normalize the decimals of USDC to SOL
+    //      or if i need to at all :shrug:
+    const args = new DepositCapitalArgs({amount: new BN(amount * LAMPORTS_PER_SOL)});
+
     const data = Buffer.from(
         serialize(getGovernanceSchema(2), args),
     );
 
-    const [usdcHoldingAddress] = await PublicKey.findProgramAddress(
+    const [vaultPublicKey] = await PublicKey.findProgramAddress(
         [
-            Buffer.from(GOVERNANCE_PROGRAM_SEED),
-            realm.toBuffer(),
-            usdcTokenMint.toBuffer(),
-        ],
-        programId,
-    );
-
-    const [lpTokenDestinationAccount] = await PublicKey.findProgramAddress(
-        [
-            payer.toBuffer(),
+            governance.toBuffer(),
             TOKEN_PROGRAM_ID.toBuffer(),
-            lpTokenMint.toBuffer(),
+            tokenMint.toBuffer()
         ],
         ASSOCIATED_TOKEN_PROGRAM_ID
-    );
+    )
 
     const keys = [
-        { pubkey: realm, isWritable: false, isSigner: false },
-        { pubkey: usdcHoldingAddress, isWritable: true, isSigner: false },
-        { pubkey: usdcTokenSource, isWritable: true, isSigner: false },
-        { pubkey: usdcTokenOwner, isWritable: false, isSigner: true },
-        { pubkey: payer, isWritable: false, isSigner: true },
-        { pubkey: payer, isWritable: false, isSigner: true },
-        { pubkey: lpTokenDestinationAccount, isWritable: true, isSigner: false },
-        { pubkey: payer, isWritable: true, isSigner: true },
-        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false },
-        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false },
+        { pubkey: realm, isWritable: false, isSigner: false }, // 0
+        { pubkey: governance, isWritable: false, isSigner: false }, // 1
+        { pubkey: authority, isWritable: true, isSigner: true }, // 2
+        { pubkey: tokenAccount, isWritable: true, isSigner: false }, // 3
+        { pubkey: vaultPublicKey, isWritable: true, isSigner: false }, // 4
+        { pubkey: tokenMint, isWritable: false, isSigner: false }, // 5
+        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 6
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 7
+        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 8
     ];
 
     instructions.push(
@@ -62,7 +52,7 @@ export const withDepositCapital = async (
             keys,
             programId,
             data,
-        }),
+        })
     );
 
 };

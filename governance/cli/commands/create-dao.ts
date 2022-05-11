@@ -530,6 +530,7 @@ const createGovernances = async (
 
     const instructions: TransactionInstruction[] = []
 
+
     const limitedPartnerGovernancePublicKey = await withCreateGovernance(
         instructions,
         governanceProgramId,

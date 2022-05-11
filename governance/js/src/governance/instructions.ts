@@ -53,8 +53,7 @@ export class CreateRealmArgs {
 }
 
 export class DepositGoverningTokensArgs {
-  instruction: GovernanceInstruction =
-    GovernanceInstruction.DepositGoverningTokens;
+  instruction: GovernanceInstruction = GovernanceInstruction.DepositGoverningTokens;
   amount: BN;
 
   constructor(args: { amount: BN }) {
@@ -72,8 +71,7 @@ export class DepositCapitalArgs {
 }
 
 export class WithdrawGoverningTokensArgs {
-  instruction: GovernanceInstruction =
-    GovernanceInstruction.WithdrawGoverningTokens;
+  instruction: GovernanceInstruction = GovernanceInstruction.WithdrawGoverningTokens;
 }
 
 export class CreateGovernanceArgs {
