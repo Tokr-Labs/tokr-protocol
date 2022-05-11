@@ -9,42 +9,60 @@ export const withDepositCapital = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
     realm: PublicKey,
-    governance: PublicKey,
-    authority: PublicKey,
-    tokenAccount: PublicKey,
-    tokenMint: PublicKey,
+    capitalGovernance: PublicKey,
+    lpGovernance: PublicKey,
+    lpGovernedAccount: PublicKey,
+    capitalTokenAuthority: PublicKey,
+    capitalTokenAccount: PublicKey,
+    capitalTokenMint: PublicKey,
+    lpTokenAccount: PublicKey,
+    lpTokenMint: PublicKey,
     amount: number,
 ) => {
 
-    // instructions.push(ata transaction instruction)
-
     // @TODO: Need to figure out how to normalize the decimals of USDC to SOL
     //      or if i need to at all :shrug:
-    const args = new DepositCapitalArgs({amount: new BN(amount * LAMPORTS_PER_SOL)});
+    const args = new DepositCapitalArgs({amount: new BN(amount)});
 
     const data = Buffer.from(
         serialize(getGovernanceSchema(2), args),
     );
 
-    const [vaultPublicKey] = await PublicKey.findProgramAddress(
+    const [capitalTokenHoldingAccount] = await PublicKey.findProgramAddress(
         [
-            governance.toBuffer(),
+            capitalGovernance.toBuffer(),
             TOKEN_PROGRAM_ID.toBuffer(),
-            tokenMint.toBuffer()
+            capitalTokenMint.toBuffer()
         ],
         ASSOCIATED_TOKEN_PROGRAM_ID
     )
 
+    const [lpHoldingAccount, bump] = await PublicKey.findProgramAddress(
+        [
+            lpGovernance.toBuffer(),
+            TOKEN_PROGRAM_ID.toBuffer(),
+            lpTokenMint.toBuffer()
+        ],
+        ASSOCIATED_TOKEN_PROGRAM_ID
+    )
+
+    console.log("bump = ", bump);
+
     const keys = [
         { pubkey: realm, isWritable: false, isSigner: false }, // 0
-        { pubkey: governance, isWritable: false, isSigner: false }, // 1
-        { pubkey: authority, isWritable: true, isSigner: true }, // 2
-        { pubkey: tokenAccount, isWritable: true, isSigner: false }, // 3
-        { pubkey: vaultPublicKey, isWritable: true, isSigner: false }, // 4
-        { pubkey: tokenMint, isWritable: false, isSigner: false }, // 5
-        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 6
-        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 7
-        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 8
+        { pubkey: capitalGovernance, isWritable: false, isSigner: false }, // 1
+        { pubkey: lpGovernance, isWritable: true, isSigner: false }, // 2
+        { pubkey: lpGovernedAccount, isWritable: false, isSigner: false }, // 3
+        { pubkey: capitalTokenAuthority, isWritable: true, isSigner: true }, // 4
+        { pubkey: capitalTokenAccount, isWritable: true, isSigner: false }, // 5
+        { pubkey: capitalTokenHoldingAccount, isWritable: true, isSigner: false }, // 6
+        { pubkey: capitalTokenMint, isWritable: false, isSigner: false }, // 7
+        { pubkey: lpTokenAccount, isWritable: true, isSigner: false }, // 8
+        { pubkey: lpHoldingAccount, isWritable: true, isSigner: false }, // 9
+        { pubkey: lpTokenMint, isWritable: false, isSigner: false }, // 10
+        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 11
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 12
+        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 13
     ];
 
     instructions.push(

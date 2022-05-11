@@ -170,6 +170,7 @@ export const createDao = async (
 
     console.log("Creating governances...")
     let {
+        limitedPartnerGovernedAccountPublicKey,
         limitedPartnerGovernancePublicKey,
         delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey
@@ -240,6 +241,7 @@ export const createDao = async (
     console.log(`Distribution Token Mint: ${distributionMintKeypair.publicKey.toBase58()}`);
     console.log()
     console.log(`LP Governance: ${limitedPartnerGovernancePublicKey}`);
+    console.log(`LP Governed Account: ${limitedPartnerGovernedAccountPublicKey}`)
     console.log(`Delegate Mint Governance: ${delegateMintGovernancePublicKey}`);
     console.log(`Distribution Mint Governance: ${distributionMintGovernancePublicKey}`);
     console.log()
@@ -530,13 +532,14 @@ const createGovernances = async (
 
     const instructions: TransactionInstruction[] = []
 
+    const limitedPartnerGovernedAccountPublicKey = Keypair.generate().publicKey;
 
     const limitedPartnerGovernancePublicKey = await withCreateGovernance(
         instructions,
         governanceProgramId,
         2,
         realmPublicKey,
-        undefined,
+        limitedPartnerGovernedAccountPublicKey,
         config,
         tokenOwnerRecordAddress,
         ownerKeypair.publicKey,
@@ -579,6 +582,7 @@ const createGovernances = async (
     await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
 
     return {
+        limitedPartnerGovernedAccountPublicKey,
         limitedPartnerGovernancePublicKey,
         delegateMintGovernancePublicKey,
         distributionMintGovernancePublicKey

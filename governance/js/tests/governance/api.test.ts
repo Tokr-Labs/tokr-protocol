@@ -28,6 +28,7 @@ import path from "path";
 import process from "process";
 import fs from "fs";
 import {withCreateAssociatedTokenAccount} from "../tools/withCreateAssociatedTokenAccount";
+import {ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID} from "../../lib";
 
 // const programId = new PublicKey('GTesTBiEWE32WHXXE2S4XbZvA5CrEc4xs6ZgRe895dP');
 // const rpcEndpoint = clusterApiUrl('devnet');
@@ -41,19 +42,19 @@ const connection = new Connection(rpcEndpoint, {
 
 describe("capital based realm", () => {
 
-    let ownerKeypair: Keypair;
-    let delegateKeypair: Keypair;
-    let governanceProgramKeypair: Keypair
-    let usdcMintPublicKey = new PublicKey("3yFztHVjMawUZpEd1gckQHy4FH19ZbdS1h2SZmFKzcPj")
-    let limitedPartnerMintKeypair: Keypair
-    let delegateMintKeypair: Keypair;
-    let distributionMintKeypair: Keypair;
-    let governanceConfig: GovernanceConfig;
-    let realmName: string;
-    let capitalSupplyTreasuryPubkey: PublicKey;
-    let realmPublicKey: PublicKey;
-    let limitedPartnerMintPublicKey: PublicKey;
-    let governancePublicKey: PublicKey;
+    // let ownerKeypair: Keypair;
+    // let delegateKeypair: Keypair;
+    // let governanceProgramKeypair: Keypair
+    // let usdcMintPublicKey = new PublicKey("3yFztHVjMawUZpEd1gckQHy4FH19ZbdS1h2SZmFKzcPj")
+    // let limitedPartnerMintKeypair: Keypair
+    // let delegateMintKeypair: Keypair;
+    // let distributionMintKeypair: Keypair;
+    // let governanceConfig: GovernanceConfig;
+    // let realmName: string;
+    // let capitalSupplyTreasuryPubkey: PublicKey;
+    // let realmPublicKey: PublicKey;
+    // let limitedPartnerMintPublicKey: PublicKey;
+    // let governancePublicKey: PublicKey;
 
     // beforeAll(async () => {
     //
@@ -82,179 +83,182 @@ describe("capital based realm", () => {
     //
     // });
 
-    test.skip("create capital based realm", async () => {
-
-        expect.assertions(1);
-
-        limitedPartnerMintPublicKey = limitedPartnerMintKeypair.publicKey
-
-        let mintInstructions: TransactionInstruction[] = [];
-
-        await createMintInstructions(
-            mintInstructions,
-            connection,
-            limitedPartnerMintKeypair,
-            ownerKeypair,
-            0
-        )
-
-        await createMintInstructions(
-            mintInstructions,
-            connection,
-            delegateMintKeypair,
-            ownerKeypair,
-            0
-        )
-
-        await createMintInstructions(
-            mintInstructions,
-            connection,
-            distributionMintKeypair,
-            ownerKeypair,
-            0
-        )
-
-        await executeMintInstructions(
-            connection,
-            mintInstructions,
-            [
-                limitedPartnerMintKeypair,
-                delegateMintKeypair,
-                distributionMintKeypair
-            ],
-            ownerKeypair
-        )
-
-        await mintDelegateTokenForDelegate(
-            connection,
-            ownerKeypair,
-            delegateMintKeypair.publicKey,
-            delegateKeypair
-        )
-
-        const ownerAta = await mintMaxLpTokens(
-            connection,
-            ownerKeypair,
-            limitedPartnerMintKeypair.publicKey,
-            ownerKeypair.publicKey,
-            1000
-        )
-
-        await setAuthority(
-            connection,
-            ownerKeypair,
-            limitedPartnerMintKeypair.publicKey,
-            ownerKeypair,
-            AuthorityType.MintTokens,
-            null
-        )
-
-        realmPublicKey = await createRealm(
-            connection,
-            programId,
-            ownerKeypair,
-            delegateMintKeypair.publicKey,
-            limitedPartnerMintKeypair.publicKey,
-            generateSlug(2)
-        )
-
-        await depositDelegateCouncilTokenInGovernance(
-            connection,
-            programId,
-            delegateKeypair,
-            ownerKeypair,
-            realmPublicKey,
-            delegateMintKeypair.publicKey
-        )
-
-        const {
-            limitedPartnerGovernancePublicKey,
-            delegateMintGovernancePublicKey,
-            distributionMintGovernancePublicKey
-        } = await createGovernances(
-            connection,
-            programId,
-            governanceConfig,
-            ownerKeypair,
-            realmPublicKey,
-            delegateMintKeypair.publicKey,
-            limitedPartnerMintKeypair.publicKey,
-            distributionMintKeypair.publicKey
-        )
-
-        governancePublicKey = limitedPartnerGovernancePublicKey;
-
-        await setLimitedPartnerGovernanceAsRealmAuthority(
-            connection,
-            programId,
-            ownerKeypair,
-            realmPublicKey,
-            limitedPartnerGovernancePublicKey
-        )
-
-        capitalSupplyTreasuryPubkey = await createTreasuryAccount(
-            connection,
-            ownerKeypair,
-            usdcMintPublicKey,
-            limitedPartnerGovernancePublicKey
-        )
-
-        const treasuryStockTreasuryPubkey = await createTreasuryAccount(
-            connection,
-            ownerKeypair,
-            limitedPartnerMintKeypair.publicKey,
-            delegateMintGovernancePublicKey
-        )
-
-        const distributionTreasuryPubkey = await createTreasuryAccount(
-            connection,
-            ownerKeypair,
-            usdcMintPublicKey,
-            distributionMintGovernancePublicKey
-        )
-
-        await transfer(
-            connection,
-            ownerKeypair,
-            ownerAta,
-            treasuryStockTreasuryPubkey,
-            ownerKeypair,
-            1000
-        )
-
-        console.log(limitedPartnerGovernancePublicKey.toBase58());
-        console.log(realmPublicKey.toBase58());
-
-        expect(realmPublicKey).toBeDefined()
-
-    });
+    // test.skip("create capital based realm", async () => {
+    //
+    //     expect.assertions(1);
+    //
+    //     limitedPartnerMintPublicKey = limitedPartnerMintKeypair.publicKey
+    //
+    //     let mintInstructions: TransactionInstruction[] = [];
+    //
+    //     await createMintInstructions(
+    //         mintInstructions,
+    //         connection,
+    //         limitedPartnerMintKeypair,
+    //         ownerKeypair,
+    //         0
+    //     )
+    //
+    //     await createMintInstructions(
+    //         mintInstructions,
+    //         connection,
+    //         delegateMintKeypair,
+    //         ownerKeypair,
+    //         0
+    //     )
+    //
+    //     await createMintInstructions(
+    //         mintInstructions,
+    //         connection,
+    //         distributionMintKeypair,
+    //         ownerKeypair,
+    //         0
+    //     )
+    //
+    //     await executeMintInstructions(
+    //         connection,
+    //         mintInstructions,
+    //         [
+    //             limitedPartnerMintKeypair,
+    //             delegateMintKeypair,
+    //             distributionMintKeypair
+    //         ],
+    //         ownerKeypair
+    //     )
+    //
+    //     await mintDelegateTokenForDelegate(
+    //         connection,
+    //         ownerKeypair,
+    //         delegateMintKeypair.publicKey,
+    //         delegateKeypair
+    //     )
+    //
+    //     const ownerAta = await mintMaxLpTokens(
+    //         connection,
+    //         ownerKeypair,
+    //         limitedPartnerMintKeypair.publicKey,
+    //         ownerKeypair.publicKey,
+    //         1000
+    //     )
+    //
+    //     await setAuthority(
+    //         connection,
+    //         ownerKeypair,
+    //         limitedPartnerMintKeypair.publicKey,
+    //         ownerKeypair,
+    //         AuthorityType.MintTokens,
+    //         null
+    //     )
+    //
+    //     realmPublicKey = await createRealm(
+    //         connection,
+    //         programId,
+    //         ownerKeypair,
+    //         delegateMintKeypair.publicKey,
+    //         limitedPartnerMintKeypair.publicKey,
+    //         generateSlug(2)
+    //     )
+    //
+    //     await depositDelegateCouncilTokenInGovernance(
+    //         connection,
+    //         programId,
+    //         delegateKeypair,
+    //         ownerKeypair,
+    //         realmPublicKey,
+    //         delegateMintKeypair.publicKey
+    //     )
+    //
+    //     const {
+    //         limitedPartnerGovernancePublicKey,
+    //         delegateMintGovernancePublicKey,
+    //         distributionMintGovernancePublicKey
+    //     } = await createGovernances(
+    //         connection,
+    //         programId,
+    //         governanceConfig,
+    //         ownerKeypair,
+    //         realmPublicKey,
+    //         delegateMintKeypair.publicKey,
+    //         limitedPartnerMintKeypair.publicKey,
+    //         distributionMintKeypair.publicKey
+    //     )
+    //
+    //     governancePublicKey = limitedPartnerGovernancePublicKey;
+    //
+    //     await setLimitedPartnerGovernanceAsRealmAuthority(
+    //         connection,
+    //         programId,
+    //         ownerKeypair,
+    //         realmPublicKey,
+    //         limitedPartnerGovernancePublicKey
+    //     )
+    //
+    //     capitalSupplyTreasuryPubkey = await createTreasuryAccount(
+    //         connection,
+    //         ownerKeypair,
+    //         usdcMintPublicKey,
+    //         limitedPartnerGovernancePublicKey
+    //     )
+    //
+    //     const treasuryStockTreasuryPubkey = await createTreasuryAccount(
+    //         connection,
+    //         ownerKeypair,
+    //         limitedPartnerMintKeypair.publicKey,
+    //         delegateMintGovernancePublicKey
+    //     )
+    //
+    //     const distributionTreasuryPubkey = await createTreasuryAccount(
+    //         connection,
+    //         ownerKeypair,
+    //         usdcMintPublicKey,
+    //         distributionMintGovernancePublicKey
+    //     )
+    //
+    //     await transfer(
+    //         connection,
+    //         ownerKeypair,
+    //         ownerAta,
+    //         treasuryStockTreasuryPubkey,
+    //         ownerKeypair,
+    //         1000
+    //     )
+    //
+    //     console.log(limitedPartnerGovernancePublicKey.toBase58());
+    //     console.log(realmPublicKey.toBase58());
+    //
+    //     expect(realmPublicKey).toBeDefined()
+    //
+    // });
 
     test.only("test deposit capital", async () => {
 
         /*
-        Realm: BbAuiXPYT3mC2YPj8HgrrhhBHPESxRkNemwvkg7DMGoc
+        Realm: J3nrXhaYtrmC4TtrE7yiKYfBwjLzTZWg6FLSx6caLojo
 
-        LP Token Mint: ActeXiVCMToMc4LWRUTSGVoQqqxCPL2TdJ7yR83WnzLa
-        Delegate Token Mint: Fi54qWhNLceHjYmEvhMBPDq2A95N4AXm9pVy9Ny49HYE
-        Distribution Token Mint: FVUvfTkMHbJwkFqUkWx98BgiNrAs343pKMrK3HyEmYTh
+        LP Token Mint: 2AMvthMvHJ7moXxmGSsY5hwQzc8Skg3ZUzfbsbrRT5ei
+        Delegate Token Mint: HLa7zUu57mNXBkWk7fQURzz9JYYXydbzw3cDfEQbibn4
+        Distribution Token Mint: BQBb3aY5zHCqtuXKqKPYFaAT8qiaukaGAPbN6T9bHNqx
 
-        LP Governance: 3iPwCJHfNeWfZpce53gRet9oqpxzjEJF7CTmnX9U9EeK
-        Delegate Mint Governance: 7MtNagvsuqo55ob65Q1f6savXshDvqij7jLNTZdX8NK8
-        Distribution Mint Governance: 8NjAPYjuD5EsQUtTLvzNpdkQMZhpYjLLFQPUbeo6XccH
+        LP Governance: CmMLAUCQF8m4TSa3LtBhKfCYau5wmUjWT8NTTouYjNE8
+        LP Governed Account: 3Qt1MVCCV3LvMkmqSamq1xVQJPTyewypTeeEgnbjuy22
+        Delegate Mint Governance: 8SPaUSRj6CaJaSZ1EFeiiRJSbckTv8HPZ2S8Yxf4Ca6J
+        Distribution Mint Governance: 5JTfsAVH1frVYaSdQ517ZyQdNBwLQRfKjGqEYUxf9q8k
 
-        Capital Supply Treasury: JDtYuu8JX2ssWaN3kxcZ2xbA2Xq3JURYEfKpnYcW8U8K
-        Treasury Stock Treasury: 7LRy5eAsHY8NixuXV19cQW8tu1EiHxWQmpWeJUtib5c5
-        Distribution Treasury: BmamJEQcAwLGYc4fGFZD61WdPYkGFG2Z8rusx9GEaPN7
+        Capital Supply Treasury: A2apqtALAk5sE4te4czB7eaQaBdga5XhmANNkYW1mqYN
+        Treasury Stock Treasury: 9Y6wz8oSj731rWPCaT9Mku5CovT1RgxiSfumFfqupunV
+        Distribution Treasury: CRhTvnWEf9j2c2k2YhDUfeKZ3VGNJUWtQFC7ubDwx5Xp
+
         */
 
         let instructions: TransactionInstruction[] = [];
 
-        // comment out the following 5 lines if running tests all together
-        ownerKeypair = await loadKeypair("~/.config/solana/id.json")
-        delegateKeypair = ownerKeypair
-        realmPublicKey = new PublicKey("BbAuiXPYT3mC2YPj8HgrrhhBHPESxRkNemwvkg7DMGoc")
-        usdcMintPublicKey = new PublicKey("3yFztHVjMawUZpEd1gckQHy4FH19ZbdS1h2SZmFKzcPj")
-        governancePublicKey = new PublicKey("3iPwCJHfNeWfZpce53gRet9oqpxzjEJF7CTmnX9U9EeK");
+        const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
+        const realmPublicKey = new PublicKey("J3nrXhaYtrmC4TtrE7yiKYfBwjLzTZWg6FLSx6caLojo")
+        const usdcMintPublicKey = new PublicKey("EMVFgbUqg37ydgCX4r9nwRRCNnTGCqtTpxNnLtzYqs8D")
+        const capitalGovernancePublicKey = new PublicKey("CmMLAUCQF8m4TSa3LtBhKfCYau5wmUjWT8NTTouYjNE8"); // lp governance
+        const lpMintPublicKey = new PublicKey("2AMvthMvHJ7moXxmGSsY5hwQzc8Skg3ZUzfbsbrRT5ei");
+        const lpGovernancePublicKey = new PublicKey("8SPaUSRj6CaJaSZ1EFeiiRJSbckTv8HPZ2S8Yxf4Ca6J");
+        const lpGovernedAccountPublicKey = new PublicKey("HLa7zUu57mNXBkWk7fQURzz9JYYXydbzw3cDfEQbibn4")
 
         // @TODO: Create and pass user's ata into the withDepositCapital instruction
 
@@ -272,14 +276,27 @@ describe("capital based realm", () => {
             ownerKeypair.publicKey
         )
 
+        const [lpTokenAccount] = await PublicKey.findProgramAddress(
+            [
+                ownerKeypair.publicKey.toBuffer(),
+                TOKEN_PROGRAM_ID.toBuffer(),
+                lpMintPublicKey.toBuffer()
+            ],
+            ASSOCIATED_TOKEN_PROGRAM_ID
+        )
+
         await withDepositCapital(
             instructions,
             programId,
             realmPublicKey,
-            governancePublicKey,
+            capitalGovernancePublicKey,
+            lpGovernancePublicKey,
+            lpGovernedAccountPublicKey,
             ownerKeypair.publicKey,
             usdcTokenSource.address,
             usdcMintPublicKey,
+            lpTokenAccount,
+            lpMintPublicKey,
             2
         )
 

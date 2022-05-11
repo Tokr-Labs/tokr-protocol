@@ -470,19 +470,74 @@ pub enum GovernanceInstruction {
     /// Deposits capital tokens into capital treasury and distribute community governance tokens
     ///
     /// 0. `[]` Realm account
-    /// 1. `[]` Governance account
-    /// 2. `[signer]` Authority
-    /// 3. `[writable]` Token Account
-    /// 4. `[writable]` Vault Token Account
-    /// 5. `[]` Token Mint
-    /// 6. `[]` Token Program
-    /// 7. `[]` Associated Token Program
-    /// 8. `[]` System
+    /// 1. `[]` Capital Governance who owns the capital holding token account
+    /// 2. `[]` LP Governance who owns the lp holding token account
+    /// 3. `[]` LP Governed account (used as seed)
+    /// 4. `[signer]` Capital Token Account Authority
+    /// 5. `[writable]` Capital Token Account
+    /// 6. `[writable]` Capital Holding Token Account
+    /// 7. `[]` Capital Token Mint
+    /// 8. `[writable]` LP Token Account
+    /// 9. `[writable]` LP Holding Token Account
+    /// 10. `[]` LP Token Mint
+    /// 11. `[]` Token Program
+    /// 12. `[]` Associated Token Program
+    /// 13. `[]` System
     DepositCapital {
         /// The amount to capital tokens to deposit into the capital treasury
         #[allow(dead_code)]
         amount: u64
     },
+
+}
+
+
+/// Creates DepositCapital instruction
+#[allow(clippy::too_many_arguments)]
+pub fn deposit_capital(
+    program_id: &Pubkey,
+    // Accounts
+    realm: &Pubkey,
+    capital_governance: &Pubkey,
+    lp_governance: &Pubkey,
+    lp_governed_account: &Pubkey,
+    capital_token_account_authority: &Pubkey,
+    capital_token_account: &Pubkey,
+    capital_token_holding_account: &Pubkey,
+    capital_token_mint: &Pubkey,
+    lp_token_account: &Pubkey,
+    lp_holding_account: &Pubkey,
+    lp_token_mint: &Pubkey,
+    token_program: &Pubkey,
+    associated_token_program: &Pubkey,
+    // Args
+    amount: u64,
+) -> Instruction {
+
+    let accounts = vec![
+        AccountMeta::new_readonly(*realm, false), // 0
+        AccountMeta::new_readonly(*capital_governance, false), // 1
+        AccountMeta::new_readonly(*lp_governance, false), // 2
+        AccountMeta::new_readonly(*lp_governed_account, false), // 3
+        AccountMeta::new_readonly(*capital_token_account_authority, true), // 4
+        AccountMeta::new(*capital_token_account, false), // 5
+        AccountMeta::new(*capital_token_holding_account, false), // 6
+        AccountMeta::new_readonly(*capital_token_mint, false), // 7
+        AccountMeta::new(*lp_token_account, false), // 8
+        AccountMeta::new(*lp_holding_account, false), // 9
+        AccountMeta::new_readonly(*lp_token_mint, false), // 10
+        AccountMeta::new_readonly(*token_program, false), // 11
+        AccountMeta::new_readonly(*associated_token_program, false), // 12
+        AccountMeta::new_readonly(system_program::id(), false), // 13
+    ];
+
+    let instruction = GovernanceInstruction::DepositCapital { amount };
+
+    Instruction {
+        program_id: *program_id,
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    }
 
 }
 
@@ -1545,43 +1600,4 @@ pub fn create_native_treasury(
         accounts,
         data: instruction.try_to_vec().unwrap(),
     }
-}
-
-/// Creates DepositCapital instruction
-#[allow(clippy::too_many_arguments)]
-pub fn deposit_capital(
-    program_id: &Pubkey,
-    // Accounts
-    realm: &Pubkey,
-    governance: &Pubkey,
-    authority: &Pubkey,
-    token_account: &Pubkey,
-    vault: &Pubkey,
-    token_mint: &Pubkey,
-    token_program: &Pubkey,
-    associated_token_program: &Pubkey,
-    // Args
-    amount: u64,
-) -> Instruction {
-
-    let accounts = vec![
-        AccountMeta::new_readonly(*realm, false), // 0
-        AccountMeta::new_readonly(*governance, false), // 1
-        AccountMeta::new_readonly(*authority, true), // 2
-        AccountMeta::new(*token_account, false), // 3
-        AccountMeta::new(*vault, false), // 4
-        AccountMeta::new_readonly(*token_mint, false), // 5
-        AccountMeta::new_readonly(*token_program, false), // 6
-        AccountMeta::new_readonly(*associated_token_program, false), // 7
-        AccountMeta::new_readonly(system_program::id(), false), // 8
-    ];
-
-    let instruction = GovernanceInstruction::DepositCapital { amount };
-
-    Instruction {
-        program_id: *program_id,
-        accounts,
-        data: instruction.try_to_vec().unwrap(),
-    }
-
 }
