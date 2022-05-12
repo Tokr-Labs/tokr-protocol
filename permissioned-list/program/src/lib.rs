@@ -8,7 +8,7 @@ pub mod errors;
 
 // declare_id!("permXeEzAzbSbtDS6CZxodr6iP3fP8B8Gvid1vXMpvM"); // mainnet
 // declare_id!("Hwh92WNAfui11wsSEgkyowFEkG3Kb6ALTQrTTQSxfL26"); // devnet
-declare_id!("BUWzgULd7yHyCzSuq7CVSb4HVMMpvpo2Z9cAyPVsXG5k"); // localnet
+declare_id!("9rMCpctTpKwaM1Wd6ppAgRLhbb9X3kJnZvzCrzy5kiDC"); // localnet
 
 #[program]
 mod permissioned_list {
