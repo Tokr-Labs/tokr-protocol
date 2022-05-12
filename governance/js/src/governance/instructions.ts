@@ -38,6 +38,7 @@ export enum GovernanceInstruction {
   CreateTokenOwnerRecord = 23,
   UpdateProgramMetadata = 24,
   CreateNativeTreasury = 25,
+  DepositCapital = 26,
 }
 
 export class CreateRealmArgs {
@@ -52,8 +53,16 @@ export class CreateRealmArgs {
 }
 
 export class DepositGoverningTokensArgs {
-  instruction: GovernanceInstruction =
-    GovernanceInstruction.DepositGoverningTokens;
+  instruction: GovernanceInstruction = GovernanceInstruction.DepositGoverningTokens;
+  amount: BN;
+
+  constructor(args: { amount: BN }) {
+    this.amount = args.amount;
+  }
+}
+
+export class DepositCapitalArgs {
+  instruction: GovernanceInstruction = GovernanceInstruction.DepositCapital;
   amount: BN;
 
   constructor(args: { amount: BN }) {
@@ -62,8 +71,7 @@ export class DepositGoverningTokensArgs {
 }
 
 export class WithdrawGoverningTokensArgs {
-  instruction: GovernanceInstruction =
-    GovernanceInstruction.WithdrawGoverningTokens;
+  instruction: GovernanceInstruction = GovernanceInstruction.WithdrawGoverningTokens;
 }
 
 export class CreateGovernanceArgs {

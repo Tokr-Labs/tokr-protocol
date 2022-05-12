@@ -1,5 +1,10 @@
 //! Program instructions
 
+use std::str::FromStr;
+
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use solana_program::{bpf_loader_upgradeable, instruction::{AccountMeta, Instruction}, pubkey::Pubkey, system_program, sysvar};
+
 use crate::{
     state::{
         enums::MintMaxVoteWeightSource,
@@ -11,21 +16,14 @@ use crate::{
         program_metadata::get_program_metadata_address,
         proposal::{get_proposal_address, VoteType},
         proposal_transaction::{get_proposal_transaction_address, InstructionData},
-        realm::SetRealmAuthorityAction,
         realm::{get_governing_token_holding_address, get_realm_address, RealmConfigArgs},
+        realm::SetRealmAuthorityAction,
         realm_config::get_realm_config_address,
         signatory_record::get_signatory_record_address,
         token_owner_record::get_token_owner_record_address,
         vote_record::{get_vote_record_address, Vote},
     },
     tools::bpf_loader_upgradeable::get_program_data_address,
-};
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{
-    bpf_loader_upgradeable,
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-    system_program, sysvar,
 };
 
 /// Instructions supported by the Governance program
@@ -227,8 +225,9 @@ pub enum GovernanceInstruction {
     ///   3. `[signer]` Governance Authority (Token Owner or Governance Delegate)
     ///   4. `[writable]` ProposalTransaction, account. PDA seeds: ['governance',proposal,index]
     ///   5. `[signer]` Payer
-    ///   6. `[]` System program
-    ///   7. `[]` Rent sysvar
+    ///   6. `[]` Token Program
+    ///   7. `[]` System program
+    ///   8. `[]` Rent sysvar
     InsertTransaction {
         #[allow(dead_code)]
         /// The index of the option the transaction is for
@@ -470,6 +469,76 @@ pub enum GovernanceInstruction {
     ///  2. `[signer]` Payer
     ///  3. `[]` System
     CreateNativeTreasury,
+
+    /// Deposits capital tokens into capital treasury and distribute community governance tokens
+    ///
+    /// 0. `[]` Realm account
+    /// 1. `[]` LP Governance who owns the lp holding token account
+    /// 2. `[signer]` Capital Token Account Authority
+    /// 3. `[writable]` Capital Token Account
+    /// 4. `[writable]` Capital Holding Token Account
+    /// 5. `[writable]` LP Token Account
+    /// 6. `[writable]` LP Holding Token Account
+    /// 7. `[]` LP Token Mint
+    /// 8. `[]` Delegate Token Mint
+    /// 9. `[]` Token Program
+    /// 10. `[]` System Program
+    /// 11. `[]` Rent Program
+    /// 12. `[]` Associated Token Program
+    DepositCapital {
+        /// The amount to capital tokens to deposit into the capital treasury
+        #[allow(dead_code)]
+        amount: u64
+    },
+
+}
+
+
+/// Creates DepositCapital instruction
+#[allow(clippy::too_many_arguments)]
+pub fn deposit_capital(
+    program_id: &Pubkey,
+    // Accounts
+    realm: &Pubkey,
+    lp_governance: &Pubkey,
+    capital_token_account_authority: &Pubkey,
+    capital_token_account: &Pubkey,
+    capital_token_holding_account: &Pubkey,
+    lp_token_account: &Pubkey,
+    lp_holding_account: &Pubkey,
+    lp_token_mint: &Pubkey,
+    delegate_token_mint: &Pubkey,
+    // Args
+    amount: u64,
+) -> Instruction {
+
+    // @TODO: Remove once ::id has been added to the associated token account spl library
+    let spl_associated_token_account_id = Pubkey::from_str("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL").unwrap();
+
+    let accounts = vec![
+        AccountMeta::new_readonly(*realm, false), // 0
+        AccountMeta::new_readonly(*lp_governance, false), // 1
+        AccountMeta::new_readonly(*capital_token_account_authority, true), // 2
+        AccountMeta::new(*capital_token_account, false), // 3
+        AccountMeta::new(*capital_token_holding_account, false), // 4
+        AccountMeta::new(*lp_token_account, false), // 5
+        AccountMeta::new(*lp_holding_account, false), // 6
+        AccountMeta::new_readonly(*lp_token_mint, false), // 7
+        AccountMeta::new_readonly(*delegate_token_mint, false), // 8
+        AccountMeta::new_readonly(spl_token::id(), false), // 9
+        AccountMeta::new_readonly(system_program::id(), false), // 10
+        AccountMeta::new_readonly(sysvar::rent::id(), false), // 11
+        AccountMeta::new_readonly(spl_associated_token_account_id, false), // 11
+    ];
+
+    let instruction = GovernanceInstruction::DepositCapital { amount };
+
+    Instruction {
+        program_id: *program_id,
+        accounts,
+        data: instruction.try_to_vec().unwrap(),
+    }
+
 }
 
 /// Creates CreateRealm instruction
@@ -488,7 +557,6 @@ pub fn create_realm(
     min_community_weight_to_create_governance: u64,
     community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
 ) -> Instruction {
-
     println!("create_realm println {}", program_id);
     print!("create_realm print {}", program_id);
 

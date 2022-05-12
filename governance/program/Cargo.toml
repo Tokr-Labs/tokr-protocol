@@ -20,9 +20,10 @@ num-traits = "0.2"
 serde = "1.0.130"
 serde_derive = "1.0.103"
 solana-program = "1.9.17"
-spl-token = { version = "3.3", features = [ "no-entrypoint" ] }
-spl-governance-tools= { version = "0.1.2", path ="../tools"}
-spl-governance-addin-api= { version = "0.1.2", path ="../addin-api"}
+spl-token = { version = "3.3", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "1.0.5", features = ["no-entrypoint"] }
+spl-governance-tools = { version = "0.1.2", path = "../tools" }
+spl-governance-addin-api = { version = "0.1.2", path = "../addin-api" }
 thiserror = "1.0"
 
 [dev-dependencies]
@@ -31,9 +32,8 @@ base64 = "0.13"
 proptest = "1.0"
 solana-program-test = "1.9.17"
 solana-sdk = "1.9.17"
-spl-governance-test-sdk = { version = "0.1.2", path ="../test-sdk"}
-spl-governance-addin-mock = { version = "0.1.2", path ="../addin-mock/program"}
-
+spl-governance-test-sdk = { version = "0.1.2", path = "../test-sdk" }
+spl-governance-addin-mock = { version = "0.1.2", path = "../addin-mock/program" }
 
 [lib]
 crate-type = ["cdylib", "lib"]

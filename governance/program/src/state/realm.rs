@@ -4,13 +4,7 @@ use borsh::maybestd::io::Write;
 use std::slice::Iter;
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{
-    account_info::{next_account_info, AccountInfo},
-    borsh::try_from_slice_unchecked,
-    program_error::ProgramError,
-    program_pack::IsInitialized,
-    pubkey::Pubkey,
-};
+use solana_program::{account_info::{next_account_info, AccountInfo}, borsh::try_from_slice_unchecked, program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use spl_governance_tools::account::{
     assert_is_valid_account_of_types, get_account_data, AccountMaxSize,
@@ -381,7 +375,7 @@ pub fn get_governing_token_holding_address(
         &get_governing_token_holding_address_seeds(realm, governing_token_mint),
         program_id,
     )
-    .0
+        .0
 }
 
 /// Asserts given realm config args are correct
@@ -393,7 +387,7 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
             }
         }
         MintMaxVoteWeightSource::Absolute(_) => {
-            return Err(GovernanceError::MintMaxVoteWeightSourceNotSupported.into())
+            return Err(GovernanceError::MintMaxVoteWeightSourceNotSupported.into());
         }
     }
 
@@ -402,11 +396,10 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
 
 #[cfg(test)]
 mod test {
-
     use crate::instruction::GovernanceInstruction;
     use solana_program::borsh::try_from_slice_unchecked;
-
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_max_size() {
@@ -480,7 +473,7 @@ mod test {
                 use_council_mint: true,
                 min_community_weight_to_create_governance: 100,
                 community_mint_max_vote_weight_source:
-                    MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
+                MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
                 use_community_voter_weight_addin: false,
                 use_max_community_voter_weight_addin: false,
             },

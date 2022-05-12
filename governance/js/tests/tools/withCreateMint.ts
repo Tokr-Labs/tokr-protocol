@@ -1,4 +1,4 @@
-import { MintLayout, Token } from '@solana/spl-token'
+import {createInitializeMintInstruction, MintLayout} from '@solana/spl-token'
 import {
   Connection,
   Keypair,
@@ -36,12 +36,12 @@ export const withCreateMint = async (
   signers.push(mintAccount)
 
   instructions.push(
-    Token.createInitMintInstruction(
-      TOKEN_PROGRAM_ID,
-      mintAccount.publicKey,
-      decimals,
-      ownerPk,
-      freezeAuthorityPk
+    createInitializeMintInstruction(
+        mintAccount.publicKey,
+        decimals,
+        ownerPk,
+        freezeAuthorityPk,
+        TOKEN_PROGRAM_ID,
     )
   )
   return mintAccount.publicKey

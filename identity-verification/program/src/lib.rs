@@ -8,7 +8,7 @@ pub mod state;
 
 // declare_id!("idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD"); // mainnet
 // declare_id!("5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9"); // devnet
-declare_id!("8XBSroNGoAUXJ8NFFxWtBYJPxSYxRmvtK3HhtkGAzPTt"); // localnet
+declare_id!("3YC2irJKAzmuqeg2Qf9v8YBb1ufGmYTuvggxqv4bCyST"); // localnet
 
 #[program]
 mod identity_verification {

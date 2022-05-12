@@ -1,223 +1,123 @@
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount} from '@solana/spl-token';
 import {
-  clusterApiUrl,
-  Connection,
-  Keypair,
-  PublicKey,
-  TransactionInstruction,
+    Connection,
+    Keypair,
+    PublicKey,
+    sendAndConfirmTransaction,
+    Transaction,
+    TransactionInstruction,
 } from '@solana/web3.js';
-import { BN } from 'bn.js';
-import {
-  createInstructionData,
-  getGovernanceProgramVersion,
-  getRealm,
-  getTokenOwnerRecordsByOwner,
-  GovernanceConfig,
-  MintMaxVoteWeightSource,
-  SetRealmAuthorityAction,
-  VoteThresholdPercentage,
-  VoteTipping,
-  VoteType,
-  withCreateMintGovernance,
-  withCreateProposal,
-  withCreateRealm,
-  withDepositGoverningTokens,
-  withInsertTransaction,
-  withSetRealmAuthority,
-} from '../../src';
-import { requestAirdrop, sendTransaction } from '../tools/sdk';
-import { getTimestampFromDays } from '../tools/units';
-import { withCreateAssociatedTokenAccount } from '../tools/withCreateAssociatedTokenAccount';
-import { withCreateMint } from '../tools/withCreateMint';
-import { withMintTo } from '../tools/withMintTo';
+import {withDepositCapital} from "../../src/governance/withDepositCaptial";
+import path from "path";
+import process from "process";
+import fs from "fs";
 
-const programId = new PublicKey('GTesTBiEWE32WHXXE2S4XbZvA5CrEc4xs6ZgRe895dP');
-const rpcEndpoint = clusterApiUrl('devnet');
+// const programId = new PublicKey('GTesTBiEWE32WHXXE2S4XbZvA5CrEc4xs6ZgRe895dP');
+// const rpcEndpoint = clusterApiUrl('devnet');
 
-// const programId = new PublicKey('GovER5Lthms3bLBqWub97yVrMmEogzX7xNjdXpPPCVZw');
-// const rpcEndpoint = 'http://127.0.0.1:8899';
+const programId = new PublicKey('DiXa9VmFGhJYco4b83ACWpCo95prArWdNsBPvGwfGLgV');
+const rpcEndpoint = 'http://127.0.0.1:8899';
 
-const connection = new Connection(rpcEndpoint, 'recent');
+const connection = new Connection(rpcEndpoint, {
+    commitment: "recent"
+});
 
-// @ts-ignore
-test('createRealmWithGovernanceAndProposal', async () => {
-  // Arrange
-  const wallet = Keypair.generate();
-  const walletPk = wallet.publicKey;
+test("test deposit capital", async () => {
 
-  await requestAirdrop(connection, walletPk);
+    /*
+    Realm: EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5
 
-  // Get governance program version
-  const programVersion = await getGovernanceProgramVersion(
-    connection,
-    programId,
-  );
+    LP Token Mint: 5gnm1PP6BG1HtTbnBMwaakLbowdJ9hG8PkZEGM3wDQBA
+    Delegate Token Mint: 9zpBdhhNjtDP9LCpJcG84Kbts1K2rzMmRFc6DRWyPCRq
+    Distribution Token Mint: AHTxrRddhRhDvCAcu5ASZs8hHtTqKLci7B4bcaV1qjrB
 
-  let instructions: TransactionInstruction[] = [];
-  let signers: Keypair[] = [];
+    LP Governance: EJeFL6kwsEfvnJwLQ68rcU85HhkmJ5986MeLZG9BcEUn
+    LP Governed Account: J3qkekEFiPpYcQhG9FqSMUYHfG3AVZd7puBfvNX1Lmkm
+    Delegate Mint Governance: 4SfqXCa2gLqvNzDZVWVDg8LvxfFQzTMCX7VkCFnJgq3y
+    Distribution Mint Governance: HJfvvL2VSWMhuPdc4ukzELBA1QjqdvAvtTtguMaxAXrZ
 
-  // Create and mint governance token
-  let mintPk = await withCreateMint(
-    connection,
-    instructions,
-    signers,
-    walletPk,
-    walletPk,
-    0,
-    walletPk,
-  );
+    Capital Supply Treasury: 9Rm9JdDE3tiSSTw6PZxLmhwtBPVNRUPdGJQfyDCWBHnC
+    Treasury Stock Treasury: 8uaDG6tUgQUHA4qDDZxancmLN2H7FpqrcN8ND1UAU9Pp
+    Distribution Treasury: HjkVKFmjWnGvppc8sHuArQgPU2oqZcpgecveSezNH7A7
 
-  let ataPk = await withCreateAssociatedTokenAccount(
-    instructions,
-    mintPk,
-    walletPk,
-    walletPk,
-  );
-  await withMintTo(instructions, mintPk, ataPk, walletPk, 1);
+    */
 
-  // Create Realm
-  const name = `Realm-${new Keypair().publicKey.toBase58().slice(0, 6)}`;
-  const realmAuthorityPk = walletPk;
+    let instructions: TransactionInstruction[] = [];
 
-  const realmPk = await withCreateRealm(
-    instructions,
-    programId,
-    programVersion,
-    name,
-    realmAuthorityPk,
-    mintPk,
-    walletPk,
-    undefined,
-    MintMaxVoteWeightSource.FULL_SUPPLY_FRACTION,
-    new BN(1),
-    undefined,
-  );
+    // const ownerKeypair = await loadKeypair("~/solana-keys/spiderman.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/blackwidow.json")
+    // const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/moonknight.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/drstrange.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/hulk.json")
+    const ownerKeypair = await loadKeypair("~/solana-keys/quicksilver.json")
 
-  // Deposit governance tokens
-  const tokenOwnerRecordPk = await withDepositGoverningTokens(
-    instructions,
-    programId,
-    programVersion,
-    realmPk,
-    ataPk,
-    mintPk,
-    walletPk,
-    walletPk,
-    walletPk,
-    new BN(1),
-  );
+    const realmPublicKey = new PublicKey("EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5")
+    const usdcMintPublicKey = new PublicKey("GLgjt8zEJwuYAKg9tLy9ZTCC9k7VUf46yfx7EQuDXdzf")
+    const capitalGovernancePublicKey = new PublicKey("EJeFL6kwsEfvnJwLQ68rcU85HhkmJ5986MeLZG9BcEUn"); // lp governance
+    const lpMintPublicKey = new PublicKey("5gnm1PP6BG1HtTbnBMwaakLbowdJ9hG8PkZEGM3wDQBA");
+    const lpGovernancePublicKey = new PublicKey("4SfqXCa2gLqvNzDZVWVDg8LvxfFQzTMCX7VkCFnJgq3y"); // delegate mint governance
+    const delegateTokenMint = new PublicKey("9zpBdhhNjtDP9LCpJcG84Kbts1K2rzMmRFc6DRWyPCRq");
 
-  // Crate governance over the the governance token mint
-  const config = new GovernanceConfig({
-    voteThresholdPercentage: new VoteThresholdPercentage({
-      value: 60,
-    }),
-    minCommunityTokensToCreateProposal: new BN(1),
-    minInstructionHoldUpTime: 0,
-    maxVotingTime: getTimestampFromDays(3),
-    voteTipping: VoteTipping.Strict,
-    proposalCoolOffTime: 0,
-    minCouncilTokensToCreateProposal: new BN(1),
-  });
+    const usdcTokenSource = await getOrCreateAssociatedTokenAccount(
+        connection,
+        ownerKeypair,
+        usdcMintPublicKey,
+        ownerKeypair.publicKey
+    )
 
-  const governancePk = await withCreateMintGovernance(
-    instructions,
-    programId,
-    programVersion,
-    realmPk,
-    mintPk,
-    config,
-    true,
-    walletPk,
-    tokenOwnerRecordPk,
-    walletPk,
-    walletPk,
-    undefined,
-  );
+    const lpTokenAccount = await getAssociatedTokenAddress(lpMintPublicKey,ownerKeypair.publicKey)
 
-  console.log('SET AUTHORITY');
+    await withDepositCapital(
+        instructions,
+        programId,
+        realmPublicKey,
+        capitalGovernancePublicKey,
+        lpGovernancePublicKey,
+        ownerKeypair.publicKey,
+        usdcTokenSource.address,
+        usdcMintPublicKey,
+        lpTokenAccount,
+        lpMintPublicKey,
+        delegateTokenMint,
+        5000
+    )
 
-  // Set realm authority to the created governance
-  withSetRealmAuthority(
-    instructions,
-    programId,
-    programVersion,
-    realmPk,
-    walletPk,
-    governancePk,
-    SetRealmAuthorityAction.SetChecked,
-  );
+    const tx = new Transaction()
+    tx.add(...instructions);
 
-  // Create single choice Approve/Deny proposal with instruction to mint more governance tokens
-  const voteType = VoteType.SINGLE_CHOICE;
-  const options = ['Approve'];
-  const useDenyOption = true;
+    const sig = await sendAndConfirmTransaction(
+        connection,
+        tx,
+        [ownerKeypair],
+        {
+            skipPreflight: true
+        }
+    )
 
-  const proposalPk = await withCreateProposal(
-    instructions,
-    programId,
-    programVersion,
-    realmPk,
-    governancePk,
-    tokenOwnerRecordPk,
-    'proposal 1',
-    '',
-    mintPk,
-    walletPk,
-    0,
-    voteType,
-    options,
-    useDenyOption,
-    walletPk,
-  );
+    expect(sig).toBeDefined()
 
-  await sendTransaction(connection, instructions, signers, wallet);
-  instructions = [];
-  signers = [];
-
-  const instruction = Token.createMintToInstruction(
-    TOKEN_PROGRAM_ID,
-    mintPk,
-    ataPk,
-    governancePk,
-    [],
-    1,
-  );
-
-  const instructionData = createInstructionData(instruction);
-
-  await withInsertTransaction(
-    instructions,
-    programId,
-    programVersion,
-    governancePk,
-    proposalPk,
-    tokenOwnerRecordPk,
-    walletPk,
-    0,
-    0,
-    0,
-    [instructionData, instructionData],
-    walletPk,
-  );
-
-  // Act
-  await sendTransaction(connection, instructions, signers, wallet);
-
-  // Assert
-  const realm = await getRealm(connection, realmPk);
-  // @ts-ignore
-  expect(realm.account.name).toBe(name);
-
-  const results = await getTokenOwnerRecordsByOwner(
-    connection,
-    programId,
-    walletPk,
-  );
-  // @ts-ignore
-  expect(results.length).toBe(1);
-  // @ts-ignore
-  expect(results[0].account.governingTokenOwner).toEqual(walletPk);
 });
 
 
+async function loadKeypair(fileRef: string) {
+
+    let filePath = fileRef;
+
+    if (filePath[0] === '~') {
+        filePath = path.join(process.env.HOME!, filePath.slice(1));
+    }
+
+    let contents = fs.readFileSync(`${filePath}`);
+
+    let parsed = String(contents)
+        .replace("[", "")
+        .replace("]", "")
+        .split(",")
+        .map((item) => Number(item))
+
+    const uint8Array = Uint8Array.from(parsed);
+
+    return Keypair.fromSecretKey(uint8Array);
+
+}
