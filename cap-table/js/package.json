@@ -1,0 +1,41 @@
+{
+  "name": "@tokr-labs/identity-verification",
+  "version": "0.2.16",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "start": "npm-run-all --parallel watch",
+    "watch": "tsc --watch"
+  },
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "url": "git@github.com:TOKR-labs/tokr-protocol.git"
+  },
+  "dependencies": {
+    "@solana/web3.js": "1.22.0",
+    "@solana/spl-token": "0.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.14.11",
+    "esbuild-jest": "^0.5.0",
+    "jest": "^27.4.7",
+    "typescript": "^4.5.4"
+  },
+  "jest": {
+    "testTimeout": 20000,
+    "verbose": true,
+    "transform": {
+      "^.+\\.tsx?$": "esbuild-jest"
+    }
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
