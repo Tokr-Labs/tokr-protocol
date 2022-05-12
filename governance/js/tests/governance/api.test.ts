@@ -80,7 +80,7 @@ test("test deposit capital", async () => {
         lpTokenAccount,
         lpMintPublicKey,
         delegateTokenMint,
-        25
+        5000
     )
 
     const tx = new Transaction()

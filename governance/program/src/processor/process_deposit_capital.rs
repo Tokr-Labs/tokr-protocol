@@ -38,7 +38,7 @@ pub fn process_deposit_capital(
 
     if lp_token_account.data_is_empty() {
         #[allow(deprecated)]
-            let create_account_instruction = &spl_associated_token_account::create_associated_token_account(
+        let create_account_instruction = &spl_associated_token_account::create_associated_token_account(
             capital_token_authority.key,
             capital_token_authority.key,
             lp_token_mint.key,
