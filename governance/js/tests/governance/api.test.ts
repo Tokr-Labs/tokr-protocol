@@ -50,7 +50,8 @@ test("test deposit capital", async () => {
     // const ownerKeypair = await loadKeypair("~/solana-keys/moonknight.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/drstrange.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/hulk.json")
-    const ownerKeypair = await loadKeypair("~/solana-keys/quicksilver.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/quicksilver.json")
+    const ownerKeypair = await loadKeypair("~/solana-keys/beast.json")
 
     const realmPublicKey = new PublicKey("EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5")
     const usdcMintPublicKey = new PublicKey("GLgjt8zEJwuYAKg9tLy9ZTCC9k7VUf46yfx7EQuDXdzf")

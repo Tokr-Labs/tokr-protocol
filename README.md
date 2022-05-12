@@ -54,15 +54,15 @@ Once the programs are initially deployed we'll want to keep the same program ids
 **Devnet**
 
 ```
-$ anchor upgrade --provider.cluster devnet --program-id CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd ./target/deploy/identity_verification.so
+$ anchor upgrade --provider.cluster devnet --program-id CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd ./target/deploy/spl_governance.so
 $ anchor upgrade --provider.cluster devnet --program-id 5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9 ./target/deploy/identity_verification.so
 ```
 
 **Mainnet**
 
 ```
+$ anchor upgrade --provider.cluster mainnet --program-id govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr ./target/deploy/spl_governance.so
 $ anchor upgrade --provider.cluster mainnet --program-id idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD ./target/deploy/identity_verification.so
-$ anchor upgrade --provider.cluster mainnet --program-id govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr ./target/deploy/identity_verification.so
 ```
 
 ## Running the programs locally

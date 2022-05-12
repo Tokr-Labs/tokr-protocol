@@ -528,7 +528,7 @@ pub fn deposit_capital(
         AccountMeta::new_readonly(spl_token::id(), false), // 9
         AccountMeta::new_readonly(system_program::id(), false), // 10
         AccountMeta::new_readonly(sysvar::rent::id(), false), // 11
-        AccountMeta::new_readonly(spl_associated_token_account_id, false), // 11
+        AccountMeta::new_readonly(spl_associated_token_account_id, false), // 12
     ];
 
     let instruction = GovernanceInstruction::DepositCapital { amount };

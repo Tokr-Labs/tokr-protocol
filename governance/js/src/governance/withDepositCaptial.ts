@@ -9,14 +9,14 @@ export const withDepositCapital = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
     realm: PublicKey,
-    capitalGovernance: PublicKey,
+    capitalGovernance: PublicKey, // governance over the usdc account
     lpGovernance: PublicKey,
-    capitalTokenAuthority: PublicKey,
-    capitalTokenAccount: PublicKey,
-    capitalTokenMint: PublicKey,
-    lpTokenAccount: PublicKey,
-    lpTokenMint: PublicKey,
-    delegateTokenMint: PublicKey,
+    capitalTokenAuthority: PublicKey, // the owner of the usdc account being transfer from
+    capitalTokenAccount: PublicKey, // the usdc ata account of the owner
+    capitalTokenMint: PublicKey, // usdc mint
+    lpTokenAccount: PublicKey, // treasury stock account
+    lpTokenMint: PublicKey, // treasury stock mint
+    delegateTokenMint: PublicKey, // treasury stock transfer signer
     amount: number,
 ) => {
 
@@ -59,6 +59,7 @@ export const withDepositCapital = async (
         { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 9
         { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 10
         { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false }, // 11
+        // even though we never use this it has to be added or the lp ata account creation fails
         { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 12
     ];
 

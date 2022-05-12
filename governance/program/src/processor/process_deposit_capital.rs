@@ -68,6 +68,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
+        // @TODO: We need to figure out the actual decimals for usdc to make sure that this will work
         amount * LAMPORTS_PER_SOL,
     )?;
 
@@ -89,6 +90,7 @@ pub fn process_deposit_capital(
         lp_token_account.key,
         lp_governance.key,
         &[lp_governance.key],
+        // @TODO: We need to figure out the actual decimals for our lp to make sure that this will work
         amount,
     )?;
 
