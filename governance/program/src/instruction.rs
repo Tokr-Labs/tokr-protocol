@@ -1,5 +1,10 @@
 //! Program instructions
 
+use std::str::FromStr;
+
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use solana_program::{bpf_loader_upgradeable, instruction::{AccountMeta, Instruction}, pubkey::Pubkey, system_program, sysvar};
+
 use crate::{
     state::{
         enums::MintMaxVoteWeightSource,
@@ -11,8 +16,8 @@ use crate::{
         program_metadata::get_program_metadata_address,
         proposal::{get_proposal_address, VoteType},
         proposal_transaction::{get_proposal_transaction_address, InstructionData},
-        realm::SetRealmAuthorityAction,
         realm::{get_governing_token_holding_address, get_realm_address, RealmConfigArgs},
+        realm::SetRealmAuthorityAction,
         realm_config::get_realm_config_address,
         signatory_record::get_signatory_record_address,
         token_owner_record::get_token_owner_record_address,
@@ -20,8 +25,6 @@ use crate::{
     },
     tools::bpf_loader_upgradeable::get_program_data_address,
 };
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{bpf_loader_upgradeable, instruction::{AccountMeta, Instruction}, msg, pubkey::Pubkey, system_program, sysvar};
 
 /// Instructions supported by the Governance program
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
@@ -470,19 +473,18 @@ pub enum GovernanceInstruction {
     /// Deposits capital tokens into capital treasury and distribute community governance tokens
     ///
     /// 0. `[]` Realm account
-    /// 1. `[]` Capital Governance who owns the capital holding token account
-    /// 2. `[]` LP Governance who owns the lp holding token account
-    /// 3. `[]` LP Governed account (used as seed)
-    /// 4. `[signer]` Capital Token Account Authority
-    /// 5. `[writable]` Capital Token Account
-    /// 6. `[writable]` Capital Holding Token Account
-    /// 7. `[]` Capital Token Mint
-    /// 8. `[writable]` LP Token Account
-    /// 9. `[writable]` LP Holding Token Account
-    /// 10. `[]` LP Token Mint
-    /// 11. `[]` Token Program
+    /// 1. `[]` LP Governance who owns the lp holding token account
+    /// 2. `[signer]` Capital Token Account Authority
+    /// 3. `[writable]` Capital Token Account
+    /// 4. `[writable]` Capital Holding Token Account
+    /// 5. `[writable]` LP Token Account
+    /// 6. `[writable]` LP Holding Token Account
+    /// 7. `[]` LP Token Mint
+    /// 8. `[]` Delegate Token Mint
+    /// 9. `[]` Token Program
+    /// 10. `[]` System Program
+    /// 11. `[]` Rent Program
     /// 12. `[]` Associated Token Program
-    /// 13. `[]` System
     DepositCapital {
         /// The amount to capital tokens to deposit into the capital treasury
         #[allow(dead_code)]
@@ -498,37 +500,35 @@ pub fn deposit_capital(
     program_id: &Pubkey,
     // Accounts
     realm: &Pubkey,
-    capital_governance: &Pubkey,
     lp_governance: &Pubkey,
-    lp_governed_account: &Pubkey,
     capital_token_account_authority: &Pubkey,
     capital_token_account: &Pubkey,
     capital_token_holding_account: &Pubkey,
-    capital_token_mint: &Pubkey,
     lp_token_account: &Pubkey,
     lp_holding_account: &Pubkey,
     lp_token_mint: &Pubkey,
-    token_program: &Pubkey,
-    associated_token_program: &Pubkey,
+    delegate_token_mint: &Pubkey,
     // Args
     amount: u64,
 ) -> Instruction {
 
+    // @TODO: Remove once ::id has been added to the associated token account spl library
+    let spl_associated_token_account_id = Pubkey::from_str("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL").unwrap();
+
     let accounts = vec![
         AccountMeta::new_readonly(*realm, false), // 0
-        AccountMeta::new_readonly(*capital_governance, false), // 1
-        AccountMeta::new_readonly(*lp_governance, false), // 2
-        AccountMeta::new_readonly(*lp_governed_account, false), // 3
-        AccountMeta::new_readonly(*capital_token_account_authority, true), // 4
-        AccountMeta::new(*capital_token_account, false), // 5
-        AccountMeta::new(*capital_token_holding_account, false), // 6
-        AccountMeta::new_readonly(*capital_token_mint, false), // 7
-        AccountMeta::new(*lp_token_account, false), // 8
-        AccountMeta::new(*lp_holding_account, false), // 9
-        AccountMeta::new_readonly(*lp_token_mint, false), // 10
-        AccountMeta::new_readonly(*token_program, false), // 11
-        AccountMeta::new_readonly(*associated_token_program, false), // 12
-        AccountMeta::new_readonly(system_program::id(), false), // 13
+        AccountMeta::new_readonly(*lp_governance, false), // 1
+        AccountMeta::new_readonly(*capital_token_account_authority, true), // 2
+        AccountMeta::new(*capital_token_account, false), // 3
+        AccountMeta::new(*capital_token_holding_account, false), // 4
+        AccountMeta::new(*lp_token_account, false), // 5
+        AccountMeta::new(*lp_holding_account, false), // 6
+        AccountMeta::new_readonly(*lp_token_mint, false), // 7
+        AccountMeta::new_readonly(*delegate_token_mint, false), // 8
+        AccountMeta::new_readonly(spl_token::id(), false), // 9
+        AccountMeta::new_readonly(system_program::id(), false), // 10
+        AccountMeta::new_readonly(sysvar::rent::id(), false), // 11
+        AccountMeta::new_readonly(spl_associated_token_account_id, false), // 11
     ];
 
     let instruction = GovernanceInstruction::DepositCapital { amount };

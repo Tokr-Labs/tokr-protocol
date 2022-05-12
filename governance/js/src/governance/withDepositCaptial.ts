@@ -1,4 +1,4 @@
-import {LAMPORTS_PER_SOL, PublicKey, TransactionInstruction} from '@solana/web3.js';
+import {LAMPORTS_PER_SOL, PublicKey, SYSVAR_RENT_PUBKEY, TransactionInstruction} from '@solana/web3.js';
 import BN from 'bn.js';
 import {DepositCapitalArgs} from "./instructions";
 import {serialize} from 'borsh';
@@ -11,12 +11,12 @@ export const withDepositCapital = async (
     realm: PublicKey,
     capitalGovernance: PublicKey,
     lpGovernance: PublicKey,
-    lpGovernedAccount: PublicKey,
     capitalTokenAuthority: PublicKey,
     capitalTokenAccount: PublicKey,
     capitalTokenMint: PublicKey,
     lpTokenAccount: PublicKey,
     lpTokenMint: PublicKey,
+    delegateTokenMint: PublicKey,
     amount: number,
 ) => {
 
@@ -46,23 +46,20 @@ export const withDepositCapital = async (
         ASSOCIATED_TOKEN_PROGRAM_ID
     )
 
-    console.log("bump = ", bump);
-
     const keys = [
         { pubkey: realm, isWritable: false, isSigner: false }, // 0
-        { pubkey: capitalGovernance, isWritable: false, isSigner: false }, // 1
-        { pubkey: lpGovernance, isWritable: true, isSigner: false }, // 2
-        { pubkey: lpGovernedAccount, isWritable: false, isSigner: false }, // 3
-        { pubkey: capitalTokenAuthority, isWritable: true, isSigner: true }, // 4
-        { pubkey: capitalTokenAccount, isWritable: true, isSigner: false }, // 5
-        { pubkey: capitalTokenHoldingAccount, isWritable: true, isSigner: false }, // 6
-        { pubkey: capitalTokenMint, isWritable: false, isSigner: false }, // 7
-        { pubkey: lpTokenAccount, isWritable: true, isSigner: false }, // 8
-        { pubkey: lpHoldingAccount, isWritable: true, isSigner: false }, // 9
-        { pubkey: lpTokenMint, isWritable: false, isSigner: false }, // 10
-        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 11
+        { pubkey: lpGovernance, isWritable: true, isSigner: false }, // 1
+        { pubkey: capitalTokenAuthority, isWritable: true, isSigner: true }, // 2
+        { pubkey: capitalTokenAccount, isWritable: true, isSigner: false }, // 3
+        { pubkey: capitalTokenHoldingAccount, isWritable: true, isSigner: false }, // 4
+        { pubkey: lpTokenAccount, isWritable: true, isSigner: false }, // 5
+        { pubkey: lpHoldingAccount, isWritable: true, isSigner: false }, // 6
+        { pubkey: lpTokenMint, isWritable: false, isSigner: false }, // 7
+        { pubkey: delegateTokenMint, isWritable: false, isSigner: false }, // 8
+        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 9
+        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 10
+        { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false }, // 11
         { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 12
-        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 13
     ];
 
     instructions.push(

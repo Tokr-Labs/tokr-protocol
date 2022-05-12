@@ -4,7 +4,7 @@ use borsh::maybestd::io::Write;
 use std::slice::Iter;
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{account_info::{next_account_info, AccountInfo}, borsh::try_from_slice_unchecked, msg, program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey};
+use solana_program::{account_info::{next_account_info, AccountInfo}, borsh::try_from_slice_unchecked, program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey};
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use spl_governance_tools::account::{
     assert_is_valid_account_of_types, get_account_data, AccountMaxSize,
@@ -377,37 +377,6 @@ pub fn get_governing_token_holding_address(
     )
         .0
 }
-
-/// Returns Capital Treasury PDA address from governance and mint
-// pub fn get_lp_token_holding_address_seeds<'a>(
-//     token_program_id: &'a Pubkey,
-//     associated_token_program_id: &'a Pubkey,
-//     lp_governance: &'a Pubkey,
-//     lp_token_mint: &'a Pubkey,
-// ) -> &[&[&[u8]]] {
-//
-//     let (address, bump) = Pubkey::find_program_address(
-//         &[
-//             governance.as_ref(),
-//             token_program_id.as_ref(),
-//             capital_token_mint.as_ref()
-//         ],
-//         associated_token_program_id,
-//     );
-//
-//     msg!("bump = {}", bump);
-//
-//     return &[
-//         &[
-//             lp_governance.key.as_ref(),
-//             token_program.key.as_ref(),
-//             lp_token_mint.key.as_ref(),
-//             &[bump] // bump
-//         ]
-//     ]
-//
-// }
-
 
 /// Asserts given realm config args are correct
 pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(), ProgramError> {

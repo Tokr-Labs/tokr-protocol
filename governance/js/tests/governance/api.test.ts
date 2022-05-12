@@ -1,322 +1,104 @@
-import {AuthorityType, getOrCreateAssociatedTokenAccount, setAuthority, transfer} from '@solana/spl-token';
+import {getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount} from '@solana/spl-token';
 import {
     Connection,
-    Keypair, LAMPORTS_PER_SOL,
+    Keypair,
     PublicKey,
     sendAndConfirmTransaction,
     Transaction,
     TransactionInstruction,
 } from '@solana/web3.js';
-import {BN} from 'bn.js';
-import {GovernanceConfig, VoteThresholdPercentage, VoteTipping} from '../../src';
-import {requestAirdrop} from '../tools/sdk';
-import {getTimestampFromDays} from '../tools/units';
-import {generateSlug} from "random-word-slugs";
 import {withDepositCapital} from "../../src/governance/withDepositCaptial";
-import {
-    createGovernances,
-    createMintInstructions,
-    createRealm,
-    createTreasuryAccount,
-    depositDelegateCouncilTokenInGovernance,
-    executeMintInstructions,
-    mintDelegateTokenForDelegate,
-    mintMaxLpTokens,
-    setLimitedPartnerGovernanceAsRealmAuthority,
-} from "./utils/utils";
 import path from "path";
 import process from "process";
 import fs from "fs";
-import {withCreateAssociatedTokenAccount} from "../tools/withCreateAssociatedTokenAccount";
-import {ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID} from "../../lib";
 
 // const programId = new PublicKey('GTesTBiEWE32WHXXE2S4XbZvA5CrEc4xs6ZgRe895dP');
 // const rpcEndpoint = clusterApiUrl('devnet');
 
-const programId = new PublicKey('5xaMNNRZ5hKFTs45Y39ALQXVoXdrPAcRAY6cBqz1qc6R');
+const programId = new PublicKey('DiXa9VmFGhJYco4b83ACWpCo95prArWdNsBPvGwfGLgV');
 const rpcEndpoint = 'http://127.0.0.1:8899';
 
 const connection = new Connection(rpcEndpoint, {
     commitment: "recent"
 });
 
-describe("capital based realm", () => {
+test("test deposit capital", async () => {
 
-    // let ownerKeypair: Keypair;
-    // let delegateKeypair: Keypair;
-    // let governanceProgramKeypair: Keypair
-    // let usdcMintPublicKey = new PublicKey("3yFztHVjMawUZpEd1gckQHy4FH19ZbdS1h2SZmFKzcPj")
-    // let limitedPartnerMintKeypair: Keypair
-    // let delegateMintKeypair: Keypair;
-    // let distributionMintKeypair: Keypair;
-    // let governanceConfig: GovernanceConfig;
-    // let realmName: string;
-    // let capitalSupplyTreasuryPubkey: PublicKey;
-    // let realmPublicKey: PublicKey;
-    // let limitedPartnerMintPublicKey: PublicKey;
-    // let governancePublicKey: PublicKey;
+    /*
+    Realm: EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5
 
-    // beforeAll(async () => {
-    //
-    //     ownerKeypair = Keypair.generate();
-    //     await requestAirdrop(connection, ownerKeypair.publicKey)
-    //     delegateKeypair = Keypair.generate();
-    //     await requestAirdrop(connection, delegateKeypair.publicKey)
-    //     governanceProgramKeypair = Keypair.generate();
-    //     limitedPartnerMintKeypair = Keypair.generate();
-    //     delegateMintKeypair = Keypair.generate();
-    //     distributionMintKeypair = Keypair.generate();
-    //     realmName = generateSlug(2);
-    //
-    //     // Crate governance over the the governance token mint
-    //     governanceConfig = new GovernanceConfig({
-    //         voteThresholdPercentage: new VoteThresholdPercentage({
-    //             value: 60,
-    //         }),
-    //         minCommunityTokensToCreateProposal: new BN(1),
-    //         minInstructionHoldUpTime: 0,
-    //         maxVotingTime: getTimestampFromDays(3),
-    //         voteTipping: VoteTipping.Strict,
-    //         proposalCoolOffTime: 0,
-    //         minCouncilTokensToCreateProposal: new BN(1),
-    //     });
-    //
-    // });
+    LP Token Mint: 5gnm1PP6BG1HtTbnBMwaakLbowdJ9hG8PkZEGM3wDQBA
+    Delegate Token Mint: 9zpBdhhNjtDP9LCpJcG84Kbts1K2rzMmRFc6DRWyPCRq
+    Distribution Token Mint: AHTxrRddhRhDvCAcu5ASZs8hHtTqKLci7B4bcaV1qjrB
 
-    // test.skip("create capital based realm", async () => {
-    //
-    //     expect.assertions(1);
-    //
-    //     limitedPartnerMintPublicKey = limitedPartnerMintKeypair.publicKey
-    //
-    //     let mintInstructions: TransactionInstruction[] = [];
-    //
-    //     await createMintInstructions(
-    //         mintInstructions,
-    //         connection,
-    //         limitedPartnerMintKeypair,
-    //         ownerKeypair,
-    //         0
-    //     )
-    //
-    //     await createMintInstructions(
-    //         mintInstructions,
-    //         connection,
-    //         delegateMintKeypair,
-    //         ownerKeypair,
-    //         0
-    //     )
-    //
-    //     await createMintInstructions(
-    //         mintInstructions,
-    //         connection,
-    //         distributionMintKeypair,
-    //         ownerKeypair,
-    //         0
-    //     )
-    //
-    //     await executeMintInstructions(
-    //         connection,
-    //         mintInstructions,
-    //         [
-    //             limitedPartnerMintKeypair,
-    //             delegateMintKeypair,
-    //             distributionMintKeypair
-    //         ],
-    //         ownerKeypair
-    //     )
-    //
-    //     await mintDelegateTokenForDelegate(
-    //         connection,
-    //         ownerKeypair,
-    //         delegateMintKeypair.publicKey,
-    //         delegateKeypair
-    //     )
-    //
-    //     const ownerAta = await mintMaxLpTokens(
-    //         connection,
-    //         ownerKeypair,
-    //         limitedPartnerMintKeypair.publicKey,
-    //         ownerKeypair.publicKey,
-    //         1000
-    //     )
-    //
-    //     await setAuthority(
-    //         connection,
-    //         ownerKeypair,
-    //         limitedPartnerMintKeypair.publicKey,
-    //         ownerKeypair,
-    //         AuthorityType.MintTokens,
-    //         null
-    //     )
-    //
-    //     realmPublicKey = await createRealm(
-    //         connection,
-    //         programId,
-    //         ownerKeypair,
-    //         delegateMintKeypair.publicKey,
-    //         limitedPartnerMintKeypair.publicKey,
-    //         generateSlug(2)
-    //     )
-    //
-    //     await depositDelegateCouncilTokenInGovernance(
-    //         connection,
-    //         programId,
-    //         delegateKeypair,
-    //         ownerKeypair,
-    //         realmPublicKey,
-    //         delegateMintKeypair.publicKey
-    //     )
-    //
-    //     const {
-    //         limitedPartnerGovernancePublicKey,
-    //         delegateMintGovernancePublicKey,
-    //         distributionMintGovernancePublicKey
-    //     } = await createGovernances(
-    //         connection,
-    //         programId,
-    //         governanceConfig,
-    //         ownerKeypair,
-    //         realmPublicKey,
-    //         delegateMintKeypair.publicKey,
-    //         limitedPartnerMintKeypair.publicKey,
-    //         distributionMintKeypair.publicKey
-    //     )
-    //
-    //     governancePublicKey = limitedPartnerGovernancePublicKey;
-    //
-    //     await setLimitedPartnerGovernanceAsRealmAuthority(
-    //         connection,
-    //         programId,
-    //         ownerKeypair,
-    //         realmPublicKey,
-    //         limitedPartnerGovernancePublicKey
-    //     )
-    //
-    //     capitalSupplyTreasuryPubkey = await createTreasuryAccount(
-    //         connection,
-    //         ownerKeypair,
-    //         usdcMintPublicKey,
-    //         limitedPartnerGovernancePublicKey
-    //     )
-    //
-    //     const treasuryStockTreasuryPubkey = await createTreasuryAccount(
-    //         connection,
-    //         ownerKeypair,
-    //         limitedPartnerMintKeypair.publicKey,
-    //         delegateMintGovernancePublicKey
-    //     )
-    //
-    //     const distributionTreasuryPubkey = await createTreasuryAccount(
-    //         connection,
-    //         ownerKeypair,
-    //         usdcMintPublicKey,
-    //         distributionMintGovernancePublicKey
-    //     )
-    //
-    //     await transfer(
-    //         connection,
-    //         ownerKeypair,
-    //         ownerAta,
-    //         treasuryStockTreasuryPubkey,
-    //         ownerKeypair,
-    //         1000
-    //     )
-    //
-    //     console.log(limitedPartnerGovernancePublicKey.toBase58());
-    //     console.log(realmPublicKey.toBase58());
-    //
-    //     expect(realmPublicKey).toBeDefined()
-    //
-    // });
+    LP Governance: EJeFL6kwsEfvnJwLQ68rcU85HhkmJ5986MeLZG9BcEUn
+    LP Governed Account: J3qkekEFiPpYcQhG9FqSMUYHfG3AVZd7puBfvNX1Lmkm
+    Delegate Mint Governance: 4SfqXCa2gLqvNzDZVWVDg8LvxfFQzTMCX7VkCFnJgq3y
+    Distribution Mint Governance: HJfvvL2VSWMhuPdc4ukzELBA1QjqdvAvtTtguMaxAXrZ
 
-    test.only("test deposit capital", async () => {
+    Capital Supply Treasury: 9Rm9JdDE3tiSSTw6PZxLmhwtBPVNRUPdGJQfyDCWBHnC
+    Treasury Stock Treasury: 8uaDG6tUgQUHA4qDDZxancmLN2H7FpqrcN8ND1UAU9Pp
+    Distribution Treasury: HjkVKFmjWnGvppc8sHuArQgPU2oqZcpgecveSezNH7A7
 
-        /*
-        Realm: J3nrXhaYtrmC4TtrE7yiKYfBwjLzTZWg6FLSx6caLojo
+    */
 
-        LP Token Mint: 2AMvthMvHJ7moXxmGSsY5hwQzc8Skg3ZUzfbsbrRT5ei
-        Delegate Token Mint: HLa7zUu57mNXBkWk7fQURzz9JYYXydbzw3cDfEQbibn4
-        Distribution Token Mint: BQBb3aY5zHCqtuXKqKPYFaAT8qiaukaGAPbN6T9bHNqx
+    let instructions: TransactionInstruction[] = [];
 
-        LP Governance: CmMLAUCQF8m4TSa3LtBhKfCYau5wmUjWT8NTTouYjNE8
-        LP Governed Account: 3Qt1MVCCV3LvMkmqSamq1xVQJPTyewypTeeEgnbjuy22
-        Delegate Mint Governance: 8SPaUSRj6CaJaSZ1EFeiiRJSbckTv8HPZ2S8Yxf4Ca6J
-        Distribution Mint Governance: 5JTfsAVH1frVYaSdQ517ZyQdNBwLQRfKjGqEYUxf9q8k
+    // const ownerKeypair = await loadKeypair("~/solana-keys/spiderman.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/blackwidow.json")
+    // const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/moonknight.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/drstrange.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/hulk.json")
+    const ownerKeypair = await loadKeypair("~/solana-keys/quicksilver.json")
 
-        Capital Supply Treasury: A2apqtALAk5sE4te4czB7eaQaBdga5XhmANNkYW1mqYN
-        Treasury Stock Treasury: 9Y6wz8oSj731rWPCaT9Mku5CovT1RgxiSfumFfqupunV
-        Distribution Treasury: CRhTvnWEf9j2c2k2YhDUfeKZ3VGNJUWtQFC7ubDwx5Xp
+    const realmPublicKey = new PublicKey("EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5")
+    const usdcMintPublicKey = new PublicKey("GLgjt8zEJwuYAKg9tLy9ZTCC9k7VUf46yfx7EQuDXdzf")
+    const capitalGovernancePublicKey = new PublicKey("EJeFL6kwsEfvnJwLQ68rcU85HhkmJ5986MeLZG9BcEUn"); // lp governance
+    const lpMintPublicKey = new PublicKey("5gnm1PP6BG1HtTbnBMwaakLbowdJ9hG8PkZEGM3wDQBA");
+    const lpGovernancePublicKey = new PublicKey("4SfqXCa2gLqvNzDZVWVDg8LvxfFQzTMCX7VkCFnJgq3y"); // delegate mint governance
+    const delegateTokenMint = new PublicKey("9zpBdhhNjtDP9LCpJcG84Kbts1K2rzMmRFc6DRWyPCRq");
 
-        */
+    const usdcTokenSource = await getOrCreateAssociatedTokenAccount(
+        connection,
+        ownerKeypair,
+        usdcMintPublicKey,
+        ownerKeypair.publicKey
+    )
 
-        let instructions: TransactionInstruction[] = [];
+    const lpTokenAccount = await getAssociatedTokenAddress(lpMintPublicKey,ownerKeypair.publicKey)
 
-        const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
-        const realmPublicKey = new PublicKey("J3nrXhaYtrmC4TtrE7yiKYfBwjLzTZWg6FLSx6caLojo")
-        const usdcMintPublicKey = new PublicKey("EMVFgbUqg37ydgCX4r9nwRRCNnTGCqtTpxNnLtzYqs8D")
-        const capitalGovernancePublicKey = new PublicKey("CmMLAUCQF8m4TSa3LtBhKfCYau5wmUjWT8NTTouYjNE8"); // lp governance
-        const lpMintPublicKey = new PublicKey("2AMvthMvHJ7moXxmGSsY5hwQzc8Skg3ZUzfbsbrRT5ei");
-        const lpGovernancePublicKey = new PublicKey("8SPaUSRj6CaJaSZ1EFeiiRJSbckTv8HPZ2S8Yxf4Ca6J");
-        const lpGovernedAccountPublicKey = new PublicKey("HLa7zUu57mNXBkWk7fQURzz9JYYXydbzw3cDfEQbibn4")
+    await withDepositCapital(
+        instructions,
+        programId,
+        realmPublicKey,
+        capitalGovernancePublicKey,
+        lpGovernancePublicKey,
+        ownerKeypair.publicKey,
+        usdcTokenSource.address,
+        usdcMintPublicKey,
+        lpTokenAccount,
+        lpMintPublicKey,
+        delegateTokenMint,
+        25
+    )
 
-        // @TODO: Create and pass user's ata into the withDepositCapital instruction
+    const tx = new Transaction()
+    tx.add(...instructions);
 
-        // const userLpTokenAccount = await getOrCreateAssociatedTokenAccount(
-        //     connection,
-        //     ownerKeypair,
-        //     usdcMintPublicKey,
-        //     ownerKeypair.publicKey
-        // )
+    const sig = await sendAndConfirmTransaction(
+        connection,
+        tx,
+        [ownerKeypair],
+        {
+            skipPreflight: true
+        }
+    )
 
-        const usdcTokenSource = await getOrCreateAssociatedTokenAccount(
-            connection,
-            ownerKeypair,
-            usdcMintPublicKey,
-            ownerKeypair.publicKey
-        )
-
-        const [lpTokenAccount] = await PublicKey.findProgramAddress(
-            [
-                ownerKeypair.publicKey.toBuffer(),
-                TOKEN_PROGRAM_ID.toBuffer(),
-                lpMintPublicKey.toBuffer()
-            ],
-            ASSOCIATED_TOKEN_PROGRAM_ID
-        )
-
-        await withDepositCapital(
-            instructions,
-            programId,
-            realmPublicKey,
-            capitalGovernancePublicKey,
-            lpGovernancePublicKey,
-            lpGovernedAccountPublicKey,
-            ownerKeypair.publicKey,
-            usdcTokenSource.address,
-            usdcMintPublicKey,
-            lpTokenAccount,
-            lpMintPublicKey,
-            2
-        )
-
-        const tx = new Transaction()
-        tx.add(...instructions);
-
-        const sig = await sendAndConfirmTransaction(
-            connection,
-            tx,
-            [ownerKeypair],
-            {
-                skipPreflight: true
-            }
-        )
-
-        console.log(sig);
-
-    });
+    expect(sig).toBeDefined()
 
 });
+
 
 async function loadKeypair(fileRef: string) {
 
