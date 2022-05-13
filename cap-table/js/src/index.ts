@@ -4,9 +4,10 @@ import {CapTable} from "./models/cap-table";
 
 /**
  * Determine the cap table for the given spl token mint
- * @param connection {Connection}
- * @param mint {PublicKey} Spl token mint
- * @param excludedAccounts {PublicKey[]} Array of public keys to exclude from the calculation of the cap table
+ * @param connection
+ * @param mint Spl token mint
+ * @param treasuryStockAccount Account that holds non-issued tokens for the mint
+ * @param excludedAccounts Array of public keys to exclude from the calculation of the cap table
  */
 export async function determineCapTableForToken(
     connection: Connection,

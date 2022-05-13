@@ -2,9 +2,11 @@ import {CapTableEntry} from "./cap-table-entry";
 import {PublicKey} from "@solana/web3.js";
 
 export interface CapTableParams {
-    entries: CapTableEntry[],
-    outstanding: number,
-    supply: number
+    entries: CapTableEntry[]
+    /// total minted tokens, held by both users and the treasury stock account
+    authorizedSupply: number
+    /// Amount held in the treasury stock account (could potentially be "issued" later)
+    reservedSupply: number
 }
 
 
@@ -19,8 +21,8 @@ export class CapTable {
     static with(info: CapTableParams): CapTable {
         return new CapTable(
             info.entries,
-            info.outstanding,
-            info.supply,
+            info.authorizedSupply,
+            info.reservedSupply,
         );
     }
 
@@ -31,27 +33,54 @@ export class CapTable {
     // Public Properties
 
     readonly entries: CapTableEntry[];
-    readonly outstanding: number;
-    readonly supply: number
 
-    get formattedIssued(): string {
-        return (this.supply - this.outstanding).toLocaleString()
+    /// Amount held in the treasury stock account (could potentially be "issued" later)
+    readonly reservedSupply: number;
+
+    /// total minted tokens, held by both users and the treasury stock account
+    readonly authorizedSupply: number
+
+    // authorizedSupply less reservedSupply
+    get outstandingSupply(): number {
+        return this.authorizedSupply - this.reservedSupply
     }
 
-    get formattedOutstanding(): string {
-        return this.outstanding.toLocaleString()
+    get formattedOutstandingSupply(): string {
+        return (this.authorizedSupply - this.reservedSupply).toLocaleString()
     }
 
-    get formattedSupply(): string {
-        return this.supply.toLocaleString()
+    get formatedReservedSupply(): string {
+        return this.reservedSupply.toLocaleString()
+    }
+
+    get formatedAuthorizedSupply(): string {
+        return this.authorizedSupply.toLocaleString()
     }
 
     // Public Methods
 
-    constructor(entries: CapTableEntry[], outstanding: number, supply: number) {
+    constructor(entries: CapTableEntry[], authorizedSupply: number, reservedSupply: number) {
         this.entries = entries
-        this.outstanding = outstanding
-        this.supply = supply
+        this.authorizedSupply = authorizedSupply
+        this.reservedSupply = reservedSupply
+    }
+
+    /**
+     * Converts the captable instance to JSON
+     */
+    toJSON() {
+        return {
+            "reservedSupply": this.reservedSupply,
+            "authorizedSupply": this.authorizedSupply,
+            "outstandingSupply": this.outstandingSupply ,
+            "entries": this.entries.map(entry => {
+                return {
+                    "holder": entry.holder,
+                    "tokensHeld": entry.tokensHeld,
+                    "percentHeld": entry.percentHeld
+                }
+            })
+        }
     }
 
 }

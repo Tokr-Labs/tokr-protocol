@@ -42,19 +42,19 @@ export class CapTableService {
         let accounts = await this.connection.getParsedProgramAccounts(TOKEN_PROGRAM_ID, config)
 
         // total spl tokens minted
-        const mintSupply = await this.connection.getTokenSupply(mintAddress);
+        const authorizedSupplyInfo = await this.connection.getTokenSupply(mintAddress);
 
         // original holder of all minted spl tokens
         let treasuryStockAccountInfo = await this.connection.getTokenAccountBalance(treasuryStockAccount);
 
-        // total minted supply of spl tokens for the provided mint
-        const supply = mintSupply.value.uiAmount ?? 0
+        //  total minted tokens, held by both users and the treasury stock account
+        const authorizedSupply = authorizedSupplyInfo.value.uiAmount ?? 1
 
-        // number of spl tokens that have not been issued
-        const outstanding = treasuryStockAccountInfo.value.uiAmount ?? 0;
+        // amount held in the treasury stock account (could potentially be "issued" later)
+        const reservedSupply = treasuryStockAccountInfo.value.uiAmount ?? 0;
 
-        // inverse of outstanding, total of spl tokens that have been issued
-        const issued = supply - outstanding;
+        // authorizedSupply less reservedSupply
+        const issued = authorizedSupply - reservedSupply;
 
         // filter out excluded accounts
 
@@ -94,8 +94,8 @@ export class CapTableService {
 
         return CapTable.with({
             entries,
-            supply,
-            outstanding
+            authorizedSupply,
+            reservedSupply
         })
 
     }

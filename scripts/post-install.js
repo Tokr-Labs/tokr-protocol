@@ -14,6 +14,12 @@ const execSync = require("child_process").execSync;
     // install identity-verification cli packages
     execSync('npm install', { cwd: "identity-verification/cli", stdio: "inherit" })
 
+    // install cap-table js npm packages
+    execSync('npm install', { cwd: "cap-table/js", stdio: "inherit" })
+
+    // install cap-table cli packages
+    execSync('npm install', { cwd: "cap-table/cli", stdio: "inherit" })
+
     // install permissioned list cli packages
     execSync('npm install', { cwd: "permissioned-list/cli", stdio: "inherit" })
 
@@ -25,6 +31,9 @@ const execSync = require("child_process").execSync;
 
     // link permissioned-list cli
     execSync('npm run build && npm link', { cwd: "permissioned-list/cli", stdio: "inherit" })
+
+    // link cap-table cli
+    execSync('npm run build && npm link', { cwd: "cap-table/cli", stdio: "inherit" })
 
 })();
 

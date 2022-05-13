@@ -1,24 +1,9 @@
 import {determineCapTableForToken} from "../src";
-import {
-    Connection,
-    Keypair,
-    LAMPORTS_PER_SOL,
-    PublicKey,
-    sendAndConfirmTransaction,
-    Transaction
-} from "@solana/web3.js";
-import {
-    createAssociatedTokenAccount,
-    createMint,
-    createTransferInstruction,
-    mintTo,
-    TOKEN_PROGRAM_ID,
-    transfer
-} from "@solana/spl-token";
+import {Connection, Keypair, PublicKey} from "@solana/web3.js";
+import {createMint, mintTo} from "@solana/spl-token";
 import {CapTable} from "../src/models/cap-table";
-import {first, where} from "underscore";
 import {helper_createAccount, helper_createAtaForKeypair, helper_transferTokens} from "./utils/helpers";
-
+import {where} from "underscore";
 
 describe("cap table", () => {
 
@@ -104,8 +89,8 @@ describe("cap table", () => {
         expect(holder3Entry.tokensHeld).toEqual(450);
         expect(holder3Entry.percentHeld).toBeCloseTo(0.5);
 
-        expect(capTable.supply).toEqual(1000);
-        expect(capTable.outstanding).toEqual(100);
+        expect(capTable.authorizedSupply).toEqual(1000);
+        expect(capTable.reservedSupply).toEqual(100);
 
     });
 

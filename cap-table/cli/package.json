@@ -1,0 +1,14 @@
+{
+  "name": "tokr-cap-table-cli",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "dependencies": {
+    "commander": "^9.2.0"
+  },
+  "bin": {
+    "tokr-captable": "cli.js"
+  }
+}
