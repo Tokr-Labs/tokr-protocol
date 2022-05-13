@@ -9,7 +9,6 @@ use solana_program::{
     program::{invoke, invoke_signed},
     pubkey::Pubkey,
 };
-use solana_program::native_token::LAMPORTS_PER_SOL;
 
 /// Processes DepositCapital instruction
 pub fn process_deposit_capital(
@@ -68,8 +67,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
-        // @TODO: We need to figure out the actual decimals for usdc to make sure that this will work
-        amount * LAMPORTS_PER_SOL,
+        amount
     )?;
 
     invoke(
@@ -90,8 +88,7 @@ pub fn process_deposit_capital(
         lp_token_account.key,
         lp_governance.key,
         &[lp_governance.key],
-        // @TODO: We need to figure out the actual decimals for our lp to make sure that this will work
-        amount,
+        amount
     )?;
 
     let (_address, bump) = Pubkey::find_program_address(
