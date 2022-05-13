@@ -4,7 +4,7 @@ A collection of on-chain programs that work together to support governance over 
 
 ## Setup
 
-Running npm install will install all packages throughout the repo. It will also setup the CLIs for governance and identity verification.
+Running npm install will install all packages throughout the repo. It will also setup the CLIs for governance, permissioned list, identity verification and cap-table.
 
 ```
 $ npm install
