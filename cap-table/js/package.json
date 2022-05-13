@@ -19,10 +19,12 @@
     "url": "git@github.com:TOKR-labs/tokr-protocol.git"
   },
   "dependencies": {
+    "@solana/spl-token": "0.2.0",
     "@solana/web3.js": "1.22.0",
-    "@solana/spl-token": "0.2.0"
+    "underscore": "^1.13.3"
   },
   "devDependencies": {
+    "@types/underscore": "^1.11.4",
     "esbuild": "^0.14.11",
     "esbuild-jest": "^0.5.0",
     "jest": "^27.4.7",
