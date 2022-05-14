@@ -15,7 +15,7 @@ $ npm install
 Running the following command will build all programs referenced in the `Anchor.toml` file in the root directory.
 
 ```
-$ anchor build
+$ npm run build
 ```
 
 ## Deploying Programs
@@ -26,7 +26,7 @@ Deploying programs is a bit tricky right now for Anchor programs. Everytime the 
 
 ### Deploy to devnet
 ```
-$ anchor deploy
+$ npm run deploy
 ```
 
 ### Deploy to devnet or mainnet
@@ -34,7 +34,7 @@ $ anchor deploy
 Deployment should only have to happen once, unless there is a reason to create a new version of the program and keep the old one running. 
 **CAUTION** These steps are very important for the first deployment:
 
-1. Run anchor build
+1. Run npm build
 2. Replace the contents of `target/deploy/identity_verification-keypair.json` with the contents of our production version of the keypair `idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD.json` or `CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd.json` for mainnet and devnet respectively.
 3. Replace the contents of `target/deploy/spl_governance-keypair.json` with the contents of our production version of the keypair `govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr.json` or `5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9.json` for mainnet and devnet respectively.
 
@@ -54,15 +54,15 @@ Once the programs are initially deployed we'll want to keep the same program ids
 **Devnet**
 
 ```
-$ anchor upgrade --provider.cluster devnet --program-id CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd ./target/deploy/spl_governance.so
-$ anchor upgrade --provider.cluster devnet --program-id 5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9 ./target/deploy/identity_verification.so
+$ npm run upgrade:governance:devnet
+$ npm run upgrade:identity-verification:devnet
 ```
 
 **Mainnet**
 
 ```
-$ anchor upgrade --provider.cluster mainnet --program-id govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr ./target/deploy/spl_governance.so
-$ anchor upgrade --provider.cluster mainnet --program-id idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD ./target/deploy/identity_verification.so
+$ npm run upgrade:governance:mainnet
+$ npm run upgrade:identity-verification:mainnet
 ```
 
 ## Running the programs locally
@@ -101,13 +101,13 @@ $ tokr create-spl-token --amount 1000000
 This will build out programs (governance and identity verification)
 
 ```
-$ anchor build
+$ npm run build
 ```
 
 Next we'll deploy these programs out to devnet. Make not of the program IDs as we'll need those later.
 
 ```
-$ anchor deploy [--provider.cluster localnet]
+$ npm run deploy
 ```
 
 ## Creating a DAO on localnet
