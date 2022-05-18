@@ -12,3 +12,4 @@ pub mod realm_config;
 pub mod signatory_record;
 pub mod token_owner_record;
 pub mod vote_record;
+pub mod identity;

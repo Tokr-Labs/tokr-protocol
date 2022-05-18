@@ -393,6 +393,10 @@ pub enum GovernanceError {
     /// GovernanceConfig change not allowed
     #[error("GovernanceConfig change not allowed")]
     GovernanceConfigChangeNotAllowed,
+
+    /// user identity not known
+    #[error("The user trying to interact with the program is not known.")]
+    UserIdentityNotKnown,
 }
 
 impl PrintProgramError for GovernanceError {

@@ -28,7 +28,7 @@ pub struct CreateRecord<'info> {
     /// Creates the account via a CPI to the system program and initializes it (sets its account discriminator).
     /// Marks the account as mutable and is mutually exclusive with mut.
     /// Makes the account rent exempt unless skipped with rent_exempt = skip.
-    #[account(init, seeds = [group.as_ref(), signer.key.as_ref()], bump, payer = signer, space = Metadata::LEN)]
+    #[account(init, seeds = [b"identity", group.as_ref(), signer.key.as_ref()], bump, payer = signer, space = Metadata::LEN)]
     pub record: Account<'info, Metadata>,
 
     pub system_program: Program<'info, System>,

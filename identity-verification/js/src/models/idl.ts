@@ -1,5 +1,5 @@
 export type IdentityVerification = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "identity_verification",
   "instructions": [
     {
@@ -36,6 +36,32 @@ export type IdentityVerification = {
           "type": "publicKey"
         }
       ]
+    },
+    {
+      "name": "getIsVerified",
+      "accounts": [
+        {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "record",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ],
+      "returns": "bool"
     },
     {
       "name": "updateIaStatus",
@@ -220,7 +246,7 @@ export type IdentityVerification = {
 };
 
 export const IDL: IdentityVerification = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "identity_verification",
   "instructions": [
     {
@@ -257,6 +283,32 @@ export const IDL: IdentityVerification = {
           "type": "publicKey"
         }
       ]
+    },
+    {
+      "name": "getIsVerified",
+      "accounts": [
+        {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "record",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ],
+      "returns": "bool"
     },
     {
       "name": "updateIaStatus",

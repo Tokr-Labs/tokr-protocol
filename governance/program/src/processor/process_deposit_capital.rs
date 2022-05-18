@@ -1,14 +1,19 @@
 //! Program state processor
 
-use solana_program::{
-    account_info::{
-        AccountInfo,
-        next_account_info,
-    },
-    entrypoint::ProgramResult,
-    program::{invoke, invoke_signed},
-    pubkey::Pubkey,
-};
+use std::convert::{TryFrom, TryInto};
+use std::io::Read;
+use std::ops::Deref;
+use bincode::deserialize_from;
+use solana_program::{account_info::{
+    AccountInfo,
+    next_account_info,
+}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, pubkey::Pubkey};
+use solana_program::borsh::try_from_slice_unchecked;
+use solana_program::log::{sol_log_data, sol_log_params, sol_log_slice};
+use spl_governance_tools::account::get_account_data;
+use crate::error::GovernanceError;
+use crate::state::governance::assert_governance_for_realm;
+use crate::state::identity::Identity;
 
 /// Processes DepositCapital instruction
 pub fn process_deposit_capital(
@@ -27,17 +32,36 @@ pub fn process_deposit_capital(
     let lp_token_holding_account = next_account_info(account_info_iter)?; // 6
     let lp_token_mint = next_account_info(account_info_iter)?; // 7
     let delegate_token_mint = next_account_info(account_info_iter)?; // 8
-    let token_program = next_account_info(account_info_iter)?; // 9
-    let system_program = next_account_info(account_info_iter)?; // 10
-    let rent_program = next_account_info(account_info_iter)?; // 11
+    let identity_verification_record = next_account_info(account_info_iter)?; // 9
+    let token_program = next_account_info(account_info_iter)?; // 10
+    let system_program = next_account_info(account_info_iter)?; // 11
+    let rent_program = next_account_info(account_info_iter)?; // 12
 
-    // @TODO: assert user's identity has been verified
+    // assert user's identity has been verified
+
+    let identity_verification_account_address = Pubkey::find_program_address(
+        &[b"identity", capital_token_authority.key.as_ref(), realm.key.as_ref()],
+        system_program.key,
+    ).0;
+
+    let mut is_verified = false;
+
+    // @TODO: determine verification from identity_verification_record data
+
+    // let idv = Identity::try_from(&identity_verification_record.data).unwrap();
+    let idv: Identity = try_from_slice_unchecked(&identity_verification_record.data.borrow())?;
+
+    println!("{}", idv.aml_status);
+
+    if identity_verification_record.key.as_ref() != identity_verification_account_address.as_ref() || !is_verified {
+        return Err(GovernanceError::UserIdentityNotKnown.into());
+    }
 
     // create account if it doesn't exist
 
     if lp_token_account.data_is_empty() {
         #[allow(deprecated)]
-        let create_account_instruction = &spl_associated_token_account::create_associated_token_account(
+            let create_account_instruction = &spl_associated_token_account::create_associated_token_account(
             capital_token_authority.key,
             capital_token_authority.key,
             lp_token_mint.key,
@@ -67,7 +91,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
-        amount
+        amount,
     )?;
 
     invoke(
@@ -88,7 +112,7 @@ pub fn process_deposit_capital(
         lp_token_account.key,
         lp_governance.key,
         &[lp_governance.key],
-        amount
+        amount,
     )?;
 
     let (_address, bump) = Pubkey::find_program_address(

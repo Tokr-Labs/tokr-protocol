@@ -1063,6 +1063,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "governance"
+version = "2.2.4"
+dependencies = [
+ "arrayref",
+ "assert_matches",
+ "base64 0.13.0",
+ "bincode",
+ "borsh",
+ "identity_verification",
+ "num-derive",
+ "num-traits",
+ "proptest",
+ "serde",
+ "serde_derive",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-associated-token-account",
+ "spl-governance-addin-api",
+ "spl-governance-addin-mock",
+ "spl-governance-test-sdk",
+ "spl-governance-tools",
+ "spl-token",
+ "thiserror",
+]
+
+[[package]]
 name = "h2"
 version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1237,7 +1264,7 @@ dependencies = [
 
 [[package]]
 name = "identity_verification"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anchor-lang",
  "solana-program",
@@ -2795,32 +2822,6 @@ dependencies = [
  "borsh",
  "solana-program",
  "spl-token",
-]
-
-[[package]]
-name = "spl-governance"
-version = "2.2.4"
-dependencies = [
- "arrayref",
- "assert_matches",
- "base64 0.13.0",
- "bincode",
- "borsh",
- "num-derive",
- "num-traits",
- "proptest",
- "serde",
- "serde_derive",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "spl-associated-token-account",
- "spl-governance-addin-api",
- "spl-governance-addin-mock",
- "spl-governance-test-sdk",
- "spl-governance-tools",
- "spl-token",
- "thiserror",
 ]
 
 [[package]]

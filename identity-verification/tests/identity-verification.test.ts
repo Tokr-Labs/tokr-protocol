@@ -48,6 +48,7 @@ describe("test that the identity-verification program", () => {
         groupKeypair = anchor.web3.Keypair.generate();
 
         const [account, bump] = await anchor.web3.PublicKey.findProgramAddress([
+            Buffer.from("identity"),
             groupKeypair.publicKey.toBytes(),
             keypair.publicKey.toBytes()
         ], program.programId);
@@ -209,6 +210,64 @@ describe("test that the identity-verification program", () => {
             expect(error).toBeDefined()
 
         }
+
+    });
+
+    /// **NOTE** According to [documentation](https://project-serum.github.io/anchor/tutorials/tutorial-3.html#return-values)
+    /// solana currently has no way of parsing a result from a cpi call, so until then this test is skipped on purpose
+    test.skip("verification can be determined for an existing record", async () => {
+
+        const tx1 = await program.rpc.updateAmlStatus(pdaBump, groupKeypair.publicKey, 2, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            },
+            signers: [authority],
+        });
+
+        await provider.connection.confirmTransaction(tx1);
+
+        const tx2 = await program.rpc.updateIaStatus(pdaBump, groupKeypair.publicKey, 2, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            },
+            signers: [authority],
+        });
+
+        await provider.connection.confirmTransaction(tx2);
+
+        const tx3 = await program.rpc.updateKycStatus(pdaBump, groupKeypair.publicKey, 2, {
+            accounts: {
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            },
+            signers: [authority],
+        });
+
+        await provider.connection.confirmTransaction(tx3);
+
+        const isVerified = await program.methods
+            .getIsVerified(pdaBump, groupKeypair.publicKey)
+            .accounts( {
+                subject: keypair.publicKey,
+                record: pdaPubkey,
+            })
+            .rpc()
+
+        // const isVerified = await program.rpc.getIsVerified(pdaBump, groupKeypair.publicKey, {
+        //     accounts: {
+        //         subject: keypair.publicKey,
+        //         record: pdaPubkey,
+        //     }
+        // });
+
+        console.log(isVerified);
+
+        expect(isVerified === "true").toBeTruthy()
 
     });
 

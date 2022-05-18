@@ -8,14 +8,14 @@ import {
     TransactionInstruction,
 } from '@solana/web3.js';
 import {withDepositCapital} from "../../src/governance/withDepositCaptial";
-import path from "path";
-import process from "process";
-import fs from "fs";
+import * as path from "path";
+import * as fs from "fs";
+
 
 // const programId = new PublicKey('GTesTBiEWE32WHXXE2S4XbZvA5CrEc4xs6ZgRe895dP');
 // const rpcEndpoint = clusterApiUrl('devnet');
 
-const programId = new PublicKey('DiXa9VmFGhJYco4b83ACWpCo95prArWdNsBPvGwfGLgV');
+const programId = new PublicKey('5Hyx5g6n82uZpVYRLZqssLSj5V6mZc2QYQFtPcj83Jp2');
 const rpcEndpoint = 'http://127.0.0.1:8899';
 
 const connection = new Connection(rpcEndpoint, {
@@ -81,7 +81,7 @@ test("test deposit capital", async () => {
         lpTokenAccount,
         lpMintPublicKey,
         delegateTokenMint,
-        5000
+        0.005
     )
 
     const tx = new Transaction()

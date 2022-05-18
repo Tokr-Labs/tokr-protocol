@@ -21,7 +21,7 @@ pub fn transfer_authority(
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct TransferAuthority<'info> {
-    #[account(mut, seeds = [group.as_ref(), subject.key.as_ref()], bump)]
+    #[account(mut, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, Metadata>,
     pub subject: SystemAccount<'info>,
     pub transfer_to: SystemAccount<'info>,

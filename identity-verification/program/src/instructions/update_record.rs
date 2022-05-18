@@ -55,7 +55,7 @@ pub fn update_kyc_status(
 pub struct UpdateRecord<'info> {
     /// Checks that given account is a PDA derived from the currently executing program, the seeds,
     /// and if provided, the bump. If not provided, anchor uses the canonical bump.
-    #[account(mut, seeds = [group.as_ref(), subject.key.as_ref()], bump)]
+    #[account(mut, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, Metadata>,
 
     /// Type validating that the account is owned by the system program. This is the account of who

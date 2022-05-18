@@ -46,6 +46,15 @@ export const withDepositCapital = async (
         ASSOCIATED_TOKEN_PROGRAM_ID
     )
 
+    const [identityVerificationRecord] = await PublicKey.findProgramAddress(
+        [
+            Buffer.from("identity"),
+            realm.toBuffer(),
+            capitalTokenAuthority.toBuffer()
+        ],
+        SYSTEM_PROGRAM_ID
+    )
+
     const keys = [
         { pubkey: realm, isWritable: false, isSigner: false }, // 0
         { pubkey: lpGovernance, isWritable: true, isSigner: false }, // 1
@@ -56,11 +65,12 @@ export const withDepositCapital = async (
         { pubkey: lpHoldingAccount, isWritable: true, isSigner: false }, // 6
         { pubkey: lpTokenMint, isWritable: false, isSigner: false }, // 7
         { pubkey: delegateTokenMint, isWritable: false, isSigner: false }, // 8
-        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 9
-        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 10
-        { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false }, // 11
+        { pubkey: identityVerificationRecord, isWritable: false, isSigner: false }, // 9
+        { pubkey: TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 10
+        { pubkey: SYSTEM_PROGRAM_ID, isWritable: false, isSigner: false }, // 11
+        { pubkey: SYSVAR_RENT_PUBKEY, isWritable: false, isSigner: false }, // 12
         // even though we never use this it has to be added or the lp ata account creation fails
-        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 12
+        { pubkey: ASSOCIATED_TOKEN_PROGRAM_ID, isWritable: false, isSigner: false }, // 13
     ];
 
     instructions.push(

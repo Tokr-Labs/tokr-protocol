@@ -10,6 +10,7 @@ hfuzz_workspace
 **/*.so
 **/.DS_Store
 test-ledger
+expanded-macros
 docker-target
 .coderrect
 _
