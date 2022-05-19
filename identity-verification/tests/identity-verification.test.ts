@@ -209,4 +209,36 @@ describe("test that the identity-verification program", () => {
 
     });
 
+    test("can delete account", async () => {
+
+        expect.assertions(2);
+
+        const accountInfoBefore = await program.provider.connection.getAccountInfo(keypair.publicKey);
+        const preCloseLamports = accountInfoBefore?.lamports ?? 0
+
+        const txsig = await program.methods.deleteRecord(pdaBump, groupKeypair.publicKey)
+            .accounts({
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                signer: newAuthority.publicKey
+            })
+            .signers([newAuthority])
+            .rpc();
+
+        await program.provider.connection.confirmTransaction(txsig);
+
+        const accountInfoAfter = await program.provider.connection.getAccountInfo(keypair.publicKey);
+        const postCloseLamports = accountInfoAfter?.lamports ?? 0
+
+        expect(postCloseLamports).toBeGreaterThan(preCloseLamports);
+
+        try {
+            await program.account.identityRecord.fetch(pdaPubkey);
+        } catch (error) {
+            expect(error).toBeDefined()
+        }
+
+
+    });
+
 });

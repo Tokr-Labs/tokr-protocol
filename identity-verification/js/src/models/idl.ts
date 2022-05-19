@@ -173,6 +173,41 @@ export type IdentityVerification = {
           "type": "publicKey"
         }
       ]
+    },
+    {
+      "name": "deleteRecord",
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -382,6 +417,41 @@ export const IDL: IdentityVerification = {
           "name": "transferFrom",
           "isMut": false,
           "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "deleteRecord",
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": true,
+          "isSigner": false
         }
       ],
       "args": [

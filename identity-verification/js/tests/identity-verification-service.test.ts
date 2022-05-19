@@ -123,11 +123,11 @@ describe("identity verification tests", () => {
 
     });
 
-    test.skip("that record can be closed", async () => {
+    test("that record can be closed", async () => {
 
         expect.assertions(1);
 
-        await service.closeRecord(ownerKeypair.publicKey, groupId);
+        await service.deleteRecord(ownerKeypair.publicKey, groupId, alsoAuthorized);
 
         try {
             await service.getRecord(ownerKeypair.publicKey, groupId)

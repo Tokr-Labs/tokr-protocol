@@ -62,4 +62,14 @@ mod identity_verification {
     ) -> Result<()> {
         instructions::transfer_authority::transfer_authority(ctx, bump, group)
     }
+
+    /// deletes the record and transfers the rent back to the original signer
+    pub fn delete_record(
+        ctx: Context<DeleteRecord>,
+        bump: u8,
+        group: Pubkey,
+    ) -> Result<()> {
+        instructions::delete_record::delete_record(ctx, bump, group)
+    }
+
 }

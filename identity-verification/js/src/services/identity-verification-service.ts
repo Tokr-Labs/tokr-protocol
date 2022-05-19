@@ -260,6 +260,34 @@ export class IdentityVerificationService {
 
     }
 
+    async deleteRecord(
+        user: PublicKey,
+        group: PublicKey,
+        signer: Keypair
+    ): Promise<TransactionSignature> {
+
+        this.checkEnvironment()
+
+        const [record, bump] = await PublicKey.findProgramAddress(
+            [
+                Buffer.from("identity"),
+                group.toBuffer(),
+                user.toBuffer(),
+            ],
+            this.programId
+        );
+
+        return await this.program.methods.deleteRecord(bump, group)
+            .accounts({
+                record,
+                subject: user,
+                signer: signer.publicKey
+            })
+            .signers([signer])
+            .rpc()
+
+    }
+
     // ============================================================
     // === Private API ============================================
     // ============================================================
