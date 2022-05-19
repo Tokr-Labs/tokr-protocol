@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 
 #[derive(Default)]
 #[account]
-pub struct Metadata {
+pub struct IdentityRecord {
     /// bump seed used in deriving the pda for the status account
     pub bump: u8,
 
@@ -19,6 +19,9 @@ pub struct Metadata {
     pub authority: Pubkey,
 }
 
-impl Metadata {
-    pub const LEN: usize = 8 + (1 * 3) + 1 + 32;
+impl IdentityRecord {
+    pub const LEN: usize = 8 + // discriminator
+        1 + // bump
+        (1 * 3) + // statuses
+        32; // authority pubkey
 }

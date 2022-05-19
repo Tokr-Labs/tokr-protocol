@@ -1,7 +1,7 @@
 /**
  * Statuses associated with kyc, aml and accreditation
  */
-export enum Status {
+export enum IdentityStatus {
     initial,
     started,
     approved,

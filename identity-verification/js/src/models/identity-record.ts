@@ -1,5 +1,5 @@
 import {PublicKey} from "@solana/web3.js";
-import {Status} from "./status";
+import {IdentityStatus} from "./identity-status";
 
 export type BumpSeed = number
 
@@ -12,15 +12,17 @@ export class IdentityRecord {
     /**
      * Factory method that takes json and produces an identity record instance
      * @param info
+     * @param address
      */
-    static with(info: any): IdentityRecord {
+    static with(info: any, address: PublicKey): IdentityRecord {
 
         return new IdentityRecord(
             info.bump,
-            info.iaStatus,
-            info.amlStatus,
-            info.kycStatus,
-            info.authority
+            info.iaStatus as IdentityStatus,
+            info.amlStatus as IdentityStatus,
+            info.kycStatus as IdentityStatus,
+            info.authority,
+            address
         )
 
     }
@@ -32,19 +34,28 @@ export class IdentityRecord {
     // Public Properties
 
     /// bump seed used in deriving the pda for the status account
-    bump: BumpSeed
+    readonly bump: BumpSeed
 
     // Accreditation status of the user
-    iaStatus: Status
+    readonly iaStatus: IdentityStatus
 
     /// AML status of the user
-    amlStatus: Status
+    readonly amlStatus: IdentityStatus
 
     /// KYC status of the user
-    kycStatus: Status
+    readonly kycStatus: IdentityStatus
 
     /// Account who has update authority over the account
-    authority: PublicKey
+    readonly authority: PublicKey
+
+    /// Address of the record
+    readonly address: PublicKey
+
+    get isVerified(): boolean {
+        return this.amlStatus == IdentityStatus.approved &&
+            this.iaStatus == IdentityStatus.approved &&
+            this.kycStatus == IdentityStatus.approved
+    }
 
     // ============================================================
     // === Private API ============================================
@@ -58,19 +69,22 @@ export class IdentityRecord {
      * @param amlStatus
      * @param kycStatus
      * @param authority
+     * @param address
      */
     private constructor(
         bump: BumpSeed,
-        iaStatus:Status,
-        amlStatus: Status,
-        kycStatus: Status,
-        authority: PublicKey
+        iaStatus: IdentityStatus,
+        amlStatus: IdentityStatus,
+        kycStatus: IdentityStatus,
+        authority: PublicKey,
+        address: PublicKey
     ) {
         this.bump = bump
         this.iaStatus = iaStatus
         this.amlStatus = amlStatus
         this.kycStatus = kycStatus
         this.authority = authority
+        this.address = address;
     }
 
 }

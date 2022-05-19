@@ -1,7 +1,8 @@
-import {loadKeypair} from "../utils/load-keypair";
+import {loadKeypair} from "../../../utils/cli/load-keypair";
 import fs from "fs";
 import {Commitment, Connection, Keypair, PublicKey} from "@solana/web3.js";
-import {getRecord, Status, updateAmlStatus, updateIaStatus, updateKycStatus} from "../../js/src/index"
+import {createIdentityVerificationServiceWith} from "../../js/src/index"
+import {IdentityStatus} from "../../js/src/models/identity-status"
 
 export async function updateRecord(options: any, approve: boolean) {
 
@@ -20,51 +21,46 @@ export async function updateRecord(options: any, approve: boolean) {
     rpcUrl = rpcUrl.replace(/(")+/gi, "")
 
     const commitment: Commitment = rpcUrl.match(/local/) ? "processed" : "confirmed"
+    const connection = new Connection(rpcUrl, commitment);
+
+    const service = createIdentityVerificationServiceWith(connection, programPublicKey)
 
     console.log("Updating IA status...")
 
-    const sig1 = await updateIaStatus(
-        new Connection(rpcUrl, commitment),
+    const sig1 = await service.updateIaStatus(
         userPublicKey,
         groupPublicKey,
         authorityKeypair,
-        approve ? Status.approved : Status.denied,
-        programPublicKey
+        approve ? IdentityStatus.approved : IdentityStatus.denied,
     )
 
     console.log(`IA Transaction Signature: ${sig1}`)
 
     console.log("Updating KYC status...")
 
-    const sig2 = await updateKycStatus(
-        new Connection(rpcUrl, commitment),
+    const sig2 = await service.updateKycStatus(
         userPublicKey,
         groupPublicKey,
         authorityKeypair,
-        approve ? Status.approved : Status.denied,
-        programPublicKey
+        approve ? IdentityStatus.approved : IdentityStatus.denied,
     )
 
     console.log(`KYC Transaction Signature: ${sig2}`)
 
     console.log("Updating AML status...")
 
-    const sig3 = await updateAmlStatus(
-        new Connection(rpcUrl, commitment),
+    const sig3 = await service.updateAmlStatus(
         userPublicKey,
         groupPublicKey,
         authorityKeypair,
-        approve ? Status.approved : Status.denied,
-        programPublicKey
+        approve ? IdentityStatus.approved : IdentityStatus.denied,
     )
 
     console.log(`AML Transaction Signature: ${sig3}`)
 
-    const record = await getRecord(
-        new Connection(rpcUrl, commitment),
+    const record = await service.getRecord(
         userPublicKey,
         groupPublicKey,
-        programPublicKey
     )
 
     console.log(`Record Authority: ${record.authority}`)

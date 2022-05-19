@@ -1,6 +1,6 @@
 import fs from "fs";
-import {getRecord} from "../../js/src/index"
-import {Connection, PublicKey} from "@solana/web3.js";
+import {createIdentityVerificationServiceWith} from "../../js/src/index"
+import {Commitment, Connection, PublicKey} from "@solana/web3.js";
 
 export async function getIdentityVerificationRecord(options: any) {
 
@@ -15,11 +15,13 @@ export async function getIdentityVerificationRecord(options: any) {
     let rpcUrl = config.match(".*(?:json_rpc_url: )(.*)")![1]
     rpcUrl = rpcUrl.replace(/(")+/gi, "")
 
-    const record = await getRecord(
-        new Connection(rpcUrl),
+    const commitment: Commitment = rpcUrl.match(/local/) ? "processed" : "confirmed"
+    const connection = new Connection(rpcUrl, commitment);
+    const service = createIdentityVerificationServiceWith(connection, programPublicKey)
+
+    const record = await service.getRecord(
         userPubkey,
-        groupPublicKey,
-        programPublicKey
+        groupPublicKey
     )
 
     console.log(`Record Authority: ${record.authority}`)

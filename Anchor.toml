@@ -23,4 +23,4 @@ identity_verification = "5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9"
 permissioned_list = "Hwh92WNAfui11wsSEgkyowFEkG3Kb6ALTQrTTQSxfL26"
 
 [scripts]
-test = "npx jest --detectOpenHandles --forceExit --noStackTrace"
+test = "jest --detectOpenHandles --forceExit --noStackTrace"

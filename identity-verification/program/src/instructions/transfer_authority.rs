@@ -1,17 +1,18 @@
 use anchor_lang::prelude::*;
 
-use crate::errors::ErrorCode;
-use crate::state::metadata::*;
+use crate::errors::IdentityVerificationErrorCode;
+use crate::state::identity_record::*;
 
 pub fn transfer_authority(
     ctx: Context<TransferAuthority>,
     _bump: u8,
     _group: Pubkey,
 ) -> Result<()> {
+
     let transfer_from = &mut ctx.accounts.transfer_from;
     let transfer_to = &mut ctx.accounts.transfer_to;
 
-    require!(ctx.accounts.record.authority.key() == transfer_from.key.clone(), ErrorCode::NotAuthorized);
+    require!(ctx.accounts.record.authority.key() == transfer_from.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
 
     ctx.accounts.record.authority = transfer_to.key.clone();
 
@@ -22,9 +23,8 @@ pub fn transfer_authority(
 #[instruction(bump: u8, group: Pubkey)]
 pub struct TransferAuthority<'info> {
     #[account(mut, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
-    pub record: Account<'info, Metadata>,
+    pub record: Account<'info, IdentityRecord>,
     pub subject: SystemAccount<'info>,
     pub transfer_to: SystemAccount<'info>,
     pub transfer_from: Signer<'info>,
-
 }

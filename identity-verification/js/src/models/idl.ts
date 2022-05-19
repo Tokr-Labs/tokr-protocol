@@ -38,32 +38,6 @@ export type IdentityVerification = {
       ]
     },
     {
-      "name": "getIsVerified",
-      "accounts": [
-        {
-          "name": "subject",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "record",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "bump",
-          "type": "u8"
-        },
-        {
-          "name": "group",
-          "type": "publicKey"
-        }
-      ],
-      "returns": "bool"
-    },
-    {
       "name": "updateIaStatus",
       "accounts": [
         {
@@ -203,7 +177,7 @@ export type IdentityVerification = {
   ],
   "accounts": [
     {
-      "name": "metadata",
+      "name": "identityRecord",
       "type": {
         "kind": "struct",
         "fields": [
@@ -285,32 +259,6 @@ export const IDL: IdentityVerification = {
       ]
     },
     {
-      "name": "getIsVerified",
-      "accounts": [
-        {
-          "name": "subject",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "record",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "bump",
-          "type": "u8"
-        },
-        {
-          "name": "group",
-          "type": "publicKey"
-        }
-      ],
-      "returns": "bool"
-    },
-    {
       "name": "updateIaStatus",
       "accounts": [
         {
@@ -450,7 +398,7 @@ export const IDL: IdentityVerification = {
   ],
   "accounts": [
     {
-      "name": "metadata",
+      "name": "identityRecord",
       "type": {
         "kind": "struct",
         "fields": [

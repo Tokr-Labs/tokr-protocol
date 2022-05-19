@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::metadata::*;
+use crate::state::identity_record::*;
 
 /// Create a record of kyc/aml metadata for the user.
 pub fn get_is_verified(
@@ -26,5 +26,5 @@ pub struct IsVerified<'info> {
     /// CHECK: We're just grabbing the using the the key off this account to derive a pda
     pub subject: AccountInfo<'info>,
     #[account(seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump = bump)]
-    pub record: Account<'info, Metadata>,
+    pub record: Account<'info, IdentityRecord>,
 }

@@ -4,11 +4,11 @@ import {Command} from "commander";
 import {addUser} from "./commands/add-user";
 import {checkList} from "./commands/check-list";
 import {removeUser} from "./commands/remove-user";
-import {getCluster} from "./utils/get-cluster";
-import {getLocalnetProgramId} from "./utils/get-localnet-program-id";
-import {resolveHome} from "./utils/resolve-home";
 import {deleteList} from "./commands/delete-list";
 import {createList} from "./commands/create-list";
+import {getCluster} from "../../utils/cli/get-cluster";
+import {getLocalnetProgramId} from "../../utils/cli/get-localnet-program-id";
+import {resolveHome} from "../../utils/cli/resolve-home";
 
 async function getProgramId(): Promise<string> {
 

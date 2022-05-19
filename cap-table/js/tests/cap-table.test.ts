@@ -2,8 +2,10 @@ import {determineCapTableForToken} from "../src";
 import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {createMint, mintTo} from "@solana/spl-token";
 import {CapTable} from "../src/models/cap-table";
-import {helper_createAccount, helper_createAtaForKeypair, helper_transferTokens} from "./utils/helpers";
 import {where} from "underscore";
+import {createAccount} from "../../../utils/test/create-account";
+import {createAta} from "../../../utils/test/create-ata";
+import {transferTokens} from "../../../utils/test/transfer-tokens";
 
 describe("cap table", () => {
 
@@ -21,10 +23,10 @@ describe("cap table", () => {
 
         connection = new Connection("http://localhost:8899", "recent")
 
-        ownerKeypair = await helper_createAccount(connection);
-        holder1 = await helper_createAccount(connection);
-        holder2 = await helper_createAccount(connection);
-        holder3 = await helper_createAccount(connection);
+        ownerKeypair = await createAccount(connection);
+        holder1 = await createAccount(connection);
+        holder2 = await createAccount(connection);
+        holder3 = await createAccount(connection);
 
         // create mint
 
@@ -38,10 +40,10 @@ describe("cap table", () => {
 
         // create mint ata
 
-        treasuryStockAccount = await helper_createAtaForKeypair(connection, mintAddress, ownerKeypair)
-        const holder1Ata = await helper_createAtaForKeypair(connection, mintAddress, holder1)
-        const holder2Ata = await helper_createAtaForKeypair(connection, mintAddress, holder2)
-        const holder3Ata = await helper_createAtaForKeypair(connection, mintAddress, holder3)
+        treasuryStockAccount = await createAta(connection, mintAddress, ownerKeypair)
+        const holder1Ata = await createAta(connection, mintAddress, holder1)
+        const holder2Ata = await createAta(connection, mintAddress, holder2)
+        const holder3Ata = await createAta(connection, mintAddress, holder3)
 
         // mint to ata
 
@@ -54,9 +56,9 @@ describe("cap table", () => {
             1000
         )
 
-        await helper_transferTokens(connection, ownerKeypair, treasuryStockAccount, holder1Ata, 150) // 150
-        await helper_transferTokens(connection, ownerKeypair, treasuryStockAccount, holder2Ata, 300) // 450
-        await helper_transferTokens(connection, ownerKeypair, treasuryStockAccount, holder3Ata, 450) // 900
+        await transferTokens(connection, ownerKeypair, treasuryStockAccount, holder1Ata, 150) // 150
+        await transferTokens(connection, ownerKeypair, treasuryStockAccount, holder2Ata, 300) // 450
+        await transferTokens(connection, ownerKeypair, treasuryStockAccount, holder3Ata, 450) // 900
 
     })
 

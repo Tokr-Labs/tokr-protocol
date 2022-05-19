@@ -1,10 +1,10 @@
-import {loadKeypair} from "../utils/load-keypair";
 import {PublicKey} from "@solana/web3.js";
 import * as anchor from "@project-serum/anchor";
 import {PermissionedList} from "../../../target/types/permissioned_list"
 import {Program} from "@project-serum/anchor";
 import * as process from "process";
-import {getRpcUrl} from "../utils/get-rpc-url";
+import {loadKeypair} from "../../../utils/cli/load-keypair";
+import {getRpcUrl} from "../../../utils/cli/get-rpc-url";
 
 export async function deleteList(options: any) {
 

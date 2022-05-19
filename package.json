@@ -13,10 +13,12 @@
     "deploy": "anchor deploy --provider.cluster localnet"
   },
   "devDependencies": {
+    "@solana/spl-token": "^0.2.0",
+    "@solana/web3.js": "^1.42.0",
     "@types/jest": "^27.4.1",
     "@types/node": "17.0.30",
     "cli-confirm": "^1.0.1",
-    "jest": "^28.0.3",
+    "jest": "^28.1.0",
     "ts-jest": "^28.0.0-next.3",
     "ts-node": "10.7.0",
     "typescript": "4.6.4"

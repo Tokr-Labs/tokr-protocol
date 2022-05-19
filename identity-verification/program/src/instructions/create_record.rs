@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::state::metadata::*;
+use crate::state::identity_record::*;
 
 /// Create a record of kyc/aml metadata for the user.
 pub fn create_record(
@@ -28,8 +28,8 @@ pub struct CreateRecord<'info> {
     /// Creates the account via a CPI to the system program and initializes it (sets its account discriminator).
     /// Marks the account as mutable and is mutually exclusive with mut.
     /// Makes the account rent exempt unless skipped with rent_exempt = skip.
-    #[account(init, seeds = [b"identity", group.as_ref(), signer.key.as_ref()], bump, payer = signer, space = Metadata::LEN)]
-    pub record: Account<'info, Metadata>,
+    #[account(init, seeds = [b"identity", group.as_ref(), signer.key.as_ref()], bump, payer = signer, space = IdentityRecord::LEN)]
+    pub record: Account<'info, IdentityRecord>,
 
     pub system_program: Program<'info, System>,
     pub authority: SystemAccount<'info>,

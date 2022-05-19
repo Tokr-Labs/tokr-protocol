@@ -10,7 +10,7 @@ import {
     TransactionSignature
 } from "@solana/web3.js";
 import {Program, web3} from "@project-serum/anchor";
-import {Status} from "../models/status";
+import {IdentityStatus} from "../models/identity-status";
 import {IdentityVerification, IDL} from "../models/idl";
 import {IdentityRecord} from "../models/identity-record";
 
@@ -109,9 +109,9 @@ export class IdentityVerificationService {
             this.programId
         );
 
-        const info = await this.program.account.metadata.fetch(record);
+        const info = await this.program.account.identityRecord.fetch(record);
 
-        return IdentityRecord.with(info);
+        return IdentityRecord.with(info, record);
 
     }
 
@@ -126,8 +126,8 @@ export class IdentityVerificationService {
         user: PublicKey,
         group: PublicKey,
         signer: Keypair,
-        status: Status,
-    ): Promise<Transaction> {
+        status: IdentityStatus,
+    ): Promise<TransactionSignature> {
 
         this.checkEnvironment()
 
@@ -147,7 +147,7 @@ export class IdentityVerificationService {
                 authority: signer.publicKey
             })
             .signers([signer])
-            .transaction()
+            .rpc()
 
     }
 
@@ -162,8 +162,8 @@ export class IdentityVerificationService {
         user: PublicKey,
         group: PublicKey,
         signer: Keypair,
-        status: Status
-    ): Promise<Transaction> {
+        status: IdentityStatus
+    ): Promise<TransactionSignature> {
 
         this.checkEnvironment()
 
@@ -176,16 +176,14 @@ export class IdentityVerificationService {
             this.programId
         );
 
-        const tx = await this.program.methods.updateKycStatus(bump, group, status)
+        return await this.program.methods.updateKycStatus(bump, group, status)
             .accounts({
                 record: record,
                 subject: user,
                 authority: signer.publicKey
             })
             .signers([signer])
-            .transaction()
-
-        return tx
+            .rpc()
 
     }
 
@@ -200,8 +198,8 @@ export class IdentityVerificationService {
         user: PublicKey,
         group: PublicKey,
         signer: Keypair,
-        status: Status,
-    ): Promise<Transaction> {
+        status: IdentityStatus,
+    ): Promise<TransactionSignature> {
 
         this.checkEnvironment()
 
@@ -221,7 +219,7 @@ export class IdentityVerificationService {
                 authority: signer.publicKey
             })
             .signers([signer])
-            .transaction()
+            .rpc();
 
     }
 
@@ -237,7 +235,7 @@ export class IdentityVerificationService {
         group: PublicKey,
         currentAuthority: Keypair,
         newAuthority: PublicKey,
-    ): Promise<Transaction> {
+    ): Promise<TransactionSignature> {
 
         this.checkEnvironment()
 
@@ -250,17 +248,15 @@ export class IdentityVerificationService {
             this.programId
         );
 
-        const tx = await this.program.methods.transferAuthority(bump, group)
+        return await this.program.methods.transferAuthority(bump, group)
             .accounts({
                 record: record,
                 subject: user,
-                transferTo: currentAuthority.publicKey,
-                transferFrom: newAuthority
+                transferTo: newAuthority,
+                transferFrom: currentAuthority.publicKey
             })
             .signers([currentAuthority])
-            .transaction()
-
-        return tx
+            .rpc()
 
     }
 

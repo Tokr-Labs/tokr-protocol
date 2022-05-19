@@ -12,7 +12,7 @@ declare_id!("3YC2irJKAzmuqeg2Qf9v8YBb1ufGmYTuvggxqv4bCyST"); // localnet
 
 #[program]
 mod identity_verification {
-    use crate::state::Metadata;
+
     use super::*;
 
     /// Create a record of kyc/aml metadata for the user.
@@ -22,17 +22,6 @@ mod identity_verification {
         group: Pubkey,
     ) -> Result<()> {
         instructions::create_record::create_record(ctx, bump, group)
-    }
-
-    /// determine whether a particular user is verified or not
-    /// **NOTE** According to [documentation](https://project-serum.github.io/anchor/tutorials/tutorial-3.html#return-values)
-    /// solana currently has no way of parsing a result from a cpi call, so until then this method is just for placement
-    pub fn get_is_verified(
-        ctx: Context<IsVerified>,
-        bump: u8,
-        group: Pubkey,
-    ) -> Result<bool> {
-        instructions::get_is_verified::get_is_verified(ctx, bump, group)
     }
 
     /// Update accreditation status of account
