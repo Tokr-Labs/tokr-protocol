@@ -4,7 +4,6 @@ import {DepositCapitalArgs} from "./instructions";
 import {serialize} from 'borsh';
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
-    IDENTITY_VERIFICATION_PROGRAM_ID,
     SYSTEM_PROGRAM_ID,
     TOKEN_PROGRAM_ID
 } from "../tools";
