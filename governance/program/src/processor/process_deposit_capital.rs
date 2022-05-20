@@ -4,6 +4,7 @@ use solana_program::{account_info::{
     AccountInfo,
     next_account_info,
 }, entrypoint::ProgramResult, program::{invoke, invoke_signed}, pubkey::Pubkey};
+use solana_program::native_token::LAMPORTS_PER_SOL;
 use crate::tools::verification::{assert_identity_verification};
 
 /// Processes DepositCapital instruction
@@ -42,7 +43,7 @@ pub fn process_deposit_capital(
 
     if lp_token_account.data_is_empty() {
         #[allow(deprecated)]
-            let create_account_instruction = &spl_associated_token_account::create_associated_token_account(
+        let create_account_instruction = &spl_associated_token_account::create_associated_token_account(
             capital_token_authority.key,
             capital_token_authority.key,
             lp_token_mint.key,
@@ -72,7 +73,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
-        amount,
+        amount * LAMPORTS_PER_SOL,
     )?;
 
     invoke(
@@ -93,7 +94,7 @@ pub fn process_deposit_capital(
         lp_token_account.key,
         lp_governance.key,
         &[lp_governance.key],
-        amount,
+        amount
     )?;
 
     let (_address, bump) = Pubkey::find_program_address(

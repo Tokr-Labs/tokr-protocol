@@ -61,8 +61,6 @@ export const withDepositCapital = async (
         identityVerificationProgramId
     )
 
-    console.log("identityVerificationRecord = ", identityVerificationRecord.toBase58());
-
     const keys = [
         {pubkey: realm, isWritable: false, isSigner: false}, // 0
         {pubkey: lpGovernance, isWritable: true, isSigner: false}, // 1

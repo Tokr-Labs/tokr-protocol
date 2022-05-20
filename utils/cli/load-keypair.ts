@@ -1,9 +1,16 @@
 import fs from "fs";
 import {Keypair} from "@solana/web3.js";
+import path from "path";
 
 export async function loadKeypair(fileRef: string) {
 
-    let contents = await fs.readFileSync(fileRef);
+    let filePath = fileRef;
+
+    if (filePath[0] === '~') {
+        filePath = path.join(process.env.HOME!, filePath.slice(1));
+    }
+
+    let contents = await fs.readFileSync(`${filePath}`);
 
     let parsed = String(contents)
         .replace("[", "")

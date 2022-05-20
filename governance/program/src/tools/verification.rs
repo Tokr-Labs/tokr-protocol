@@ -16,6 +16,7 @@ pub fn assert_identity_verification(
     program: &AccountInfo
 ) -> Result<bool, ProgramError> {
 
+    msg!("Verifying user identity...");
 
     let identity_verification_account_address = Pubkey::find_program_address(
         &[
@@ -26,24 +27,15 @@ pub fn assert_identity_verification(
         program.key,
     ).0;
 
-    msg!("subject = {}", subject.key);
-    msg!("group = {}", group.key);
-    msg!("program = {}", program.key);
-
-    msg!("identity_verification_account_address = {}", identity_verification_account_address);
-
     let idv: Identity = try_from_slice_unchecked(&record.data.borrow())?;
 
     let is_verified = idv.aml_status == 2 && idv.kyc_status == 2 && idv.ia_status == 2;
 
-    msg!("is_verified = {}", is_verified);
-    msg!("aml_status = {}", idv.aml_status);
-    msg!("kyc_status = {}", idv.kyc_status);
-    msg!("ia_status = {}", idv.ia_status);
-
     if record.key.as_ref() != identity_verification_account_address.as_ref() || !is_verified {
         return Err(GovernanceError::UserIdentityNotKnown.into());
     }
+
+    msg!("User is known and in good standing.");
 
     Ok(false)
 
