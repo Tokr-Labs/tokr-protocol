@@ -6,7 +6,7 @@ use crate::errors::IdentityVerificationErrorCode;
 /// Create a record of kyc/aml metadata for the user.
 pub fn delete_record(
     ctx: Context<DeleteRecord>,
-    bump: u8,
+    _bump: u8,
     _group: Pubkey,
 ) -> Result<()> {
 

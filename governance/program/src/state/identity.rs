@@ -1,25 +1,15 @@
 //! Identity account
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{
-    clock::{Slot, UnixTimestamp},
-    program_pack::IsInitialized,
-    pubkey::Pubkey,
-};
-
-use crate::state::{
-    enums::{
-        GovernanceAccountType, InstructionExecutionFlags, ProposalState,
-        TransactionExecutionStatus, VoteThresholdPercentage,
-    },
-    governance::GovernanceConfig,
-    proposal_transaction::InstructionData,
-    realm::RealmConfig,
-};
+use solana_program::pubkey::Pubkey;
 
 /// identity for use in governance program
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
 pub struct Identity {
+
+    /// this is the anchor discriminator
+    pub discriminator: [u8; 8],
+
     /// bump seed used in deriving the pda for the status account
     pub bump: u8,
 

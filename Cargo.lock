@@ -1071,7 +1071,6 @@ dependencies = [
  "base64 0.13.0",
  "bincode",
  "borsh",
- "identity_verification",
  "num-derive",
  "num-traits",
  "proptest",

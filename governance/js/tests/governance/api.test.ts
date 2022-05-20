@@ -16,6 +16,7 @@ import * as fs from "fs";
 // const rpcEndpoint = clusterApiUrl('devnet');
 
 const programId = new PublicKey('5Hyx5g6n82uZpVYRLZqssLSj5V6mZc2QYQFtPcj83Jp2');
+const identityVerificationProgramId = new PublicKey('3YC2irJKAzmuqeg2Qf9v8YBb1ufGmYTuvggxqv4bCyST');
 const rpcEndpoint = 'http://127.0.0.1:8899';
 
 const connection = new Connection(rpcEndpoint, {
@@ -72,6 +73,7 @@ test("test deposit capital", async () => {
     await withDepositCapital(
         instructions,
         programId,
+        identityVerificationProgramId,
         realmPublicKey,
         capitalGovernancePublicKey,
         lpGovernancePublicKey,

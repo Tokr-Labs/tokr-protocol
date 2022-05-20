@@ -24,7 +24,6 @@ spl-token = { version = "3.3", features = ["no-entrypoint"] }
 spl-associated-token-account = { version = "1.0.5", features = ["no-entrypoint"] }
 spl-governance-tools = { version = "0.1.2", path = "../tools" }
 spl-governance-addin-api = { version = "0.1.2", path = "../addin-api" }
-identity_verification = { version = "0.2.0", path = "../../identity-verification/program" }
 thiserror = "1.0"
 
 [dev-dependencies]
