@@ -4,7 +4,6 @@ use solana_program::{account_info::{
     AccountInfo,
     next_account_info,
 }, entrypoint::ProgramResult, program::{invoke, invoke_signed}, pubkey::Pubkey};
-use solana_program::native_token::LAMPORTS_PER_SOL;
 use crate::tools::verification::{assert_identity_verification};
 
 /// Processes DepositCapital instruction
@@ -73,7 +72,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
-        amount * LAMPORTS_PER_SOL,
+        amount,
     )?;
 
     invoke(
