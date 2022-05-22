@@ -6,9 +6,11 @@ const {createDao} = require("./commands/create-dao");
 export default (async (program: Command) => {
 
     const command = program.command("governance")
-        .description("stuff for governance")
+        .description("Utility CLI for creating and interacting with on-chain DAO governances.")
+        .alias("gov");
 
     command.command("create-dao")
+        .alias("create")
         .description("Creates a DAO in accordance to the tokr-governance library.")
         .requiredOption(
             "-i, --input-file <string>",

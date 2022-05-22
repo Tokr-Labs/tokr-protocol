@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+console.warn = () => { };
 const commander_1 = require("commander");
 const cap_table_1 = __importDefault(require("./cap-table"));
 const governance_1 = __importDefault(require("./governance"));

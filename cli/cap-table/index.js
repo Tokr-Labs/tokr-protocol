@@ -13,7 +13,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const generate_cap_table_1 = require("./commands/generate-cap-table");
 exports.default = ((program) => __awaiter(void 0, void 0, void 0, function* () {
     const command = program.command("cap-table")
-        .description("stuff for cap table");
+        .description("CLI for generating and interacting with spl-token cap tables.")
+        .alias("cap");
     command.command("generate")
         .description("Generates a captable for the given spl token.")
         .requiredOption("-m, --mint <public-key>", "The public key of the captable")

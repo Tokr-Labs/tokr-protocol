@@ -56,9 +56,11 @@ exports.default = ((program) => __awaiter(void 0, void 0, void 0, function* () {
     const programId = yield getProgramId();
     const defaultListId = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj";
     const command = program.command("permissioned-list")
-        .description("CLI to manage an on-chain permissioned list.");
+        .description("Utility functions for CRUD operations for on-chain permissioned lists.")
+        .alias("perm");
     command.command("create-list")
         .description("Creates a list.")
+        .alias("create")
         .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
         .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
         .action((opts) => __awaiter(void 0, void 0, void 0, function* () {
@@ -78,6 +80,7 @@ exports.default = ((program) => __awaiter(void 0, void 0, void 0, function* () {
     }));
     command.command("delete-list")
         .description("Creates a list.")
+        .alias("delete")
         .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
         .option(`-l, --list <public-key>, '${defaultListId}'`, "Public key of the list to delete.")
         .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
@@ -100,6 +103,7 @@ exports.default = ((program) => __awaiter(void 0, void 0, void 0, function* () {
         }
     }));
     command.command("add-user")
+        .alias("add")
         .description("Adds a user to a permissioned list.")
         .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
         .requiredOption("-u, --user <public-key>", "The user to add to the permissioned list.")
@@ -120,6 +124,7 @@ exports.default = ((program) => __awaiter(void 0, void 0, void 0, function* () {
         }
     }));
     command.command("check-list")
+        .alias("check")
         .description("Checks if the given user is on a specific permissioned list.")
         .requiredOption("-u, --user <public-key>", "Public key of user who is being checked if on the list.")
         .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")
@@ -138,6 +143,7 @@ exports.default = ((program) => __awaiter(void 0, void 0, void 0, function* () {
     }));
     command.command("remove-user")
         .description("")
+        .alias("remove")
         .option("-s, --signer <keypair>, '~/.config/solana/id.json'", "Signer keypair of the transaction.")
         .requiredOption("-u, --user <public-key>", "Public key of the user who should be removed from the list.")
         .option(`-p, --program <public-key>, ${programId}`, "Public key of the on-chain permissioned list program.")

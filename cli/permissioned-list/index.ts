@@ -55,10 +55,12 @@ export default (async (program: Command) => {
     const defaultListId = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj"
 
     const command = program.command("permissioned-list")
-        .description("CLI to manage an on-chain permissioned list.")
+        .description("Utility functions for CRUD operations for on-chain permissioned lists.")
+        .alias("perm");
 
     command.command("create-list")
         .description("Creates a list.")
+        .alias("create")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
             "Signer keypair of the transaction.",
@@ -89,6 +91,7 @@ export default (async (program: Command) => {
 
     command.command("delete-list")
         .description("Creates a list.")
+        .alias("delete")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
             "Signer keypair of the transaction.",
@@ -126,6 +129,7 @@ export default (async (program: Command) => {
         });
 
     command.command("add-user")
+        .alias("add")
         .description("Adds a user to a permissioned list.")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
@@ -160,6 +164,7 @@ export default (async (program: Command) => {
         });
 
     command.command("check-list")
+        .alias("check")
         .description("Checks if the given user is on a specific permissioned list.")
         .requiredOption(
             "-u, --user <public-key>",
@@ -189,6 +194,7 @@ export default (async (program: Command) => {
 
     command.command("remove-user")
         .description("")
+        .alias("remove")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
             "Signer keypair of the transaction.",

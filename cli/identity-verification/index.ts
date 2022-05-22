@@ -8,9 +8,11 @@ import {Command} from "commander";
 export default (async (program: Command) => {
 
     const command = program.command("identity-verification")
-        .description("stuff for identity verification")
+        .description("Utility functions for CRUD operations for on-chain identity verification records.")
+        .alias("idv");
 
     command.command("create-record")
+        .alias("create")
         .description("Creates a identity verification record for a user and sets its authority.")
         .requiredOption(
             "-u, --user <string>",
@@ -40,6 +42,7 @@ export default (async (program: Command) => {
 
     command.command("get-record")
         .description("Gets the information assoaciated with a record.")
+        .alias("get")
         .requiredOption(
             "-u, --user <string>",
             "PublicKey of user who the record is about.",
@@ -64,6 +67,7 @@ export default (async (program: Command) => {
 
     command.command("approve-record")
         .description("Approves the given record and sets all statuses to approved.")
+        .alias("approve")
         .requiredOption(
             "-u, --user <string>",
             "PublicKey of user who the record is about.",
@@ -92,6 +96,7 @@ export default (async (program: Command) => {
 
     command.command("deny-record")
         .description("Denies the given record and sets all statuses to denied.")
+        .alias("deny")
         .requiredOption(
             "-u, --user <string>",
             "PublicKey of user who the record is about.",

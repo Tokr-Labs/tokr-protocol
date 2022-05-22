@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+console.warn = () => {};
+
 import {Command} from "commander";
 import capTableCommands from "./cap-table";
 import governanceCommands from "./governance";
@@ -23,3 +25,4 @@ import permissionedListCommands from "./permissioned-list";
     await program.parseAsync();
 
 })();
+

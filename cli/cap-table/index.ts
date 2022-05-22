@@ -6,7 +6,8 @@ import {generateCapTable} from "./commands/generate-cap-table";
 export default (async (program: Command) => {
 
     const command = program.command("cap-table")
-        .description("stuff for cap table")
+        .description("CLI for generating and interacting with spl-token cap tables.")
+        .alias("cap");
 
     command.command("generate")
         .description("Generates a captable for the given spl token.")
