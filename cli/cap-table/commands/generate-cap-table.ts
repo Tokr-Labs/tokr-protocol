@@ -8,7 +8,12 @@ export async function generateCapTable(options: any) {
     const endpoint = options.endpoint;
     const mintAddress = new PublicKey(options.mint);
     const treasuryStockAccount = new PublicKey(options.treasuryStockAccount);
-    const excludedAccounts = options.excludedAccounts.split(",").map((excludedAccount: string) => new PublicKey(excludedAccount));
+
+    let excludedAccounts = [];
+
+    if (options.excludedAccounts !== "") {
+        excludedAccounts = options.excludedAccounts.split(",").map((excludedAccount: string) => new PublicKey(excludedAccount));
+    }
 
     const connection = new Connection(endpoint)
 
