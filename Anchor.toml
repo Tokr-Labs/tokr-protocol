@@ -3,9 +3,9 @@ solana_version = "1.9.17"
 
 [workspace]
 members = [
-  "identity-verification/program",
-  "governance/program",
-  "permissioned-list/program"
+  "programs/governance/program",
+  "programs/identity-verification/program",
+  "programs/permissioned-list/program"
 ]
 
 [provider]
@@ -13,12 +13,12 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 [programs.mainnet]
-spl_governance = "govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr"
+governance = "govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr"
 identity_verification = "idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD"
 permissioned_list = "permXeEzAzbSbtDS6CZxodr6iP3fP8B8Gvid1vXMpvM"
 
 [programs.devnet]
-spl_governance = "CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd"
+governance = "CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd"
 identity_verification = "5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9"
 permissioned_list = "Hwh92WNAfui11wsSEgkyowFEkG3Kb6ALTQrTTQSxfL26"
 

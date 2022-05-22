@@ -20,14 +20,6 @@
       <sourceFolder url="file://$MODULE_DIR$/feature-proposal/cli/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/feature-proposal/program/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/feature-proposal/program/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/addin-api/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/addin-mock/program/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/chat/program/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/chat/program/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/program/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/program/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/test-sdk/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/governance/tools/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libraries/math/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/libraries/math/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/memo/program/src" isTestSource="false" />
@@ -57,10 +49,18 @@
       <sourceFolder url="file://$MODULE_DIR$/token/program-2022/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/token/program/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/token/program/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/utils/cgen/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/utils/test-client/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/identity-verification/program/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/permissioned-list/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/addin-api/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/addin-mock/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/chat/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/chat/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/program/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/test-sdk/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/governance/tools/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/identity-verification/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/permissioned-list/program/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cli/utils/cgen/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/cli/utils/test-client/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />

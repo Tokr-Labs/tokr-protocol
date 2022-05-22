@@ -1,8 +1,8 @@
 [workspace]
 members = [
-    "governance/program",
-    "identity-verification/program",
-    "permissioned-list/program"
+    "programs/governance/program",
+    "programs/identity-verification/program",
+    "programs/permissioned-list/program"
 ]
 
 exclude = [
