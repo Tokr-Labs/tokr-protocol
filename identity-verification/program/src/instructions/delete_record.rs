@@ -24,9 +24,6 @@ pub struct DeleteRecord<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// Creates the account via a CPI to the system program and initializes it (sets its account discriminator).
-    /// Marks the account as mutable and is mutually exclusive with mut.
-    /// Makes the account rent exempt unless skipped with rent_exempt = skip.
     #[account(mut, close = subject, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, IdentityRecord>,
 
