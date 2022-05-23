@@ -143,7 +143,7 @@ export default (async (program: Command) => {
             `-p, --program <public-key>, ${programId}`,
             "Public key of the on-chain permissioned list program.",
         )
-        .action(async (opts) => {
+        .action(async (opts: any) => {
 
             let options = opts
 
@@ -174,7 +174,7 @@ export default (async (program: Command) => {
             `-p, --program <public-key>, ${programId}`,
             "Public key of the on-chain permissioned list program.",
         )
-        .action(async (opts) => {
+        .action(async (opts: any) => {
 
             let options = opts
 
@@ -207,7 +207,7 @@ export default (async (program: Command) => {
             `-p, --program <public-key>, ${programId}`,
             "Public key of the on-chain permissioned list program.",
         )
-        .action(async (opts) => {
+        .action(async (opts: any) => {
 
             let options = opts
 

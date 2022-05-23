@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::state::identity_record::*;
 use crate::errors::IdentityVerificationErrorCode;
 
-/// Create a record of kyc/aml metadata for the user.
+/// Delete a record and return funds to the subject of the record
 pub fn delete_record(
     ctx: Context<DeleteRecord>,
     _bump: u8,
@@ -24,9 +24,6 @@ pub struct DeleteRecord<'info> {
     #[account(mut)]
     pub signer: Signer<'info>,
 
-    /// Creates the account via a CPI to the system program and initializes it (sets its account discriminator).
-    /// Marks the account as mutable and is mutually exclusive with mut.
-    /// Makes the account rent exempt unless skipped with rent_exempt = skip.
     #[account(mut, close = subject, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, IdentityRecord>,
 
