@@ -3,6 +3,14 @@ import {IdentityStatus} from "./identity-status";
 
 export type BumpSeed = number
 
+export interface IdentityRecordParams {
+    bump: BumpSeed,
+    iaStatus: IdentityStatus,
+    amlStatus: IdentityStatus,
+    kycStatus: IdentityStatus,
+    authority: PublicKey
+}
+
 export class IdentityRecord {
 
     // ============================================================
@@ -11,10 +19,10 @@ export class IdentityRecord {
 
     /**
      * Factory method that takes json and produces an identity record instance
-     * @param info
-     * @param address
+     * @param info data returned from the on-chain idv program
+     * @param address Account address the record is about
      */
-    static with(info: any, address: PublicKey): IdentityRecord {
+    static with(info: IdentityRecordParams, address: PublicKey): IdentityRecord {
 
         return new IdentityRecord(
             info.bump,
@@ -51,6 +59,7 @@ export class IdentityRecord {
     /// Address of the record
     readonly address: PublicKey
 
+    /// derived property that checks that all statuses are approved
     get isVerified(): boolean {
         return this.amlStatus == IdentityStatus.approved &&
             this.iaStatus == IdentityStatus.approved &&
@@ -64,12 +73,13 @@ export class IdentityRecord {
     // Private Methods
 
     /**
-     * @param bump
-     * @param iaStatus
-     * @param amlStatus
-     * @param kycStatus
-     * @param authority
-     * @param address
+     * The constructor is private, the static factory method should be used
+     * @param bump Bump for the PDA
+     * @param iaStatus Investor accreditation status
+     * @param amlStatus AML status
+     * @param kycStatus KYC status
+     * @param authority Account that has the authority to update the idv record
+     * @param address Address of the account the record is about
      */
     private constructor(
         bump: BumpSeed,

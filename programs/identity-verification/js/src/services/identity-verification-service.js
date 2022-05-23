@@ -58,23 +58,13 @@ class IdentityVerificationService {
         });
     }
     /**
-     * Closes the record out and returns the rent to the user specified
-     * @param user The user of whom the record is about.
-     * @param group The public key of the group this record belongs to.
-     */
-    closeRecord(user, group) {
-        return __awaiter(this, void 0, void 0, function* () {
-            throw new Error("Not yet implemented");
-        });
-    }
-    /**
-     * Retrieves a identity verification record
+     * Retrieves an identity verification record
      * @param user The user of whom the record is about.
      * @param group The public key of the group this record belongs to.
      */
     getRecord(user, group) {
         return __awaiter(this, void 0, void 0, function* () {
-            const [record, bump] = yield web3_js_1.PublicKey.findProgramAddress([
+            const [record] = yield web3_js_1.PublicKey.findProgramAddress([
                 Buffer.from("identity"),
                 group.toBuffer(),
                 user.toBuffer(),
@@ -92,6 +82,7 @@ class IdentityVerificationService {
      */
     updateIaStatus(user, group, signer, status) {
         return __awaiter(this, void 0, void 0, function* () {
+            // this method is not available in the browser
             this.checkEnvironment();
             const [record, bump] = yield web3_js_1.PublicKey.findProgramAddress([
                 Buffer.from("identity"),
@@ -117,6 +108,7 @@ class IdentityVerificationService {
      */
     updateKycStatus(user, group, signer, status) {
         return __awaiter(this, void 0, void 0, function* () {
+            // this method is not available in the browser
             this.checkEnvironment();
             const [record, bump] = yield web3_js_1.PublicKey.findProgramAddress([
                 Buffer.from("identity"),
@@ -142,6 +134,7 @@ class IdentityVerificationService {
      */
     updateAmlStatus(user, group, signer, status) {
         return __awaiter(this, void 0, void 0, function* () {
+            // this method is not available in the browser
             this.checkEnvironment();
             const [record, bump] = yield web3_js_1.PublicKey.findProgramAddress([
                 Buffer.from("identity"),
@@ -167,6 +160,7 @@ class IdentityVerificationService {
      */
     transferAuthority(user, group, currentAuthority, newAuthority) {
         return __awaiter(this, void 0, void 0, function* () {
+            // this method is not available in the browser
             this.checkEnvironment();
             const [record, bump] = yield web3_js_1.PublicKey.findProgramAddress([
                 Buffer.from("identity"),
@@ -184,8 +178,15 @@ class IdentityVerificationService {
                 .rpc();
         });
     }
+    /**
+     * Deletes a record of the passed user account. It also returns the rent to the user whom it's about.
+     * @param user The user of whom the record is about.
+     * @param group The public key of the group this record belongs to.
+     * @param signer The keypair of the account that currently has update authority.
+     */
     deleteRecord(user, group, signer) {
         return __awaiter(this, void 0, void 0, function* () {
+            // this method is not available in the browser
             this.checkEnvironment();
             const [record, bump] = yield web3_js_1.PublicKey.findProgramAddress([
                 Buffer.from("identity"),
@@ -202,6 +203,10 @@ class IdentityVerificationService {
                 .rpc();
         });
     }
+    /**
+     * Based on the rpc endpoint this will determine what program id to use in the methods.
+     * @private
+     */
     get deterministicProgramId() {
         if (this.connection.rpcEndpoint.search(/dev/gi)) {
             return new web3_js_1.PublicKey("5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9");

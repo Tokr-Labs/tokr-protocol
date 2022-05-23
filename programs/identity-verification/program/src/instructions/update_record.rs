@@ -10,9 +10,10 @@ pub fn update_aml_status(
     status: u8,
 ) -> Result<()> {
     let authority = &mut ctx.accounts.authority;
-    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
 
+    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
     require!(status <= 3, IdentityVerificationErrorCode::UnknownStatus);
+
     ctx.accounts.record.aml_status = status;
 
     Ok(())
@@ -26,9 +27,10 @@ pub fn update_ia_status(
     status: u8,
 ) -> Result<()> {
     let authority = &mut ctx.accounts.authority;
-    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
 
+    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
     require!(status <= 3, IdentityVerificationErrorCode::UnknownStatus);
+
     ctx.accounts.record.ia_status = status;
 
     Ok(())
@@ -42,9 +44,10 @@ pub fn update_kyc_status(
     status: u8,
 ) -> Result<()> {
     let authority = &mut ctx.accounts.authority;
-    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
 
+    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
     require!(status <= 3, IdentityVerificationErrorCode::UnknownStatus);
+
     ctx.accounts.record.kyc_status = status;
 
     Ok(())
@@ -53,15 +56,8 @@ pub fn update_kyc_status(
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct UpdateRecord<'info> {
-    /// Checks that given account is a PDA derived from the currently executing program, the seeds,
-    /// and if provided, the bump. If not provided, anchor uses the canonical bump.
     #[account(mut, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, IdentityRecord>,
-
-    /// Type validating that the account is owned by the system program. This is the account of who
-    /// the record is about and should have been created by the system account ensuring that it is
-    /// an actual user account.
     pub subject: SystemAccount<'info>,
-
     pub authority: Signer<'info>,
 }

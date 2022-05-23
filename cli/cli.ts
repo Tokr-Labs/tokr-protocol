@@ -18,8 +18,8 @@ import permissionedListCommands from "./permissioned-list";
         .version("0.1.0");
 
     await capTableCommands(program);
-    await governanceCommands(program);
     await identityVerificationCommands(program);
+    await governanceCommands(program);
     await permissionedListCommands(program);
 
     await program.parseAsync();

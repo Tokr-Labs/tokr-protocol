@@ -79,19 +79,7 @@ export class IdentityVerificationService {
     }
 
     /**
-     * Closes the record out and returns the rent to the user specified
-     * @param user The user of whom the record is about.
-     * @param group The public key of the group this record belongs to.
-     */
-    async closeRecord(
-        user: PublicKey,
-        group: PublicKey
-    ): Promise<TransactionSignature> {
-        throw new Error("Not yet implemented")
-    }
-
-    /**
-     * Retrieves a identity verification record
+     * Retrieves an identity verification record
      * @param user The user of whom the record is about.
      * @param group The public key of the group this record belongs to.
      */
@@ -100,7 +88,7 @@ export class IdentityVerificationService {
         group: PublicKey,
     ): Promise<IdentityRecord> {
 
-        const [record, bump] = await PublicKey.findProgramAddress(
+        const [record] = await PublicKey.findProgramAddress(
             [
                 Buffer.from("identity"),
                 group.toBuffer(),
@@ -128,6 +116,8 @@ export class IdentityVerificationService {
         signer: Keypair,
         status: IdentityStatus,
     ): Promise<TransactionSignature> {
+
+        // this method is not available in the browser
 
         this.checkEnvironment()
 
@@ -165,6 +155,8 @@ export class IdentityVerificationService {
         status: IdentityStatus
     ): Promise<TransactionSignature> {
 
+        // this method is not available in the browser
+
         this.checkEnvironment()
 
         const [record, bump] = await PublicKey.findProgramAddress(
@@ -200,6 +192,8 @@ export class IdentityVerificationService {
         signer: Keypair,
         status: IdentityStatus,
     ): Promise<TransactionSignature> {
+
+        // this method is not available in the browser
 
         this.checkEnvironment()
 
@@ -237,6 +231,8 @@ export class IdentityVerificationService {
         newAuthority: PublicKey,
     ): Promise<TransactionSignature> {
 
+        // this method is not available in the browser
+
         this.checkEnvironment()
 
         const [record, bump] = await PublicKey.findProgramAddress(
@@ -260,11 +256,19 @@ export class IdentityVerificationService {
 
     }
 
+    /**
+     * Deletes a record of the passed user account. It also returns the rent to the user whom it's about.
+     * @param user The user of whom the record is about.
+     * @param group The public key of the group this record belongs to.
+     * @param signer The keypair of the account that currently has update authority.
+     */
     async deleteRecord(
         user: PublicKey,
         group: PublicKey,
         signer: Keypair
     ): Promise<TransactionSignature> {
+
+        // this method is not available in the browser
 
         this.checkEnvironment()
 
@@ -295,8 +299,12 @@ export class IdentityVerificationService {
     // Private Properties
 
     private program: Program<IdentityVerification>
-    private programId: PublicKey;
+    private readonly programId: PublicKey;
 
+    /**
+     * Based on the rpc endpoint this will determine what program id to use in the methods.
+     * @private
+     */
     private get deterministicProgramId(): PublicKey {
 
         if (this.connection.rpcEndpoint.search(/dev/gi)) {
