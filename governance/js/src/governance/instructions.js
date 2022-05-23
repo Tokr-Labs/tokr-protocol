@@ -50,6 +50,7 @@ class DepositCapitalArgs {
     constructor(args) {
         this.instruction = GovernanceInstruction.DepositCapital;
         this.amount = args.amount;
+        this.decimals = args.decimals;
     }
 }
 exports.DepositCapitalArgs = DepositCapitalArgs;
