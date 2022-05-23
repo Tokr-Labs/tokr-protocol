@@ -41,7 +41,7 @@
       }
     },
     "testPathIgnorePatterns": [
-      "/programs/governance/",
+      "/tests/governance/",
       "/node_modules/"
     ],
     "testMatch": [
