@@ -3,7 +3,7 @@ use anchor_lang::prelude::*;
 use crate::state::identity_record::*;
 use crate::errors::IdentityVerificationErrorCode;
 
-/// Create a record of kyc/aml metadata for the user.
+/// Delete a record and return funds to the subject of the record
 pub fn delete_record(
     ctx: Context<DeleteRecord>,
     _bump: u8,
