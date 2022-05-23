@@ -1,5 +1,5 @@
 export type IdentityVerification = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "identity_verification",
   "instructions": [
     {
@@ -173,11 +173,46 @@ export type IdentityVerification = {
           "type": "publicKey"
         }
       ]
+    },
+    {
+      "name": "deleteRecord",
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
     }
   ],
   "accounts": [
     {
-      "name": "metadata",
+      "name": "identityRecord",
       "type": {
         "kind": "struct",
         "fields": [
@@ -220,7 +255,7 @@ export type IdentityVerification = {
 };
 
 export const IDL: IdentityVerification = {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "name": "identity_verification",
   "instructions": [
     {
@@ -394,11 +429,46 @@ export const IDL: IdentityVerification = {
           "type": "publicKey"
         }
       ]
+    },
+    {
+      "name": "deleteRecord",
+      "accounts": [
+        {
+          "name": "signer",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
     }
   ],
   "accounts": [
     {
-      "name": "metadata",
+      "name": "identityRecord",
       "type": {
         "kind": "struct",
         "fields": [

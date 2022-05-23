@@ -1,21 +1,11 @@
 import {getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount} from '@solana/spl-token';
-import {
-    Connection,
-    Keypair,
-    PublicKey,
-    sendAndConfirmTransaction,
-    Transaction,
-    TransactionInstruction,
-} from '@solana/web3.js';
+import {Connection, PublicKey, sendAndConfirmTransaction, Transaction, TransactionInstruction,} from '@solana/web3.js';
 import {withDepositCapital} from "../../src/governance/withDepositCaptial";
-import path from "path";
-import process from "process";
-import fs from "fs";
+import {loadKeypair} from "../../../../utils/cli/load-keypair";
 
-// const programId = new PublicKey('GTesTBiEWE32WHXXE2S4XbZvA5CrEc4xs6ZgRe895dP');
-// const rpcEndpoint = clusterApiUrl('devnet');
 
-const programId = new PublicKey('DiXa9VmFGhJYco4b83ACWpCo95prArWdNsBPvGwfGLgV');
+const programId = new PublicKey('5Hyx5g6n82uZpVYRLZqssLSj5V6mZc2QYQFtPcj83Jp2');
+const identityVerificationProgramId = new PublicKey('3YC2irJKAzmuqeg2Qf9v8YBb1ufGmYTuvggxqv4bCyST');
 const rpcEndpoint = 'http://127.0.0.1:8899';
 
 const connection = new Connection(rpcEndpoint, {
@@ -25,20 +15,21 @@ const connection = new Connection(rpcEndpoint, {
 test("test deposit capital", async () => {
 
     /*
-    Realm: EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5
 
-    LP Token Mint: 5gnm1PP6BG1HtTbnBMwaakLbowdJ9hG8PkZEGM3wDQBA
-    Delegate Token Mint: 9zpBdhhNjtDP9LCpJcG84Kbts1K2rzMmRFc6DRWyPCRq
-    Distribution Token Mint: AHTxrRddhRhDvCAcu5ASZs8hHtTqKLci7B4bcaV1qjrB
+    Realm: 98VUKFoD7KqYfBNnvyJiuKmb8sj5ws7HotZopSngxsqY
 
-    LP Governance: EJeFL6kwsEfvnJwLQ68rcU85HhkmJ5986MeLZG9BcEUn
-    LP Governed Account: J3qkekEFiPpYcQhG9FqSMUYHfG3AVZd7puBfvNX1Lmkm
-    Delegate Mint Governance: 4SfqXCa2gLqvNzDZVWVDg8LvxfFQzTMCX7VkCFnJgq3y
-    Distribution Mint Governance: HJfvvL2VSWMhuPdc4ukzELBA1QjqdvAvtTtguMaxAXrZ
+    LP Token Mint: HzhBrBLD8NQrE1jwHNptvmFmgQ1nddtHTamWy7eqLtTJ
+    Delegate Token Mint: F2RdujrSfffnTc1Qps8bEtxW25Wm2j1u7d2Ph3ZLQKzt
+    Distribution Token Mint: BcugFTYmrEQWj7UqGsfWrJodDQq3twto2gt5KHr4hP6V
 
-    Capital Supply Treasury: 9Rm9JdDE3tiSSTw6PZxLmhwtBPVNRUPdGJQfyDCWBHnC
-    Treasury Stock Treasury: 8uaDG6tUgQUHA4qDDZxancmLN2H7FpqrcN8ND1UAU9Pp
-    Distribution Treasury: HjkVKFmjWnGvppc8sHuArQgPU2oqZcpgecveSezNH7A7
+    LP Governance: HApH8Zr8fqXyoH3xyjaj4PBdgWyCDPiGevu4ijTCGb9E
+    LP Governed Account: CowrJkkfCsstkRMmvdstok8RAoEgo5qYDRyw19EP2RLz
+    Delegate Mint Governance: UW21kChKwbPjtrYipcGqWXrKkG3XvHchKYgbLdauhCB
+    Distribution Mint Governance: Eq9Zg7rYKj5b5kjp5P2feUu1Mvr5u5kLW13fNHp5vKWR
+
+    Capital Supply Treasury: GfoMVfjKitFnPfCVN6B3k4Mdv9y2GFcpr5E3sCLSwkvg
+    Treasury Stock Treasury: BKbEUJYsM3GB9z6Xxxewakqtt4jom1vBVo41ogKaH1ur
+    Distribution Treasury: tYWEBspgLhDce8Y83i8eNKTLx4rVrWGGQeoxTMd3Dnq
 
     */
 
@@ -46,19 +37,19 @@ test("test deposit capital", async () => {
 
     // const ownerKeypair = await loadKeypair("~/solana-keys/spiderman.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/blackwidow.json")
-    // const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
+    const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/moonknight.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/drstrange.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/hulk.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/quicksilver.json")
-    const ownerKeypair = await loadKeypair("~/solana-keys/beast.json")
+    // const ownerKeypair = await loadKeypair("~/solana-keys/beast.json")
 
-    const realmPublicKey = new PublicKey("EkwKC1vSdazzuab2QbkprqwVezM4i6Q49CfFLKA6Krc5")
-    const usdcMintPublicKey = new PublicKey("GLgjt8zEJwuYAKg9tLy9ZTCC9k7VUf46yfx7EQuDXdzf")
-    const capitalGovernancePublicKey = new PublicKey("EJeFL6kwsEfvnJwLQ68rcU85HhkmJ5986MeLZG9BcEUn"); // lp governance
-    const lpMintPublicKey = new PublicKey("5gnm1PP6BG1HtTbnBMwaakLbowdJ9hG8PkZEGM3wDQBA");
-    const lpGovernancePublicKey = new PublicKey("4SfqXCa2gLqvNzDZVWVDg8LvxfFQzTMCX7VkCFnJgq3y"); // delegate mint governance
-    const delegateTokenMint = new PublicKey("9zpBdhhNjtDP9LCpJcG84Kbts1K2rzMmRFc6DRWyPCRq");
+    const realmPublicKey = new PublicKey("98VUKFoD7KqYfBNnvyJiuKmb8sj5ws7HotZopSngxsqY")
+    const usdcMintPublicKey = new PublicKey("Ha46W7m15Pviwwv95AnjXThFxum3nhcjEdvSw9GxxTWA")
+    const capitalGovernancePublicKey = new PublicKey("HApH8Zr8fqXyoH3xyjaj4PBdgWyCDPiGevu4ijTCGb9E"); // lp governance
+    const lpMintPublicKey = new PublicKey("HzhBrBLD8NQrE1jwHNptvmFmgQ1nddtHTamWy7eqLtTJ");
+    const lpGovernancePublicKey = new PublicKey("UW21kChKwbPjtrYipcGqWXrKkG3XvHchKYgbLdauhCB"); // delegate mint governance
+    const delegateTokenMint = new PublicKey("F2RdujrSfffnTc1Qps8bEtxW25Wm2j1u7d2Ph3ZLQKzt");
 
     const usdcTokenSource = await getOrCreateAssociatedTokenAccount(
         connection,
@@ -67,11 +58,12 @@ test("test deposit capital", async () => {
         ownerKeypair.publicKey
     )
 
-    const lpTokenAccount = await getAssociatedTokenAddress(lpMintPublicKey,ownerKeypair.publicKey)
+    const lpTokenAccount = await getAssociatedTokenAddress(lpMintPublicKey, ownerKeypair.publicKey)
 
     await withDepositCapital(
         instructions,
         programId,
+        identityVerificationProgramId,
         realmPublicKey,
         capitalGovernancePublicKey,
         lpGovernancePublicKey,
@@ -81,7 +73,7 @@ test("test deposit capital", async () => {
         lpTokenAccount,
         lpMintPublicKey,
         delegateTokenMint,
-        5000
+        1
     )
 
     const tx = new Transaction()
@@ -99,26 +91,3 @@ test("test deposit capital", async () => {
     expect(sig).toBeDefined()
 
 });
-
-
-async function loadKeypair(fileRef: string) {
-
-    let filePath = fileRef;
-
-    if (filePath[0] === '~') {
-        filePath = path.join(process.env.HOME!, filePath.slice(1));
-    }
-
-    let contents = fs.readFileSync(`${filePath}`);
-
-    let parsed = String(contents)
-        .replace("[", "")
-        .replace("]", "")
-        .split(",")
-        .map((item) => Number(item))
-
-    const uint8Array = Uint8Array.from(parsed);
-
-    return Keypair.fromSecretKey(uint8Array);
-
-}

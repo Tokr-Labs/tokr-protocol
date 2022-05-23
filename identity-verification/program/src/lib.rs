@@ -12,53 +12,64 @@ declare_id!("3YC2irJKAzmuqeg2Qf9v8YBb1ufGmYTuvggxqv4bCyST"); // localnet
 
 #[program]
 mod identity_verification {
+
     use super::*;
 
     /// Create a record of kyc/aml metadata for the user.
     pub fn create_record(
         ctx: Context<CreateRecord>,
         bump: u8,
-        _group: Pubkey,
+        group: Pubkey,
     ) -> Result<()> {
-        instructions::create_record::create_record(ctx, bump, _group)
+        instructions::create_record::create_record(ctx, bump, group)
     }
 
     /// Update accreditation status of account
     pub fn update_ia_status(
         ctx: Context<UpdateRecord>,
-        _bump: u8,
-        _group: Pubkey,
+        bump: u8,
+        group: Pubkey,
         status: u8,
     ) -> Result<()> {
-        instructions::update_record::update_ia_status(ctx, _bump, _group, status)
+        instructions::update_record::update_ia_status(ctx, bump, group, status)
     }
 
     /// Update aml status of account
     pub fn update_aml_status(
         ctx: Context<UpdateRecord>,
-        _bump: u8,
-        _group: Pubkey,
+        bump: u8,
+        group: Pubkey,
         status: u8,
     ) -> Result<()> {
-        instructions::update_record::update_aml_status(ctx, _bump, _group, status)
+        instructions::update_record::update_aml_status(ctx, bump, group, status)
     }
 
     /// Update kyc status of account
     pub fn update_kyc_status(
         ctx: Context<UpdateRecord>,
-        _bump: u8,
-        _group: Pubkey,
+        bump: u8,
+        group: Pubkey,
         status: u8,
     ) -> Result<()> {
-        instructions::update_record::update_kyc_status(ctx, _bump, _group, status)
+        instructions::update_record::update_kyc_status(ctx, bump, group, status)
     }
 
     /// transfer the authority of a record to another account
     pub fn transfer_authority(
         ctx: Context<TransferAuthority>,
-        _bump: u8,
-        _group: Pubkey,
+        bump: u8,
+        group: Pubkey,
     ) -> Result<()> {
-        instructions::transfer_authority::transfer_authority(ctx, _bump, _group)
+        instructions::transfer_authority::transfer_authority(ctx, bump, group)
     }
+
+    /// deletes the record and transfers the rent back to the original signer
+    pub fn delete_record(
+        ctx: Context<DeleteRecord>,
+        bump: u8,
+        group: Pubkey,
+    ) -> Result<()> {
+        instructions::delete_record::delete_record(ctx, bump, group)
+    }
+
 }

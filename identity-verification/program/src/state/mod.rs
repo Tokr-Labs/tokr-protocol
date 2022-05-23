@@ -1,3 +1,3 @@
-pub use metadata::*;
+pub use identity_record::*;
 
-pub mod metadata;
+pub mod identity_record;

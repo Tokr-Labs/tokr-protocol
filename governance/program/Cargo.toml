@@ -1,5 +1,5 @@
 [package]
-name = "spl-governance"
+name = "governance"
 version = "2.2.4"
 description = "Solana Program Library Governance Program"
 authors = ["Solana Maintainers <maintainers@solana.foundation>"]

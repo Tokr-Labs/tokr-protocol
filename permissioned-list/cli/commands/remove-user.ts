@@ -1,10 +1,10 @@
 import {PublicKey} from "@solana/web3.js";
-import {loadKeypair} from "../utils/load-keypair";
 import process from "process";
-import {getRpcUrl} from "../utils/get-rpc-url";
 import * as anchor from "@project-serum/anchor";
 import {Program} from "@project-serum/anchor";
 import {PermissionedList} from "../../../target/types/permissioned_list";
+import {loadKeypair} from "../../../utils/cli/load-keypair";
+import {getRpcUrl} from "../../../utils/cli/get-rpc-url";
 
 export async function removeUser(options: any, approve: boolean) {
 

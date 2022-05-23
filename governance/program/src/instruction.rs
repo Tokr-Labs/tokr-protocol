@@ -481,10 +481,12 @@ pub enum GovernanceInstruction {
     /// 6. `[writable]` LP Holding Token Account
     /// 7. `[]` LP Token Mint
     /// 8. `[]` Delegate Token Mint
-    /// 9. `[]` Token Program
-    /// 10. `[]` System Program
-    /// 11. `[]` Rent Program
-    /// 12. `[]` Associated Token Program
+    /// 9. `[]` Identity Verification Record
+    /// 10. `[]` Identity Verification Program
+    /// 11. `[]` Token Program
+    /// 12. `[]` System Program
+    /// 13. `[]` Rent Program
+    /// 14. `[]` Associated Token Program
     DepositCapital {
         /// The amount to capital tokens to deposit into the capital treasury
         #[allow(dead_code)]
@@ -508,6 +510,8 @@ pub fn deposit_capital(
     lp_holding_account: &Pubkey,
     lp_token_mint: &Pubkey,
     delegate_token_mint: &Pubkey,
+    identity_verification_record: &Pubkey,
+    identity_verification_program: &Pubkey,
     // Args
     amount: u64,
 ) -> Instruction {
@@ -525,10 +529,12 @@ pub fn deposit_capital(
         AccountMeta::new(*lp_holding_account, false), // 6
         AccountMeta::new_readonly(*lp_token_mint, false), // 7
         AccountMeta::new_readonly(*delegate_token_mint, false), // 8
-        AccountMeta::new_readonly(spl_token::id(), false), // 9
-        AccountMeta::new_readonly(system_program::id(), false), // 10
-        AccountMeta::new_readonly(sysvar::rent::id(), false), // 11
-        AccountMeta::new_readonly(spl_associated_token_account_id, false), // 12
+        AccountMeta::new_readonly(*identity_verification_record, false), // 9
+        AccountMeta::new_readonly(*identity_verification_program, false), // 10
+        AccountMeta::new_readonly(spl_token::id(), false), // 11
+        AccountMeta::new_readonly(system_program::id(), false), // 12
+        AccountMeta::new_readonly(sysvar::rent::id(), false), // 13
+        AccountMeta::new_readonly(spl_associated_token_account_id, false), // 14
     ];
 
     let instruction = GovernanceInstruction::DepositCapital { amount };

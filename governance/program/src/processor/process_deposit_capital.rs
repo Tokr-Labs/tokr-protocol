@@ -1,14 +1,10 @@
 //! Program state processor
 
-use solana_program::{
-    account_info::{
-        AccountInfo,
-        next_account_info,
-    },
-    entrypoint::ProgramResult,
-    program::{invoke, invoke_signed},
-    pubkey::Pubkey,
-};
+use solana_program::{account_info::{
+    AccountInfo,
+    next_account_info,
+}, entrypoint::ProgramResult, program::{invoke, invoke_signed}, pubkey::Pubkey};
+use crate::tools::verification::{assert_identity_verification};
 
 /// Processes DepositCapital instruction
 pub fn process_deposit_capital(
@@ -27,11 +23,20 @@ pub fn process_deposit_capital(
     let lp_token_holding_account = next_account_info(account_info_iter)?; // 6
     let lp_token_mint = next_account_info(account_info_iter)?; // 7
     let delegate_token_mint = next_account_info(account_info_iter)?; // 8
-    let token_program = next_account_info(account_info_iter)?; // 9
-    let system_program = next_account_info(account_info_iter)?; // 10
-    let rent_program = next_account_info(account_info_iter)?; // 11
+    let identity_verification_record = next_account_info(account_info_iter)?; // 9
+    let identity_verification_program = next_account_info(account_info_iter)?; // 10
+    let token_program = next_account_info(account_info_iter)?; // 11
+    let system_program = next_account_info(account_info_iter)?; // 12
+    let rent_program = next_account_info(account_info_iter)?; // 13
 
-    // @TODO: assert user's identity has been verified
+    // assert user's identity has been verified
+
+    assert_identity_verification(
+        identity_verification_record,
+        capital_token_authority,
+        realm,
+        identity_verification_program
+    )?;
 
     // create account if it doesn't exist
 
@@ -67,7 +72,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
-        amount
+        amount,
     )?;
 
     invoke(

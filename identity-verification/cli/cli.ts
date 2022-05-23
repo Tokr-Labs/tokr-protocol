@@ -73,12 +73,12 @@ import {updateRecord} from "./commands/update-record";
             "PublicKey of user who the record is about.",
         )
         .requiredOption(
-            "-a, --authority <string>",
+            "-a, --authority <keypair>",
             "Keypair file location of account that will have authority over the identity-verification account.",
         )
         .requiredOption(
             "-g, --group <string>",
-            "Keypair file location of account that will have authority over the identity-verification account.",
+            "PublicKey of group the idv is for.",
         )
         .requiredOption(
             "-p, --program <string>",

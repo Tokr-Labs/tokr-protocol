@@ -1,8 +1,15 @@
-use anchor_lang::prelude::*;
+//! Identity account
 
-#[derive(Default)]
-#[account]
-pub struct Metadata {
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use solana_program::pubkey::Pubkey;
+
+/// identity for use in governance program
+#[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
+pub struct Identity {
+
+    /// this is the anchor discriminator
+    pub discriminator: [u8; 8],
+
     /// bump seed used in deriving the pda for the status account
     pub bump: u8,
 
@@ -17,8 +24,4 @@ pub struct Metadata {
 
     /// Account who has update authority over the account
     pub authority: Pubkey,
-}
-
-impl Metadata {
-    pub const LEN: usize = 8 + (1 * 3) + 1 + 32;
 }
