@@ -1,3 +1,3 @@
 <component name="DependencyValidationManager">
-  <scope name="Cap Table" pattern="file[tokr-protocol]:cap-table//*" />
+  <scope name="Cap Table" pattern="file[tokr-protocol]:programs/cap-table//*" />
 </component>
