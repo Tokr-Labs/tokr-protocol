@@ -35,9 +35,9 @@ test("test deposit capital", async () => {
 
     let instructions: TransactionInstruction[] = [];
 
+    const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/spiderman.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/blackwidow.json")
-    const ownerKeypair = await loadKeypair("~/.config/solana/id.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/moonknight.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/drstrange.json")
     // const ownerKeypair = await loadKeypair("~/solana-keys/hulk.json")

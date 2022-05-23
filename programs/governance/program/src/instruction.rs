@@ -488,10 +488,11 @@ pub enum GovernanceInstruction {
     /// 13. `[]` Rent Program
     /// 14. `[]` Associated Token Program
     DepositCapital {
-        /// The amount of capital tokens to deposit into the capital treasury
         #[allow(dead_code)]
+        /// The amount of capital tokens to deposit into the capital treasury
         amount: u64,
 
+        #[allow(dead_code)]
         /// The amount of decimals associated with the capital token mint
         decimals: u8
     },
