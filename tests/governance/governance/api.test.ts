@@ -1,8 +1,7 @@
 import {getAssociatedTokenAddress, getMint, getOrCreateAssociatedTokenAccount} from '@solana/spl-token';
 import {Connection, PublicKey, sendAndConfirmTransaction, Transaction, TransactionInstruction,} from '@solana/web3.js';
-import {withDepositCapital} from "../../src/governance/withDepositCaptial";
-import {loadKeypair} from "../../../../../cli/utils/load-keypair";
-
+import {withDepositCapital} from "../../../programs/governance/js/src/governance/withDepositCaptial";
+import {loadKeypair} from "../../../cli/utils/load-keypair";
 
 const programId = new PublicKey('5Hyx5g6n82uZpVYRLZqssLSj5V6mZc2QYQFtPcj83Jp2');
 const identityVerificationProgramId = new PublicKey('3YC2irJKAzmuqeg2Qf9v8YBb1ufGmYTuvggxqv4bCyST');

@@ -8,12 +8,10 @@ pub fn transfer_authority(
     _bump: u8,
     _group: Pubkey,
 ) -> Result<()> {
-
     let transfer_from = &mut ctx.accounts.transfer_from;
     let transfer_to = &mut ctx.accounts.transfer_to;
 
     require!(ctx.accounts.record.authority.key() == transfer_from.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
-
     ctx.accounts.record.authority = transfer_to.key.clone();
 
     Ok(())

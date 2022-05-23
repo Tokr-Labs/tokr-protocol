@@ -6,30 +6,30 @@ import {generateCapTable} from "./commands/generate-cap-table";
 export default (async (program: Command) => {
 
     const command = program.command("cap-table")
-        .description("CLI for generating and interacting with spl-token cap tables.")
+        .description("generate and interact with spl-token cap tables.")
         .alias("cap");
 
     command.command("generate")
-        .description("Generates a captable for the given spl token.")
+        .description("generates a captable for the given spl token.")
         .requiredOption(
             "-m, --mint <public-key>",
             "The public key of the captable",
         )
         .requiredOption(
             "-t, --treasury-stock-account <public-key>",
-            "Account that holds non-issued tokens for the mint.",
+            "account that holds non-issued tokens for the mint.",
         )
         .option(
             `-e, --endpoint <path>, http://localhost:8899`,
-            "Cluster endpoint.",
+            "cluster endpoint, defaults to 'http://localhost:8899'.",
         )
         .option(
             `--excluded-accounts <public-key[]>`,
-            "Comma separated list of accounts to exclude from the cap table.",
+            "comma separated list of accounts to exclude from the cap table. Defaults to an empty string.",
         )
         .option(
             `-o, --output <path>`,
-            "Path to output the cap table to.",
+            "path to output the cap table to. If not passed the command will just print the cap-table to the standard output.",
         )
         .action(async (opts) => {
 

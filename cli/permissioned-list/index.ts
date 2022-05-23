@@ -55,19 +55,19 @@ export default (async (program: Command) => {
     const defaultListId = "HZvsgSw2u3CNEN1dms58NgJ68K2rWYk1Bb7rsFcymDQj"
 
     const command = program.command("permissioned-list")
-        .description("Utility functions for CRUD operations for on-chain permissioned lists.")
+        .description("generate and interact with permissioned lists.")
         .alias("perm");
 
     command.command("create-list")
-        .description("Creates a list.")
+        .description("create a list. the signers public key as well as the seed 'list' is used to find the pda used in the creation of the list account. currently you can only create one list per keypair, this could change in the future.")
         .alias("create")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
-            "Signer keypair of the transaction.",
+            "signer keypair of the transaction. defaults to '~/.config/solana/id.json'",
         )
         .option(
             `-p, --program <public-key>, ${programId}`,
-            "Public key of the on-chain permissioned list program.",
+            `public key of the on-chain permissioned list program. defaults to '${programId}.`,
         )
         .action(async (opts) => {
 
@@ -90,19 +90,19 @@ export default (async (program: Command) => {
         });
 
     command.command("delete-list")
-        .description("Creates a list.")
+        .description("delete a list.")
         .alias("delete")
         .option(
             "-s, --signer <keypair>, '~/.config/solana/id.json'",
-            "Signer keypair of the transaction.",
+            "signer keypair of the transaction. defaults to '~/.config/solana/id.json'.",
         )
         .option(
             `-l, --list <public-key>, '${defaultListId}'`,
-            "Public key of the list to delete.",
+            `public key of the list to delete. defaults to ${defaultListId}.`,
         )
         .option(
             `-p, --program <public-key>, ${programId}`,
-            "Public key of the on-chain permissioned list program.",
+            `public key of the on-chain permissioned list program. defaults to '${programId}.`,
         )
         .action(async (opts) => {
 
@@ -130,18 +130,18 @@ export default (async (program: Command) => {
 
     command.command("add-user")
         .alias("add")
-        .description("Adds a user to a permissioned list.")
-        .option(
-            "-s, --signer <keypair>, '~/.config/solana/id.json'",
-            "Signer keypair of the transaction.",
-        )
+        .description("adds an account to a permissioned list.")
         .requiredOption(
             "-u, --user <public-key>",
-            "The user to add to the permissioned list.",
+            "the account to add to the permissioned list.",
+        )
+        .option(
+            "-s, --signer <keypair>, '~/.config/solana/id.json'",
+            "signer keypair of the transaction.",
         )
         .option(
             `-p, --program <public-key>, ${programId}`,
-            "Public key of the on-chain permissioned list program.",
+            `public key of the on-chain permissioned list program. defaults to '${programId}.`,
         )
         .action(async (opts: any) => {
 
@@ -165,14 +165,14 @@ export default (async (program: Command) => {
 
     command.command("check-list")
         .alias("check")
-        .description("Checks if the given user is on a specific permissioned list.")
+        .description("checks if the given account is on a specific permissioned list.")
         .requiredOption(
             "-u, --user <public-key>",
-            "Public key of user who is being checked if on the list.",
+            "public key of account which is being checked.",
         )
         .option(
             `-p, --program <public-key>, ${programId}`,
-            "Public key of the on-chain permissioned list program.",
+            `public key of the on-chain permissioned list program. defaults to '${programId}'.`,
         )
         .action(async (opts: any) => {
 
@@ -195,17 +195,18 @@ export default (async (program: Command) => {
     command.command("remove-user")
         .description("")
         .alias("remove")
-        .option(
-            "-s, --signer <keypair>, '~/.config/solana/id.json'",
-            "Signer keypair of the transaction.",
-        )
+        .description("removes an account from a permissioned list.")
         .requiredOption(
             "-u, --user <public-key>",
-            "Public key of the user who should be removed from the list.",
+            "public key of the user who should be removed from the list.",
         )
         .option(
             `-p, --program <public-key>, ${programId}`,
-            "Public key of the on-chain permissioned list program.",
+            "public key of the on-chain permissioned list program. defaults to '${programId}'.",
+        )
+        .option(
+            "-s, --signer <keypair>, '~/.config/solana/id.json'",
+            "signer keypair of the transaction. defaults to '~/.config/solana/id.json'",
         )
         .action(async (opts: any) => {
 

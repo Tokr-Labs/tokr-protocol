@@ -20,7 +20,7 @@ class CapTableService {
     // ============================================================
     /**
      * Constructor
-     * @param connection
+     * @param connection RPC connection for the cli or client
      */
     constructor(connection) {
         this.connection = connection;

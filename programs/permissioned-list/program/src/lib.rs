@@ -14,24 +14,28 @@ declare_id!("9rMCpctTpKwaM1Wd6ppAgRLhbb9X3kJnZvzCrzy5kiDC"); // localnet
 mod permissioned_list {
     use super::*;
 
+    /// Create a list
     pub fn create_list(
         ctx: Context<CreateList>
     ) -> Result<()> {
         instructions::create_list::create_list(ctx)
     }
 
+    /// delete a list
     pub fn delete_list(
         ctx: Context<DeleteList>
     ) -> Result<()> {
         instructions::delete_list::delete_list(ctx)
     }
 
+    /// add a user to a list
     pub fn add_user(
         ctx: Context<AddUser>
     ) -> Result<()> {
         instructions::add_user::add_user(ctx)
     }
 
+    /// remove a user from a list
     pub fn remove_user(
         ctx: Context<RemoveUser>
     ) -> Result<()> {

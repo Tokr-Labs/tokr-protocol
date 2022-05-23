@@ -8,27 +8,27 @@ import {Command} from "commander";
 export default (async (program: Command) => {
 
     const command = program.command("identity-verification")
-        .description("Utility functions for CRUD operations for on-chain identity verification records.")
+        .description("utility functions for CRUD operations to on-chain identity-verification records.")
         .alias("idv");
 
     command.command("create-record")
         .alias("create")
-        .description("Creates a identity verification record for a user and sets its authority.")
+        .description("creates an identity verification record for a user and sets its authority.")
         .requiredOption(
-            "-u, --user <string>",
-            "Keypair file location of user who is going to have a record about.",
+            "-a, --authority <public-key>",
+            "public key of account that will have authority over the identity-verification account.",
         )
         .requiredOption(
-            "-a, --authority <string>",
-            "PublicKey of account that will have authority over the identity-verification account.",
+            "-g, --group <public-key>",
+            "public key of the group the record is associated with.",
         )
         .requiredOption(
-            "-g, --group <string>",
-            "PublicKey of account that will have authority over the identity-verification account.",
+            "-p, --program <public-key>",
+            "public key of the on-chain identity verification program.",
         )
         .requiredOption(
-            "-p, --program <string>",
-            "PublicKey on-chain identity verification program.",
+            "-u, --user <keypair>",
+            "keypair of user whom the record is about.",
         )
         .action(async (options) => {
 
@@ -41,19 +41,19 @@ export default (async (program: Command) => {
         });
 
     command.command("get-record")
-        .description("Gets the information assoaciated with a record.")
+        .description("retrieves the identification record given the passed options.")
         .alias("get")
         .requiredOption(
-            "-u, --user <string>",
-            "PublicKey of user who the record is about.",
+            "-g, --group <public-key>",
+            "public key of the group the record is associated with.",
         )
         .requiredOption(
-            "-g, --group <string>",
-            "Keypair file location of account that will have authority over the identity-verification account.",
+            "-p, --program <public-key>",
+            "public key of the on-chain identity verification program.",
         )
         .requiredOption(
-            "-p, --program <string>",
-            "PublicKey on-chain identity verification program.",
+            "-u, --user <public-key>",
+            "public key of user whom the record is about.",
         )
         .action(async (options) => {
 
@@ -66,23 +66,23 @@ export default (async (program: Command) => {
         });
 
     command.command("approve-record")
-        .description("Approves the given record and sets all statuses to approved.")
+        .description("approves the given record and sets all statuses to approved.")
         .alias("approve")
         .requiredOption(
-            "-u, --user <string>",
-            "PublicKey of user who the record is about.",
-        )
-        .requiredOption(
             "-a, --authority <keypair>",
-            "Keypair file location of account that will have authority over the identity-verification account.",
+            "keypair file location of account that will have authority over the identity-verification account.",
         )
         .requiredOption(
-            "-g, --group <string>",
-            "PublicKey of group the idv is for.",
+            "-g, --group <public-key>",
+            "public key of the group the record is associated with.",
         )
         .requiredOption(
-            "-p, --program <string>",
-            "PublicKey on-chain identity verification program.",
+            "-p, --program <public-key>",
+            "public key of the on-chain identity verification program.",
+        )
+        .requiredOption(
+            "-u, --user <public-key>",
+            "public key of user whom the record is about.",
         )
         .action(async (options) => {
 
@@ -95,23 +95,23 @@ export default (async (program: Command) => {
         });
 
     command.command("deny-record")
-        .description("Denies the given record and sets all statuses to denied.")
+        .description("denies the given record and sets all statuses to denied.")
         .alias("deny")
         .requiredOption(
-            "-u, --user <string>",
-            "PublicKey of user who the record is about.",
+            "-a, --authority <keypair>",
+            "keypair file location of account that will have authority over the identity-verification account.",
         )
         .requiredOption(
-            "-a, --authority <string>",
-            "Keypair file location of account that will have authority over the identity-verification account.",
+            "-g, --group <public-key>",
+            "public key of the group the record is associated with.",
         )
         .requiredOption(
-            "-g, --group <string>",
-            "Keypair file location of account that will have authority over the identity-verification account.",
+            "-p, --program <public-key>",
+            "public key of the on-chain identity verification program.",
         )
         .requiredOption(
-            "-p, --program <string>",
-            "PublicKey on-chain identity verification program.",
+            "-u, --user <public-key>",
+            "public key of user whom the record is about.",
         )
         .action(async (options) => {
 

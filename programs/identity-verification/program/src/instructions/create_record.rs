@@ -8,7 +8,6 @@ pub fn create_record(
     bump: u8,
     _group: Pubkey,
 ) -> Result<()> {
-
     ctx.accounts.record.aml_status = 0;
     ctx.accounts.record.ia_status = 0;
     ctx.accounts.record.kyc_status = 0;
@@ -21,16 +20,10 @@ pub fn create_record(
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct CreateRecord<'info> {
-    /// Assigns the account as the signer of the transaction
     #[account(mut)]
     pub signer: Signer<'info>,
-
-    /// Creates the account via a CPI to the system program and initializes it (sets its account discriminator).
-    /// Marks the account as mutable and is mutually exclusive with mut.
-    /// Makes the account rent exempt unless skipped with rent_exempt = skip.
     #[account(init, seeds = [b"identity", group.as_ref(), signer.key.as_ref()], bump, payer = signer, space = IdentityRecord::LEN)]
     pub record: Account<'info, IdentityRecord>,
-
     pub system_program: Program<'info, System>,
     pub authority: SystemAccount<'info>,
 }

@@ -12,7 +12,7 @@ export class CapTableService {
 
     /**
      * Constructor
-     * @param connection
+     * @param connection RPC connection for the cli or client
      */
     constructor(private connection: Connection) {
     }

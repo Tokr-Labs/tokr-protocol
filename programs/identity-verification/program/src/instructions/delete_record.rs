@@ -9,7 +9,6 @@ pub fn delete_record(
     _bump: u8,
     _group: Pubkey,
 ) -> Result<()> {
-
     let signer = &mut ctx.accounts.signer;
 
     require!(ctx.accounts.record.authority.key() == signer.key.clone(), IdentityVerificationErrorCode::NotAuthorized);

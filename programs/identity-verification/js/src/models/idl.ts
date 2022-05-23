@@ -178,23 +178,23 @@ export type IdentityVerification = {
       "name": "deleteRecord",
       "accounts": [
         {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "record",
+          "name": "subject",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "systemProgram",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "subject",
-          "isMut": true,
           "isSigner": false
         }
       ],
@@ -434,23 +434,23 @@ export const IDL: IdentityVerification = {
       "name": "deleteRecord",
       "accounts": [
         {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
           "name": "signer",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "record",
+          "name": "subject",
           "isMut": true,
           "isSigner": false
         },
         {
           "name": "systemProgram",
           "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "subject",
-          "isMut": true,
           "isSigner": false
         }
       ],
