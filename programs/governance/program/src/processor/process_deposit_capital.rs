@@ -11,6 +11,7 @@ pub fn process_deposit_capital(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     amount: u64,
+    decimals: u8,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
 
@@ -72,7 +73,7 @@ pub fn process_deposit_capital(
         capital_token_holding_account.key,
         capital_token_authority.key,
         &[capital_token_authority.key],
-        amount,
+        spl_token::ui_amount_to_amount(amount as f64, decimals),
     )?;
 
     invoke(
