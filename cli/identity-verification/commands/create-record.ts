@@ -7,7 +7,7 @@ import {Commitment, Connection, sendAndConfirmTransaction, Transaction} from "@s
 export async function createRecord(options: any) {
 
     let userKeypair = await loadKeypair(options.user);
-    let authorityPublicKey = options.authority;
+    let authorityPublicKey = new anchor.web3.PublicKey(options.authority);
     let programPublicKey = new anchor.web3.PublicKey(options.program);
     let groupPublicKey = new anchor.web3.PublicKey(options.group);
 
@@ -29,7 +29,7 @@ export async function createRecord(options: any) {
     )
 
     const tx = new Transaction()
-
+    tx.feePayer = userKeypair.publicKey;
     tx.add(tix);
 
     const txs = await sendAndConfirmTransaction(
