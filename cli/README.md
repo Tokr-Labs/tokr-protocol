@@ -42,7 +42,7 @@ $ tokr cap generate \
 }
 ```
 
-Defaults for options are shown after the `<input-type`, so if not passed the value shown will be used. And if a required option is not passed the terminal will output a helper error on what was not passed (or passed incorrectly).
+Defaults for options are shown after the `<input-type>`, so if not passed the value shown will be used. And if a required option is not passed the terminal will output a helper error on what was not passed (or passed incorrectly).
 
 ```
 $ tokr cap generate --mint 81jNGpGWcU6jkgDMjvZENJeYakR481q7tBkupiytPdMm

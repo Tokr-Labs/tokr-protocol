@@ -288,9 +288,7 @@ export class IdentityVerificationService {
                 subject: user
             })
             .signers([signer])
-            .rpc({
-                skipPreflight: true
-            })
+            .rpc()
 
     }
 
