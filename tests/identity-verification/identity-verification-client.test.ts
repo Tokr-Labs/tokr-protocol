@@ -129,7 +129,8 @@ describe("identity verification tests", () => {
 
         expect.assertions(1);
 
-        await service.deleteRecord(ownerKeypair.publicKey, groupId, alsoAuthorized);
+        const sig = await service.deleteRecord(ownerKeypair.publicKey, groupId, alsoAuthorized);
+        await connection.confirmTransaction(sig);
 
         try {
             await service.getRecord(ownerKeypair.publicKey, groupId)
