@@ -95,7 +95,7 @@ $ solana logs
 We'll need to create a mint/token for what we'll call USDC in localnet (and devnet). This is because USDC does not exist in our cluster as it does on mainnet. Make not of the Mint Address, we'll need this for a later step.
 
 ```
-$ tokr create-spl-token --amount 1000000
+$ tokr-helper create-spl-token --amount 1000000
 ```
 
 This will build out programs (governance and identity verification)

@@ -25,7 +25,11 @@ import {
     transfer
 } from "@solana/spl-token"
 
-import {GovernanceConfig, MintMaxVoteWeightSource, VoteThresholdPercentage} from "../../../programs/governance/js/src/governance/accounts"
+import {
+    GovernanceConfig,
+    MintMaxVoteWeightSource,
+    VoteThresholdPercentage
+} from "../../../programs/governance/js/src/governance/accounts"
 import {withDepositGoverningTokens} from '../../../programs/governance/js/src/governance/withDepositGoverningTokens'
 import {withCreateMintGovernance} from '../../../programs/governance/js/src/governance/withCreateMintGovernance'
 import {withSetRealmAuthority} from '../../../programs/governance/js/src/governance/withSetRealmAuthority'
@@ -34,17 +38,23 @@ import {withCreateRealm} from '../../../programs/governance/js/src/governance/wi
 import * as fs from "fs";
 import {readFileSync} from "fs";
 import path from "path";
-import {isNumber, isString} from "underscore"
 import * as process from "process";
+import {validateRealmConfig} from "../../utils/validate-realm-config";
+import {resolveHome} from "../../utils/resolve-home";
 
 export const createDao = async (
     configFile: string,
 ) => {
 
-    const configStr = readFileSync(configFile, {encoding: "utf8"})
+    const file = resolveHome(configFile);
+    const configStr = readFileSync(file, {encoding: "utf8"})
     const config = JSON.parse(configStr);
 
-    if (!validateConfig(config)) {
+    console.log(config);
+
+    return;
+
+    if (!validateRealmConfig(config)) {
         console.error("Invalid JSON format detected.")
         process.exit(1)
     }
@@ -687,25 +697,5 @@ async function loadKeypair(fileRef: string) {
     const uint8Array = Uint8Array.from(parsed);
 
     return Keypair.fromSecretKey(uint8Array);
-
-}
-
-const validateConfig = (config: any) => {
-
-    return !!(
-        isString(config.cluster) &&
-        isString(config.owner) &&
-        isString(config.delegate) &&
-        isString(config.name) &&
-        isString(config.governanceProgramId) &&
-        isString(config.usdcMint) &&
-        isNumber(config.governance.voteThresholdPercentage) &&
-        isNumber(config.governance.minCommunityTokensToCreateProposal) &&
-        isNumber(config.governance.minInstructionHoldUpTime) &&
-        isNumber(config.governance.maxVotingTime) &&
-        isNumber(config.governance.voteTipping) &&
-        isNumber(config.governance.proposalCoolOffTime) &&
-        isNumber(config.governance.minCouncilTokensToCreateProposal)
-    );
 
 }

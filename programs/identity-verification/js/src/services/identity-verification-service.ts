@@ -283,9 +283,9 @@ export class IdentityVerificationService {
 
         return await this.program.methods.deleteRecord(bump, group)
             .accounts({
-                record,
-                subject: user,
-                signer: signer.publicKey
+                record: record,
+                signer: signer.publicKey,
+                subject: user
             })
             .signers([signer])
             .rpc()
