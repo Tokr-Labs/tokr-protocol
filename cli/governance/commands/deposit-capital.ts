@@ -69,10 +69,7 @@ export const depositCapital = async (inputFile: string) => {
     await sendAndConfirmTransaction(
         connection,
         tx,
-        [ownerKeypair],
-        {
-            skipPreflight: true
-        }
+        [ownerKeypair]
     )
 
     console.log("Deposit complete.")
