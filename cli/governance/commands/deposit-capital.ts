@@ -18,6 +18,8 @@ export const depositCapital = async (inputFile: string) => {
         process.exit(1)
     }
 
+    console.log(`Depositing ${config.amount} USDC as capital...`)
+
     const programId = new PublicKey(config.governanceProgramId);
     const identityVerificationProgramId = new PublicKey(config.identityVerificationProgramId);
     const rpcEndpoint = config.cluster;
@@ -64,7 +66,7 @@ export const depositCapital = async (inputFile: string) => {
     const tx = new Transaction()
     tx.add(...instructions);
 
-    const sig = await sendAndConfirmTransaction(
+    await sendAndConfirmTransaction(
         connection,
         tx,
         [ownerKeypair],
@@ -72,6 +74,8 @@ export const depositCapital = async (inputFile: string) => {
             skipPreflight: true
         }
     )
+
+    console.log("Deposit complete.")
 
     process.exit();
 
