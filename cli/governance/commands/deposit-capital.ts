@@ -1,6 +1,6 @@
 import {Connection, PublicKey, sendAndConfirmTransaction, Transaction, TransactionInstruction} from "@solana/web3.js";
 import {loadKeypair} from "../../utils/load-keypair";
-import {getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount} from "@solana/spl-token";
+import {getAssociatedTokenAddress, getMint, getOrCreateAssociatedTokenAccount} from "@solana/spl-token";
 import {withDepositCapital} from "../../../programs/governance/js/src/governance/withDepositCaptial"
 import {readFileSync} from "fs";
 import process from "process";
@@ -32,7 +32,7 @@ export const depositCapital = async (inputFile: string) => {
 
     const ownerKeypair = await loadKeypair(config.owner);
     const realmPublicKey = new PublicKey(config.realm);
-    const usdcMint = new PublicKey(config.usdcMint);
+    const usdcMintPublicKey = new PublicKey(config.usdcMint);
     const lpGovernance = new PublicKey(config.lpGovernance);
     const lpMintPublicKey = new PublicKey(config.lpMint);
     const delegateMintGovernance = new PublicKey(config.delegateMintGovernance);
@@ -41,11 +41,13 @@ export const depositCapital = async (inputFile: string) => {
     const usdcTokenSource = await getOrCreateAssociatedTokenAccount(
         connection,
         ownerKeypair,
-        usdcMint,
+        usdcMintPublicKey,
         ownerKeypair.publicKey
     )
 
     const lpTokenAccount = await getAssociatedTokenAddress(lpMintPublicKey, ownerKeypair.publicKey)
+
+    const usdcMint = await getMint(connection, usdcMintPublicKey)
 
     await withDepositCapital(
         instructions,
@@ -56,11 +58,12 @@ export const depositCapital = async (inputFile: string) => {
         delegateMintGovernance,
         ownerKeypair.publicKey,
         usdcTokenSource.address,
-        usdcMint,
+        usdcMintPublicKey,
         lpTokenAccount,
         lpMintPublicKey,
         delegateTokenMint,
-        config.amount
+        config.amount,
+        usdcMint.decimals
     )
 
     const tx = new Transaction()
