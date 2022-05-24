@@ -1,8 +1,8 @@
 import * as anchor from "@project-serum/anchor";
 import {AnchorProvider, Program} from "@project-serum/anchor";
-import {IdentityVerification} from "../../target/types/identity_verification";
+import {IdentityVerification} from "../../../target/types/identity_verification";
 import {Keypair, PublicKey, Transaction} from "@solana/web3.js";
-import {createAccount} from "../utils/create-account";
+import {createAccount} from "../../utils/create-account";
 
 describe("test that the identity-verification program", () => {
 

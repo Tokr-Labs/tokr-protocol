@@ -9,6 +9,7 @@ pub fn delete_record(
     _bump: u8,
     _group: Pubkey,
 ) -> Result<()> {
+
     let signer = &mut ctx.accounts.signer;
 
     require!(ctx.accounts.record.authority.key() == signer.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
@@ -19,14 +20,11 @@ pub fn delete_record(
 #[derive(Accounts)]
 #[instruction(bump: u8, group: Pubkey)]
 pub struct DeleteRecord<'info> {
-
-    #[account(mut)]
-    pub signer: Signer<'info>,
-
     #[account(mut, close = subject, seeds = [b"identity", group.as_ref(), subject.key.as_ref()], bump)]
     pub record: Account<'info, IdentityRecord>,
-
-    pub system_program: Program<'info, System>,
+    #[account(mut)]
+    pub signer: Signer<'info>,
     #[account(mut)]
     pub subject: SystemAccount<'info>,
+    pub system_program: Program<'info, System>,
 }

@@ -1,10 +1,10 @@
 import {Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction} from "@solana/web3.js";
-import {createAccount} from "../utils/create-account";
-import {IdentityStatus} from "../../programs/identity-verification/js/src/models/identity-status";
+import {createAccount} from "../../utils/create-account";
+import {IdentityStatus} from "../../../programs/identity-verification/js/src/models/identity-status";
 import {
     IdentityVerificationService
-} from "../../programs/identity-verification/js/src/services/identity-verification-service";
-import {createIdentityVerificationServiceWith} from "../../programs/identity-verification/js/src";
+} from "../../../programs/identity-verification/js/src/services/identity-verification-service";
+import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/js/src";
 
 describe("identity verification tests", () => {
 
@@ -129,7 +129,8 @@ describe("identity verification tests", () => {
 
         expect.assertions(1);
 
-        await service.deleteRecord(ownerKeypair.publicKey, groupId, alsoAuthorized);
+        const sig = await service.deleteRecord(ownerKeypair.publicKey, groupId, alsoAuthorized);
+        await connection.confirmTransaction(sig);
 
         try {
             await service.getRecord(ownerKeypair.publicKey, groupId)

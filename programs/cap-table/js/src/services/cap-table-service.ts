@@ -31,6 +31,8 @@ export class CapTableService {
 
         const config = {
             filters: [{
+                dataSize: 165
+            },{
                 memcmp: {
                     offset: 0,
                     bytes: mintAddress.toBase58()

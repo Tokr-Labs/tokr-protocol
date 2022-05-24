@@ -1,7 +1,6 @@
 import {PublicKey, TransactionInstruction} from '@solana/web3.js'
 import {createMintToInstruction} from "@solana/spl-token";
 
-
 export const withMintTo = async (
     instructions: TransactionInstruction[],
     mintPk: PublicKey,
