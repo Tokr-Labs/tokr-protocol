@@ -50,10 +50,6 @@ export const createDao = async (
     const configStr = readFileSync(file, {encoding: "utf8"})
     const config = JSON.parse(configStr);
 
-    console.log(config);
-
-    return;
-
     if (!validateRealmConfig(config)) {
         console.error("Invalid JSON format detected.")
         process.exit(1)
