@@ -29,7 +29,7 @@
     "superstruct": "0.15.2"
   },
   "devDependencies": {
-    "@solana/spl-token": "^0.2.0",
+    "@solana/spl-token": "0.24.2",
     "@types/bn.js": "^5.1.0",
     "@types/node": "^17.0.33",
     "@types/bs58": "^4.0.1",
