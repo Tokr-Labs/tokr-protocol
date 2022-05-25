@@ -1,5 +1,5 @@
 import fs from "fs";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src/index"
+import {IdentityVerificationService} from "../../../programs/identity-verification/client/src/services/identity-verification-service"
 import {Commitment, Connection, PublicKey} from "@solana/web3.js";
 
 export async function getIdentityVerificationRecord(options: any) {
@@ -17,7 +17,7 @@ export async function getIdentityVerificationRecord(options: any) {
 
     const commitment: Commitment = rpcUrl.match(/local/) ? "processed" : "confirmed"
     const connection = new Connection(rpcUrl, commitment);
-    const service = createIdentityVerificationServiceWith(connection, programPublicKey)
+    const service = new IdentityVerificationService(connection, programPublicKey)
 
     const record = await service.getRecord(
         userPubkey,

@@ -1,6 +1,6 @@
 import {PublicKey, Connection} from "@solana/web3.js";
 import process from "process";
-import {determineCapTableForToken} from "../../../programs/cap-table/client/src/index";
+import {generateCapTable as generateCapTableClient} from "../../../programs/cap-table/client/src/index";
 import * as fs from "fs";
 
 export async function generateCapTable(options: any) {
@@ -17,7 +17,7 @@ export async function generateCapTable(options: any) {
 
     const connection = new Connection(endpoint)
 
-    const capTable = await determineCapTableForToken(
+    const capTable = await generateCapTableClient(
         connection,
         mintAddress,
         treasuryStockAccount,

@@ -5,7 +5,7 @@ import {createAccount} from "../utils/create-account";
 import {createAta} from "../utils/create-ata";
 import {transferTokens} from "../utils/transfer-tokens";
 import {CapTable} from "../../programs/cap-table/client/src/models/cap-table";
-import {determineCapTableForToken} from "../../programs/cap-table/client/src";
+import {generateCapTable} from "../../programs/cap-table/client/src";
 
 describe("cap table", () => {
 
@@ -66,7 +66,7 @@ describe("cap table", () => {
 
         expect.assertions(8)
 
-        const capTable: CapTable = await determineCapTableForToken(
+        const capTable: CapTable = await generateCapTable(
             connection,
             mintAddress,
             treasuryStockAccount,
