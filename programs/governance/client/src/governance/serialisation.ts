@@ -239,8 +239,9 @@ function createGovernanceSchema(programVersion: number) {
                 kind: 'struct',
                 fields: [
                     ['instruction', 'u8'],
-                    ['amount', 'u64']
-                ].filter(Boolean),
+                    ['amount', 'u64'],
+                    ['decimals', 'u8']
+                ]
             },
         ],
         [

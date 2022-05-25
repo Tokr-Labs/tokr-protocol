@@ -215,8 +215,8 @@ pub fn process_instruction(
         GovernanceInstruction::CreateNativeTreasury {} => {
             process_create_native_treasury(program_id, accounts)
         }
-        GovernanceInstruction::DepositCapital { amount } => {
-            process_deposit_capital(program_id, accounts, amount)
+        GovernanceInstruction::DepositCapital { amount, decimals } => {
+            process_deposit_capital(program_id, accounts, amount, decimals)
         }
     }
 }

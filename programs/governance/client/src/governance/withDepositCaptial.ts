@@ -1,4 +1,4 @@
-import {LAMPORTS_PER_SOL, PublicKey, SYSVAR_RENT_PUBKEY, TransactionInstruction} from '@solana/web3.js';
+import {PublicKey, SYSVAR_RENT_PUBKEY, TransactionInstruction} from '@solana/web3.js';
 import BN from 'bn.js';
 import {DepositCapitalArgs} from "./instructions";
 import {serialize} from 'borsh';
@@ -23,11 +23,13 @@ export const withDepositCapital = async (
     lpTokenMint: PublicKey, // treasury stock mint
     delegateTokenMint: PublicKey, // treasury stock transfer signer
     amount: number,
+    decimals: number,
 ) => {
 
-    // @TODO: Need to figure out how to normalize the decimals of USDC to SOL
-    //      or if i need to at all :shrug:
-    const args = new DepositCapitalArgs({amount: new BN(amount)});
+    const args = new DepositCapitalArgs({
+        amount: new BN(amount),
+        decimals: new BN(decimals)
+    });
 
     const data = Buffer.from(
         serialize(getGovernanceSchema(2), args),

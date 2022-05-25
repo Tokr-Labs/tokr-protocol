@@ -64,9 +64,11 @@ export class DepositGoverningTokensArgs {
 export class DepositCapitalArgs {
   instruction: GovernanceInstruction = GovernanceInstruction.DepositCapital;
   amount: BN;
+  decimals: BN;
 
-  constructor(args: { amount: BN }) {
+  constructor(args: { amount: BN, decimals: BN }) {
     this.amount = args.amount;
+    this.decimals = args.decimals;
   }
 }
 

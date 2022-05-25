@@ -488,9 +488,13 @@ pub enum GovernanceInstruction {
     /// 13. `[]` Rent Program
     /// 14. `[]` Associated Token Program
     DepositCapital {
-        /// The amount to capital tokens to deposit into the capital treasury
         #[allow(dead_code)]
-        amount: u64
+        /// The amount of capital tokens to deposit into the capital treasury
+        amount: u64,
+
+        #[allow(dead_code)]
+        /// The amount of decimals associated with the capital token mint
+        decimals: u8
     },
 
 }
@@ -514,6 +518,7 @@ pub fn deposit_capital(
     identity_verification_program: &Pubkey,
     // Args
     amount: u64,
+    decimals: u8,
 ) -> Instruction {
 
     // @TODO: Remove once ::id has been added to the associated token account spl library
@@ -537,7 +542,7 @@ pub fn deposit_capital(
         AccountMeta::new_readonly(spl_associated_token_account_id, false), // 14
     ];
 
-    let instruction = GovernanceInstruction::DepositCapital { amount };
+    let instruction = GovernanceInstruction::DepositCapital { amount, decimals };
 
     Instruction {
         program_id: *program_id,
