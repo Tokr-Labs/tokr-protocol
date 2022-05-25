@@ -9,7 +9,7 @@
     "clean:node": "node ./scripts/clean-node.js",
     "deploy": "anchor deploy --provider.cluster localnet",
     "postinstall": "node ./scripts/post-install.js",
-    "relink": "npm run postinstall",
+    "relink": "node ./scripts/relink-cli.js",
     "test": "anchor test",
     "upgrade:governance:devnet": "anchor upgrade --provider.cluster devnet --program-id CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd ./target/deploy/spl_governance.so",
     "upgrade:governance:mainnet": "cli-confirm 'Are you sure you want to upgrade the governance program on mainnet?' && anchor upgrade --provider.cluster mainnet --program-id govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr ./target/deploy/spl_governance.so",
