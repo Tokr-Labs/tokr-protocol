@@ -3,7 +3,7 @@
 use solana_program::{account_info::{
     AccountInfo,
     next_account_info,
-}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, pubkey::Pubkey};
+}, entrypoint::ProgramResult, program::{invoke, invoke_signed}, pubkey::Pubkey};
 use crate::tools::verification::{assert_identity_verification};
 
 /// Processes DepositCapital instruction
