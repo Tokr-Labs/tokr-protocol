@@ -4,8 +4,8 @@ import {where} from "underscore";
 import {createAccount} from "../utils/create-account";
 import {createAta} from "../utils/create-ata";
 import {transferTokens} from "../utils/transfer-tokens";
-import {CapTable} from "../../programs/cap-table/js/src/models/cap-table";
-import {determineCapTableForToken} from "../../programs/cap-table/js/src";
+import {CapTable} from "../../programs/cap-table/client/src/models/cap-table";
+import {determineCapTableForToken} from "../../programs/cap-table/client/src";
 
 describe("cap table", () => {
 

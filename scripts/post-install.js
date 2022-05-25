@@ -2,17 +2,10 @@ const execSync = require("child_process").execSync;
 
 (async () => {
 
-    // install governance js npm packages and build its library
-    execSync('npm install', {cwd: "programs/governance/js", stdio: "inherit"})
-    execSync('npm run build', {cwd: "programs/governance/js", stdio: "inherit"})
-
-    // install identity-verification packages and build its library
-    execSync('npm install', {cwd: "programs/identity-verification/js", stdio: "inherit"})
-    execSync('npm run build', {cwd: "programs/identity-verification/js", stdio: "inherit"})
-
-    // install cap-table js npm packages and build its library
-    execSync('npm install', {cwd: "programs/cap-table/js", stdio: "inherit"})
-    execSync('npm run build', {cwd: "programs/cap-table/js", stdio: "inherit"})
+    // install programs client packages
+    execSync('npm install', {cwd: "programs/governance/client", stdio: "inherit"})
+    execSync('npm install', {cwd: "programs/identity-verification/client", stdio: "inherit"})
+    execSync('npm install', {cwd: "programs/cap-table/client", stdio: "inherit"})
 
     // run install for the cli
     execSync('npm install', {cwd: "cli", stdio: "inherit"})

@@ -1,6 +1,6 @@
 import {PublicKey, Connection} from "@solana/web3.js";
 import process from "process";
-import {determineCapTableForToken} from "../../../programs/cap-table/js/src/index";
+import {determineCapTableForToken} from "../../../programs/cap-table/client/src/index";
 import * as fs from "fs";
 
 export async function generateCapTable(options: any) {

@@ -1,5 +1,5 @@
 import fs from "fs";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/js/src/index"
+import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src/index"
 import {Commitment, Connection, PublicKey} from "@solana/web3.js";
 
 export async function getIdentityVerificationRecord(options: any) {

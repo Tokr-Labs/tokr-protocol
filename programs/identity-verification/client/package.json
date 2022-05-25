@@ -19,8 +19,8 @@
     "url": "git@github.com:TOKR-labs/tokr-protocol.git"
   },
   "dependencies": {
-    "@solana/web3.js": "^1.22.0",
-    "@project-serum/anchor": "^0.24.2"
+    "@solana/web3.js": "1.43.1",
+    "@project-serum/anchor": "0.24.2"
   },
   "devDependencies": {
     "esbuild": "^0.14.11",

@@ -1,7 +1,7 @@
 import fs from "fs"
 import * as anchor from "@project-serum/anchor";
 import {loadKeypair} from "../../utils/load-keypair";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/js/src/index"
+import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src/index"
 import {Commitment, Connection, sendAndConfirmTransaction, Transaction} from "@solana/web3.js";
 
 export async function createRecord(options: any) {

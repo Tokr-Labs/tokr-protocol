@@ -1,8 +1,8 @@
 import {loadKeypair} from "../../utils/load-keypair";
 import fs from "fs";
 import {Commitment, Connection, Keypair, PublicKey} from "@solana/web3.js";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/js/src/index"
-import {IdentityStatus} from "../../../programs/identity-verification/js/src/models/identity-status"
+import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src/index"
+import {IdentityStatus} from "../../../programs/identity-verification/client/src/models/identity-status"
 
 export async function updateRecord(options: any, approve: boolean) {
 
