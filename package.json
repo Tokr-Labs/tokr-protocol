@@ -17,8 +17,8 @@
     "upgrade:identity-verifcation:mainnet": "cli-confirm 'Are you sure you want to upgrade the identity-verification program on mainnet?' && anchor upgrade --provider.cluster mainnet --program-id idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD ./target/deploy/identity_verification.so"
   },
   "devDependencies": {
-    "@project-serum/anchor": "^0.24.2",
-    "@solana/spl-token": "^0.2.0",
+    "@project-serum/anchor": "0.24.2",
+    "@solana/spl-token": "0.24.2",
     "@solana/web3.js": "1.43.1",
     "@types/jest": "^27.4.1",
     "@types/node": "17.0.30",
