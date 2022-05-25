@@ -5,7 +5,7 @@ use crate::{
         enums::GovernanceAccountType,
         governance::{
             assert_valid_create_governance_args, get_mint_governance_address_seeds,
-            GovernanceConfig, GovernanceV2,
+            GovernanceConfig, Governance,
         },
         realm::get_realm_data,
     },
@@ -63,8 +63,8 @@ pub fn process_create_mint_governance(
         account_info_iter, // realm_config_info 9, voter_weight_record_info 10
     )?;
 
-    let mint_governance_data = GovernanceV2 {
-        account_type: GovernanceAccountType::MintGovernanceV2,
+    let mint_governance_data = Governance {
+        account_type: GovernanceAccountType::MintGovernance,
         realm: *realm_info.key,
         governed_account: *governed_mint_info.key,
         config,
@@ -74,7 +74,7 @@ pub fn process_create_mint_governance(
         reserved_v2: [0; 128],
     };
 
-    create_and_serialize_account_signed::<GovernanceV2>(
+    create_and_serialize_account_signed::<Governance>(
         payer_info,
         mint_governance_info,
         &mint_governance_data,

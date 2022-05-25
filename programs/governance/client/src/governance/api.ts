@@ -1,7 +1,7 @@
 import { Connection, PublicKey } from '@solana/web3.js';
 
 import {
-  getGovernanceSchemaForAccount,
+  GOVERNANCE_SCHEMA,
   GovernanceAccountParser,
 } from './serialisation';
 import {
@@ -211,7 +211,7 @@ export async function getGovernanceAccounts<TAccount extends GovernanceAccount>(
     let accounts = await getBorshProgramAccounts(
       connection,
       programId,
-      at => getGovernanceSchemaForAccount(at),
+      () => GOVERNANCE_SCHEMA,
       accountClass,
       filters,
       accountType,

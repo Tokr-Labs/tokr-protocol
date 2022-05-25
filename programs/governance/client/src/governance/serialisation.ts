@@ -13,8 +13,8 @@ import {
     CreateRealmArgs,
     CreateTokenGovernanceArgs,
     CreateTokenOwnerRecordArgs,
-    DepositGoverningTokensArgs,
     DepositCapitalArgs,
+    DepositGoverningTokensArgs,
     ExecuteTransactionArgs,
     FinalizeVoteArgs,
     FlagTransactionErrorArgs,
@@ -34,33 +34,30 @@ import {
 } from './instructions';
 import {
     AccountMetaData,
-    RealmConfigArgs,
     Governance,
+    GovernanceAccountClass,
+    GovernanceAccountType,
     GovernanceConfig,
     InstructionData,
     MintMaxVoteWeightSource,
+    ProgramMetadata,
     Proposal,
+    ProposalOption,
     ProposalTransaction,
     Realm,
     RealmConfig,
+    RealmConfigAccount,
+    RealmConfigArgs,
     SignatoryRecord,
     TokenOwnerRecord,
     VoteRecord,
     VoteThresholdPercentage,
-    VoteWeight,
-    RealmConfigAccount,
-    GovernanceAccountClass,
     VoteType,
     VoteTypeKind,
-    ProposalOption,
-    GovernanceAccountType,
-    getAccountProgramVersion,
-    ProgramMetadata,
+    VoteWeight,
 } from './accounts';
-import {serialize} from 'borsh';
-import {BorshAccountParser} from '../core/serialisation';
-import {PROGRAM_VERSION_V1} from '../registry/constants';
-import {deserializeBorsh} from '../tools/borsh';
+import {BorshAccountParser} from '../core';
+import {deserializeBorsh} from '../tools';
 
 // ------------ u16 ------------
 
@@ -154,15 +151,6 @@ import {deserializeBorsh} from '../tools/borsh';
     }
 };
 
-// Serializes sdk instruction into InstructionData and encodes it as base64 which then can be entered into the UI form
-export const serializeInstructionToBase64 = (
-    instruction: TransactionInstruction,
-) => {
-    let data = createInstructionData(instruction);
-
-    return Buffer.from(serialize(GOVERNANCE_SCHEMA, data)).toString('base64');
-};
-
 // Converts TransactionInstruction to InstructionData format
 export const createInstructionData = (instruction: TransactionInstruction) => {
     return new InstructionData({
@@ -179,19 +167,13 @@ export const createInstructionData = (instruction: TransactionInstruction) => {
     });
 };
 
-export const GOVERNANCE_SCHEMA_V1 = createGovernanceSchema(1);
-export const GOVERNANCE_SCHEMA = createGovernanceSchema(2);
+export const GOVERNANCE_SCHEMA = createGovernanceSchema();
 
-export function getGovernanceSchema(programVersion: number) {
-    switch (programVersion) {
-        case 1:
-            return GOVERNANCE_SCHEMA_V1;
-        default:
-            return GOVERNANCE_SCHEMA;
-    }
+export function getGovernanceSchema() {
+    return GOVERNANCE_SCHEMA;
 }
 
-function createGovernanceSchema(programVersion: number) {
+function createGovernanceSchema() {
     return new Map<Function, any>([
         [
             RealmConfigArgs,
@@ -201,13 +183,10 @@ function createGovernanceSchema(programVersion: number) {
                     ['useCouncilMint', 'u8'],
                     ['minCommunityTokensToCreateGovernance', 'u64'],
                     ['communityMintMaxVoteWeightSource', MintMaxVoteWeightSource],
-                    // V1 of the program used restrictive instruction deserialisation which didn't allow additional data
-                    ...(programVersion > PROGRAM_VERSION_V1
-                        ? [
-                            ['useCommunityVoterWeightAddin', 'u8'],
-                            ['useMaxCommunityVoterWeightAddin', 'u8'],
-                        ]
-                        : []),
+                    ...[
+                        ['useCommunityVoterWeightAddin', 'u8'],
+                        ['useMaxCommunityVoterWeightAddin', 'u8'],
+                    ],
                 ],
             },
         ],
@@ -228,8 +207,7 @@ function createGovernanceSchema(programVersion: number) {
                 kind: 'struct',
                 fields: [
                     ['instruction', 'u8'],
-                    // V1 of the program used restrictive instruction deserialisation which didn't allow additional data
-                    programVersion > PROGRAM_VERSION_V1 ? ['amount', 'u64'] : undefined,
+                    ['amount', 'u64'],
                 ].filter(Boolean),
             },
         ],
@@ -323,13 +301,11 @@ function createGovernanceSchema(programVersion: number) {
                     ['name', 'string'],
                     ['descriptionLink', 'string'],
 
-                    ...(programVersion === PROGRAM_VERSION_V1
-                        ? [['governingTokenMint', 'pubkey']]
-                        : [
-                            ['voteType', 'voteType'],
-                            ['options', ['string']],
-                            ['useDenyOption', 'u8'],
-                        ]),
+                    ...[
+                        ['voteType', 'voteType'],
+                        ['options', ['string']],
+                        ['useDenyOption', 'u8'],
+                    ],
                 ],
             },
         ],
@@ -387,9 +363,7 @@ function createGovernanceSchema(programVersion: number) {
                 kind: 'struct',
                 fields: [
                     ['instruction', 'u8'],
-                    programVersion === PROGRAM_VERSION_V1
-                        ? ['yesNoVote', 'u8']
-                        : ['vote', 'vote'],
+                    ['vote', 'vote'],
                 ],
             },
         ],
@@ -399,15 +373,10 @@ function createGovernanceSchema(programVersion: number) {
                 kind: 'struct',
                 fields: [
                     ['instruction', 'u8'],
-                    programVersion > PROGRAM_VERSION_V1
-                        ? ['optionIndex', 'u8']
-                        : undefined,
+                    ['optionIndex', 'u8'],
                     ['index', 'u16'],
                     ['holdUpTime', 'u32'],
-
-                    programVersion > PROGRAM_VERSION_V1
-                        ? ['instructions', [InstructionData]]
-                        : ['instructionData', InstructionData],
+                    ['instructions', [InstructionData]],
                 ].filter(Boolean),
             },
         ],
@@ -438,9 +407,7 @@ function createGovernanceSchema(programVersion: number) {
                 kind: 'struct',
                 fields: [
                     ['instruction', 'u8'],
-                    ...(programVersion === PROGRAM_VERSION_V1
-                        ? [['newRealmAuthority', {kind: 'option', type: 'pubkey'}]]
-                        : [['action', 'u8']]),
+                    ['action', 'u8'],
                 ],
             },
         ],
@@ -634,24 +601,12 @@ function createGovernanceSchema(programVersion: number) {
                     ['tokenOwnerRecord', 'pubkey'],
                     ['signatoriesCount', 'u8'],
                     ['signatoriesSignedOffCount', 'u8'],
-
-                    ...(programVersion === PROGRAM_VERSION_V1
-                        ? [
-                            ['yesVotesCount', 'u64'],
-                            ['noVotesCount', 'u64'],
-                            ['instructionsExecutedCount', 'u16'],
-                            ['instructionsCount', 'u16'],
-                            ['instructionsNextIndex', 'u16'],
-                        ]
-                        : [
-                            ['voteType', 'voteType'],
-                            ['options', [ProposalOption]],
-                            ['denyVoteWeight', {kind: 'option', type: 'u64'}],
-                            ['vetoVoteWeight', {kind: 'option', type: 'u64'}],
-                            ['abstainVoteWeight', {kind: 'option', type: 'u64'}],
-                            ['startVotingAt', {kind: 'option', type: 'u64'}],
-                        ]),
-
+                    ['voteType', 'voteType'],
+                    ['options', [ProposalOption]],
+                    ['denyVoteWeight', {kind: 'option', type: 'u64'}],
+                    ['vetoVoteWeight', {kind: 'option', type: 'u64'}],
+                    ['abstainVoteWeight', {kind: 'option', type: 'u64'}],
+                    ['startVotingAt', {kind: 'option', type: 'u64'}],
                     ['draftAt', 'u64'],
                     ['signingOffAt', {kind: 'option', type: 'u64'}],
                     ['votingAt', {kind: 'option', type: 'u64'}],
@@ -661,20 +616,9 @@ function createGovernanceSchema(programVersion: number) {
                     ['closedAt', {kind: 'option', type: 'u64'}],
                     ['executionFlags', 'u8'],
                     ['maxVoteWeight', {kind: 'option', type: 'u64'}],
-
-                    ...(programVersion === PROGRAM_VERSION_V1
-                        ? []
-                        : [['maxVotingTime', {kind: 'option', type: 'u32'}]]),
-
-                    [
-                        'voteThresholdPercentage',
-                        {kind: 'option', type: VoteThresholdPercentage},
-                    ],
-
-                    ...(programVersion === PROGRAM_VERSION_V1
-                        ? []
-                        : [['reserved', [64]]]),
-
+                    ['maxVotingTime', {kind: 'option', type: 'u32'}],
+                    ['voteThresholdPercentage', {kind: 'option', type: VoteThresholdPercentage}],
+                    ['reserved', [64]],
                     ['name', 'string'],
                     ['descriptionLink', 'string'],
                 ],
@@ -711,13 +655,8 @@ function createGovernanceSchema(programVersion: number) {
                     ['proposal', 'pubkey'],
                     ['governingTokenOwner', 'pubkey'],
                     ['isRelinquished', 'u8'],
-
-                    ...(programVersion === PROGRAM_VERSION_V1
-                        ? [['voteWeight', VoteWeight]]
-                        : [
-                            ['voterWeight', 'u64'],
-                            ['vote', 'vote'],
-                        ]),
+                    ['voterWeight', 'u64'],
+                    ['vote', 'vote'],
                 ],
             },
         ],
@@ -728,14 +667,10 @@ function createGovernanceSchema(programVersion: number) {
                 fields: [
                     ['accountType', 'u8'],
                     ['proposal', 'pubkey'],
-                    programVersion > PROGRAM_VERSION_V1
-                        ? ['optionIndex', 'u8']
-                        : undefined,
+                    ['optionIndex', 'u8'],
                     ['instructionIndex', 'u16'],
                     ['holdUpTime', 'u32'],
-                    programVersion > PROGRAM_VERSION_V1
-                        ? ['instructions', [InstructionData]]
-                        : ['instruction', InstructionData],
+                    ['instructions', [InstructionData]],
                     ['executedAt', {kind: 'option', type: 'u64'}],
                     ['executionStatus', 'u8'],
                 ].filter(Boolean),
@@ -756,15 +691,9 @@ function createGovernanceSchema(programVersion: number) {
     ]);
 }
 
-export function getGovernanceSchemaForAccount(
-    accountType: GovernanceAccountType,
-) {
-    return getGovernanceSchema(getAccountProgramVersion(accountType));
-}
-
 export const GovernanceAccountParser = (classType: GovernanceAccountClass) =>
     BorshAccountParser(classType, (accountType: GovernanceAccountType) =>
-        getGovernanceSchemaForAccount(accountType),
+        GOVERNANCE_SCHEMA,
     );
 
 export function getInstructionDataFromBase64(instructionDataBase64: string) {

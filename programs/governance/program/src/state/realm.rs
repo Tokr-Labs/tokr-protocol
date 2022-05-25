@@ -1,23 +1,23 @@
 //! Realm Account
 
-use borsh::maybestd::io::Write;
 use std::slice::Iter;
 
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{account_info::{next_account_info, AccountInfo}, borsh::try_from_slice_unchecked, program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey};
+use borsh::maybestd::io::Write;
+use solana_program::{account_info::{AccountInfo, next_account_info}, program_error::ProgramError, program_pack::IsInitialized, pubkey::Pubkey};
+
 use spl_governance_addin_api::voter_weight::VoterWeightAction;
 use spl_governance_tools::account::{
-    assert_is_valid_account_of_types, get_account_data, AccountMaxSize,
+    AccountMaxSize, assert_is_valid_account_of_types, get_account_data,
 };
 
 use crate::{
     error::GovernanceError,
+    PROGRAM_AUTHORITY_SEED,
     state::{
         enums::{GovernanceAccountType, MintMaxVoteWeightSource},
-        legacy::RealmV1,
         token_owner_record::get_token_owner_record_data_for_realm,
     },
-    PROGRAM_AUTHORITY_SEED,
 };
 
 /// Realm Config instruction args
@@ -86,7 +86,7 @@ pub struct RealmConfig {
 /// Account PDA seeds" ['governance', name]
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct RealmV2 {
+pub struct Realm {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
@@ -114,47 +114,38 @@ pub struct RealmV2 {
     pub reserved_v2: [u8; 128],
 }
 
-impl AccountMaxSize for RealmV2 {
+impl AccountMaxSize for Realm {
     fn get_max_size(&self) -> Option<usize> {
         Some(self.name.len() + 264)
     }
 }
 
-impl IsInitialized for RealmV2 {
+impl IsInitialized for Realm {
     fn is_initialized(&self) -> bool {
-        self.account_type == GovernanceAccountType::RealmV2
+        self.account_type == GovernanceAccountType::Realm
     }
 }
 
 /// Checks if the given account type is on of the Realm account types of any version
 pub fn is_realm_account_type(account_type: &GovernanceAccountType) -> bool {
     match account_type {
-        GovernanceAccountType::RealmV1 | GovernanceAccountType::RealmV2 => true,
-        GovernanceAccountType::GovernanceV2
-        | GovernanceAccountType::ProgramGovernanceV2
-        | GovernanceAccountType::MintGovernanceV2
-        | GovernanceAccountType::TokenGovernanceV2
+        GovernanceAccountType::Realm => true,
+        GovernanceAccountType::Governance
+        | GovernanceAccountType::ProgramGovernance
+        | GovernanceAccountType::MintGovernance
+        | GovernanceAccountType::TokenGovernance
         | GovernanceAccountType::Uninitialized
         | GovernanceAccountType::RealmConfig
-        | GovernanceAccountType::TokenOwnerRecordV1
-        | GovernanceAccountType::TokenOwnerRecordV2
-        | GovernanceAccountType::GovernanceV1
-        | GovernanceAccountType::ProgramGovernanceV1
-        | GovernanceAccountType::MintGovernanceV1
-        | GovernanceAccountType::TokenGovernanceV1
-        | GovernanceAccountType::ProposalV1
-        | GovernanceAccountType::ProposalV2
-        | GovernanceAccountType::SignatoryRecordV1
-        | GovernanceAccountType::SignatoryRecordV2
-        | GovernanceAccountType::ProposalInstructionV1
-        | GovernanceAccountType::ProposalTransactionV2
-        | GovernanceAccountType::VoteRecordV1
-        | GovernanceAccountType::VoteRecordV2
+        | GovernanceAccountType::TokenOwnerRecord
+        | GovernanceAccountType::Proposal
+        | GovernanceAccountType::SignatoryRecord
+        | GovernanceAccountType::ProposalTransaction
+        | GovernanceAccountType::VoteRecord
         | GovernanceAccountType::ProgramMetadata => false,
     }
 }
 
-impl RealmV2 {
+impl Realm {
     /// Asserts the given mint is either Community or Council mint of the Realm
     pub fn assert_is_valid_governing_token_mint(
         &self,
@@ -249,29 +240,7 @@ impl RealmV2 {
 
     /// Serializes account into the target buffer
     pub fn serialize<W: Write>(self, writer: &mut W) -> Result<(), ProgramError> {
-        if self.account_type == GovernanceAccountType::RealmV2 {
-            BorshSerialize::serialize(&self, writer)?
-        } else if self.account_type == GovernanceAccountType::RealmV1 {
-            // V1 account can't be resized and we have to translate it back to the original format
-
-            // If reserved_v2 is used it must be individually asses for v1 backward compatibility impact
-            if self.reserved_v2 != [0; 128] {
-                panic!("Extended data not supported by RealmV1")
-            }
-
-            let realm_data_v1 = RealmV1 {
-                account_type: self.account_type,
-                community_mint: self.community_mint,
-                config: self.config,
-                reserved: self.reserved,
-                voting_proposal_count: self.voting_proposal_count,
-                authority: self.authority,
-                name: self.name,
-            };
-
-            BorshSerialize::serialize(&realm_data_v1, writer)?;
-        }
-
+        BorshSerialize::serialize(&self, writer)?;
         Ok(())
     }
 }
@@ -288,27 +257,8 @@ pub fn assert_is_valid_realm(
 pub fn get_realm_data(
     program_id: &Pubkey,
     realm_info: &AccountInfo,
-) -> Result<RealmV2, ProgramError> {
-    let account_type: GovernanceAccountType = try_from_slice_unchecked(&realm_info.data.borrow())?;
-
-    // If the account is V1 version then translate to V2
-    if account_type == GovernanceAccountType::RealmV1 {
-        let realm_data_v1 = get_account_data::<RealmV1>(program_id, realm_info)?;
-
-        return Ok(RealmV2 {
-            account_type,
-            community_mint: realm_data_v1.community_mint,
-            config: realm_data_v1.config,
-            reserved: realm_data_v1.reserved,
-            voting_proposal_count: realm_data_v1.voting_proposal_count,
-            authority: realm_data_v1.authority,
-            name: realm_data_v1.name,
-            // Add the extra reserved_v2 padding
-            reserved_v2: [0; 128],
-        });
-    }
-
-    get_account_data::<RealmV2>(program_id, realm_info)
+) -> Result<Realm, ProgramError> {
+    get_account_data::<Realm>(program_id, realm_info)
 }
 
 /// Deserializes account and checks the given authority is Realm's authority
@@ -316,7 +266,7 @@ pub fn get_realm_data_for_authority(
     program_id: &Pubkey,
     realm_info: &AccountInfo,
     realm_authority: &Pubkey,
-) -> Result<RealmV2, ProgramError> {
+) -> Result<Realm, ProgramError> {
     let realm_data = get_realm_data(program_id, realm_info)?;
 
     if realm_data.authority.is_none() {
@@ -335,7 +285,7 @@ pub fn get_realm_data_for_governing_token_mint(
     program_id: &Pubkey,
     realm_info: &AccountInfo,
     governing_token_mint: &Pubkey,
-) -> Result<RealmV2, ProgramError> {
+) -> Result<Realm, ProgramError> {
     let realm_data = get_realm_data(program_id, realm_info)?;
 
     realm_data.assert_is_valid_governing_token_mint(governing_token_mint)?;
@@ -396,15 +346,18 @@ pub fn assert_valid_realm_config_args(config_args: &RealmConfigArgs) -> Result<(
 
 #[cfg(test)]
 mod test {
-    use crate::instruction::GovernanceInstruction;
-    use solana_program::borsh::try_from_slice_unchecked;
-    use super::*;
     use std::str::FromStr;
+
+    use solana_program::borsh::try_from_slice_unchecked;
+
+    use crate::instruction::GovernanceInstruction;
+
+    use super::*;
 
     #[test]
     fn test_max_size() {
-        let realm = RealmV2 {
-            account_type: GovernanceAccountType::RealmV2,
+        let realm = Realm {
+            account_type: GovernanceAccountType::Realm,
             community_mint: Pubkey::new_unique(),
             reserved: [0; 6],
 
@@ -428,75 +381,4 @@ mod test {
         assert_eq!(realm.get_max_size(), Some(size));
     }
 
-    /// Realm Config instruction args
-    #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-    pub struct RealmConfigArgsV1 {
-        /// Indicates whether council_mint should be used
-        /// If yes then council_mint account must also be passed to the instruction
-        pub use_council_mint: bool,
-
-        /// Min number of community tokens required to create a governance
-        pub min_community_weight_to_create_governance: u64,
-
-        /// The source used for community mint max vote weight source
-        pub community_mint_max_vote_weight_source: MintMaxVoteWeightSource,
-    }
-
-    /// Instructions supported by the Governance program
-    #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-    pub enum GovernanceInstructionV1 {
-        /// Creates Governance Realm account which aggregates governances for given Community Mint and optional Council Mint
-        CreateRealm {
-            #[allow(dead_code)]
-            /// UTF-8 encoded Governance Realm name
-            name: String,
-
-            #[allow(dead_code)]
-            /// Realm config args     
-            config_args: RealmConfigArgsV1,
-        },
-
-        /// Deposits governing tokens (Community or Council) to Governance Realm and establishes your voter weight to be used for voting within the Realm
-        DepositGoverningTokens {
-            /// The amount to deposit into the realm
-            #[allow(dead_code)]
-            amount: u64,
-        },
-    }
-
-    #[test]
-    fn test_deserialize_v1_create_realm_instruction_from_v2() {
-        // Arrange
-        let create_realm_ix_v2 = GovernanceInstruction::CreateRealm {
-            name: "test-realm".to_string(),
-            config_args: RealmConfigArgs {
-                use_council_mint: true,
-                min_community_weight_to_create_governance: 100,
-                community_mint_max_vote_weight_source:
-                MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
-                use_community_voter_weight_addin: false,
-                use_max_community_voter_weight_addin: false,
-            },
-        };
-
-        let mut create_realm_ix_data = vec![];
-        create_realm_ix_v2
-            .serialize(&mut create_realm_ix_data)
-            .unwrap();
-
-        // Act
-        let create_realm_ix_v1: GovernanceInstructionV1 =
-            try_from_slice_unchecked(&create_realm_ix_data).unwrap();
-
-        // Assert
-        if let GovernanceInstructionV1::CreateRealm { name, config_args } = create_realm_ix_v1 {
-            assert_eq!("test-realm", name);
-            assert_eq!(
-                MintMaxVoteWeightSource::FULL_SUPPLY_FRACTION,
-                config_args.community_mint_max_vote_weight_source
-            );
-        } else {
-            panic!("Can't deserialize v1 CreateRealm instruction from v2");
-        }
-    }
 }

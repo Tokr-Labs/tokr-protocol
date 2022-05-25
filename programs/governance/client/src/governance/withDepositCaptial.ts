@@ -32,7 +32,7 @@ export const withDepositCapital = async (
     });
 
     const data = Buffer.from(
-        serialize(getGovernanceSchema(2), args),
+        serialize(getGovernanceSchema(), args),
     );
 
     const [capitalTokenHoldingAccount] = await PublicKey.findProgramAddress(

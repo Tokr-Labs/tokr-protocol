@@ -22,7 +22,7 @@ use crate::{
             get_token_owner_record_data_for_proposal_owner,
             get_token_owner_record_data_for_realm_and_governing_mint,
         },
-        vote_record::{get_vote_record_address_seeds, Vote, VoteRecordV2},
+        vote_record::{get_vote_record_address_seeds, Vote, VoteRecord},
     },
 };
 
@@ -182,8 +182,8 @@ pub fn process_cast_vote(
     proposal_data.serialize(&mut *proposal_info.data.borrow_mut())?;
 
     // Create and serialize VoteRecord
-    let vote_record_data = VoteRecordV2 {
-        account_type: GovernanceAccountType::VoteRecordV2,
+    let vote_record_data = VoteRecord {
+        account_type: GovernanceAccountType::VoteRecord,
         proposal: *proposal_info.key,
         governing_token_owner,
         voter_weight,
@@ -192,7 +192,7 @@ pub fn process_cast_vote(
         reserved_v2: [0; 8],
     };
 
-    create_and_serialize_account_signed::<VoteRecordV2>(
+    create_and_serialize_account_signed::<VoteRecord>(
         payer_info,
         vote_record_info,
         &vote_record_data,

@@ -18,7 +18,7 @@ export const withSetGovernanceDelegate = async (
     newGovernanceDelegate: newGovernanceDelegate,
   });
   const data = Buffer.from(
-    serialize(getGovernanceSchema(programVersion), args),
+    serialize(getGovernanceSchema(), args),
   );
 
   const tokenOwnerRecordAddress = await getTokenOwnerRecordAddress(

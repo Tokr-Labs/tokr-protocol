@@ -1,12 +1,12 @@
 //! RealmConfig account
 
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use solana_program::{
     account_info::AccountInfo, program_error::ProgramError, program_pack::IsInitialized,
     pubkey::Pubkey,
 };
 
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use spl_governance_tools::account::{get_account_data, AccountMaxSize};
+use spl_governance_tools::account::{AccountMaxSize, get_account_data};
 
 use crate::{error::GovernanceError, state::enums::GovernanceAccountType};
 
@@ -86,13 +86,14 @@ pub fn get_realm_config_address(program_id: &Pubkey, realm: &Pubkey) -> Pubkey {
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use crate::state::{enums::GovernanceAccountType, realm_config::RealmConfigAccount};
+
+    use super::*;
 
     #[test]
     fn test_max_size() {
         let realm_config = RealmConfigAccount {
-            account_type: GovernanceAccountType::RealmV2,
+            account_type: GovernanceAccountType::Realm,
             realm: Pubkey::new_unique(),
             community_voter_weight_addin: Some(Pubkey::new_unique()),
             max_community_voter_weight_addin: Some(Pubkey::new_unique()),

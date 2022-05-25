@@ -1,22 +1,23 @@
 //! Governance Account
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
 use borsh::maybestd::io::Write;
+use solana_program::{
+    account_info::AccountInfo, program_error::ProgramError,
+    program_pack::IsInitialized, pubkey::Pubkey,
+};
+
+use spl_governance_tools::{
+    account::{AccountMaxSize, assert_is_valid_account_of_types, get_account_data},
+    error::GovernanceToolsError,
+};
 
 use crate::{
     error::GovernanceError,
     state::{
         enums::{GovernanceAccountType, VoteThresholdPercentage, VoteTipping},
-        legacy::{is_governance_v1_account_type, GovernanceV1},
+        // legacy::{is_governance_v1_account_type, GovernanceV1},
         realm::assert_is_valid_realm,
     },
-};
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
-use solana_program::{
-    account_info::AccountInfo, borsh::try_from_slice_unchecked, program_error::ProgramError,
-    program_pack::IsInitialized, pubkey::Pubkey,
-};
-use spl_governance_tools::{
-    account::{assert_is_valid_account_of_types, get_account_data, AccountMaxSize},
-    error::GovernanceToolsError,
 };
 
 /// Governance config
@@ -51,7 +52,7 @@ pub struct GovernanceConfig {
 /// Governance Account
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct GovernanceV2 {
+pub struct Governance {
     /// Account type. It can be Uninitialized, Governance, ProgramGovernance, TokenGovernance or MintGovernance
     pub account_type: GovernanceAccountType,
 
@@ -86,80 +87,63 @@ pub struct GovernanceV2 {
     pub reserved_v2: [u8; 128],
 }
 
-impl AccountMaxSize for GovernanceV2 {}
+impl AccountMaxSize for Governance {}
 
 /// Checks if the given account type is one of the Governance V2 account types
 pub fn is_governance_v2_account_type(account_type: &GovernanceAccountType) -> bool {
     match account_type {
-        GovernanceAccountType::GovernanceV2
-        | GovernanceAccountType::ProgramGovernanceV2
-        | GovernanceAccountType::MintGovernanceV2
-        | GovernanceAccountType::TokenGovernanceV2 => true,
+        GovernanceAccountType::Governance |
+        GovernanceAccountType::ProgramGovernance |
+        GovernanceAccountType::MintGovernance |
+        GovernanceAccountType::TokenGovernance => true,
         GovernanceAccountType::Uninitialized
-        | GovernanceAccountType::RealmV1
-        | GovernanceAccountType::RealmV2
+        | GovernanceAccountType::Realm
         | GovernanceAccountType::RealmConfig
-        | GovernanceAccountType::TokenOwnerRecordV1
-        | GovernanceAccountType::TokenOwnerRecordV2
-        | GovernanceAccountType::GovernanceV1
-        | GovernanceAccountType::ProgramGovernanceV1
-        | GovernanceAccountType::MintGovernanceV1
-        | GovernanceAccountType::TokenGovernanceV1
-        | GovernanceAccountType::ProposalV1
-        | GovernanceAccountType::ProposalV2
-        | GovernanceAccountType::SignatoryRecordV1
-        | GovernanceAccountType::SignatoryRecordV2
-        | GovernanceAccountType::ProposalInstructionV1
-        | GovernanceAccountType::ProposalTransactionV2
-        | GovernanceAccountType::VoteRecordV1
-        | GovernanceAccountType::VoteRecordV2
+        | GovernanceAccountType::TokenOwnerRecord
+        | GovernanceAccountType::Proposal
+        | GovernanceAccountType::SignatoryRecord
+        | GovernanceAccountType::ProposalTransaction
+        | GovernanceAccountType::VoteRecord
         | GovernanceAccountType::ProgramMetadata => false,
     }
 }
 
-/// Checks if the given account type is on of the Governance account types of any version
-pub fn is_governance_account_type(account_type: &GovernanceAccountType) -> bool {
-    is_governance_v1_account_type(account_type) || is_governance_v2_account_type(account_type)
-}
+// Checks if the given account type is on of the Governance account types of any version
+// pub fn is_governance_account_type(account_type: &GovernanceAccountType) -> bool {
+//     is_governance_v1_account_type(account_type) || is_governance_v2_account_type(account_type)
+// }
 
-impl IsInitialized for GovernanceV2 {
+impl IsInitialized for Governance {
     fn is_initialized(&self) -> bool {
         is_governance_v2_account_type(&self.account_type)
     }
 }
 
-impl GovernanceV2 {
+impl Governance {
     /// Returns Governance PDA seeds
     pub fn get_governance_address_seeds(&self) -> Result<[&[u8]; 3], ProgramError> {
         let seeds = match self.account_type {
-            GovernanceAccountType::GovernanceV1 | GovernanceAccountType::GovernanceV2 => {
+            GovernanceAccountType::Governance => {
                 get_governance_address_seeds(&self.realm, &self.governed_account)
             }
-            GovernanceAccountType::ProgramGovernanceV1
-            | GovernanceAccountType::ProgramGovernanceV2 => {
+            GovernanceAccountType::ProgramGovernance => {
                 get_program_governance_address_seeds(&self.realm, &self.governed_account)
             }
-            GovernanceAccountType::MintGovernanceV1 | GovernanceAccountType::MintGovernanceV2 => {
+            GovernanceAccountType::MintGovernance => {
                 get_mint_governance_address_seeds(&self.realm, &self.governed_account)
             }
-            GovernanceAccountType::TokenGovernanceV1 | GovernanceAccountType::TokenGovernanceV2 => {
+            GovernanceAccountType::TokenGovernance => {
                 get_token_governance_address_seeds(&self.realm, &self.governed_account)
             }
             GovernanceAccountType::Uninitialized
-            | GovernanceAccountType::RealmV1
-            | GovernanceAccountType::TokenOwnerRecordV1
-            | GovernanceAccountType::ProposalV1
-            | GovernanceAccountType::SignatoryRecordV1
-            | GovernanceAccountType::VoteRecordV1
-            | GovernanceAccountType::ProposalInstructionV1
             | GovernanceAccountType::RealmConfig
-            | GovernanceAccountType::VoteRecordV2
-            | GovernanceAccountType::ProposalTransactionV2
-            | GovernanceAccountType::ProposalV2
+            | GovernanceAccountType::VoteRecord
+            | GovernanceAccountType::ProposalTransaction
+            | GovernanceAccountType::Proposal
             | GovernanceAccountType::ProgramMetadata
-            | GovernanceAccountType::RealmV2
-            | GovernanceAccountType::TokenOwnerRecordV2
-            | GovernanceAccountType::SignatoryRecordV2 => {
+            | GovernanceAccountType::Realm
+            | GovernanceAccountType::TokenOwnerRecord
+            | GovernanceAccountType::SignatoryRecord => {
                 return Err(GovernanceToolsError::InvalidAccountType.into())
             }
         };
@@ -169,29 +153,7 @@ impl GovernanceV2 {
 
     /// Serializes account into the target buffer
     pub fn serialize<W: Write>(self, writer: &mut W) -> Result<(), ProgramError> {
-        if is_governance_v2_account_type(&self.account_type) {
-            BorshSerialize::serialize(&self, writer)?
-        } else if is_governance_v1_account_type(&self.account_type) {
-            // V1 account can't be resized and we have to translate it back to the original format
-
-            // If reserved_v2 is used it must be individually asses for v1 backward compatibility impact
-            if self.reserved_v2 != [0; 128] {
-                panic!("Extended data not supported by GovernanceV1")
-            }
-
-            let governance_data_v1 = GovernanceV1 {
-                account_type: self.account_type,
-                realm: self.realm,
-                governed_account: self.governed_account,
-                proposals_count: self.proposals_count,
-                config: self.config,
-                reserved: self.reserved,
-                voting_proposal_count: self.voting_proposal_count,
-            };
-
-            BorshSerialize::serialize(&governance_data_v1, writer)?;
-        }
-
+        BorshSerialize::serialize(&self, writer)?;
         Ok(())
     }
 }
@@ -200,33 +162,13 @@ impl GovernanceV2 {
 pub fn get_governance_data(
     program_id: &Pubkey,
     governance_info: &AccountInfo,
-) -> Result<GovernanceV2, ProgramError> {
+) -> Result<Governance, ProgramError> {
+
     if governance_info.data_is_empty() {
         return Err(GovernanceToolsError::AccountDoesNotExist.into());
     }
 
-    let account_type: GovernanceAccountType =
-        try_from_slice_unchecked(&governance_info.data.borrow())?;
-
-    // If the account is V1 version then translate to V2
-    if is_governance_v1_account_type(&account_type) {
-        let governance_data_v1 = get_account_data::<GovernanceV1>(program_id, governance_info)?;
-
-        return Ok(GovernanceV2 {
-            account_type,
-            realm: governance_data_v1.realm,
-            governed_account: governance_data_v1.governed_account,
-            proposals_count: governance_data_v1.proposals_count,
-            config: governance_data_v1.config,
-            reserved: governance_data_v1.reserved,
-            voting_proposal_count: governance_data_v1.voting_proposal_count,
-
-            // Add the extra reserved_v2 padding
-            reserved_v2: [0; 128],
-        });
-    }
-
-    get_account_data::<GovernanceV2>(program_id, governance_info)
+    get_account_data::<Governance>(program_id, governance_info)
 }
 
 /// Deserializes Governance account, checks owner program and asserts governance belongs to the given ream
@@ -234,7 +176,7 @@ pub fn get_governance_data_for_realm(
     program_id: &Pubkey,
     governance_info: &AccountInfo,
     realm: &Pubkey,
-) -> Result<GovernanceV2, ProgramError> {
+) -> Result<Governance, ProgramError> {
     let governance_data = get_governance_data(program_id, governance_info)?;
 
     if governance_data.realm != *realm {
@@ -357,7 +299,7 @@ pub fn assert_is_valid_governance(
     program_id: &Pubkey,
     governance_info: &AccountInfo,
 ) -> Result<(), ProgramError> {
-    assert_is_valid_account_of_types(program_id, governance_info, is_governance_account_type)
+    assert_is_valid_account_of_types(program_id, governance_info, is_governance_v2_account_type)
 }
 
 /// Validates args supplied to create governance account

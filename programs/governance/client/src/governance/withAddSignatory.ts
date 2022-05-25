@@ -3,12 +3,11 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { GOVERNANCE_SCHEMA } from './serialisation';
 import { serialize } from 'borsh';
 import { AddSignatoryArgs } from './instructions';
 import { getSignatoryRecordAddress } from './accounts';
-import { SYSTEM_PROGRAM_ID } from '../tools/sdk/runtime';
-import { PROGRAM_VERSION_V1 } from '../registry/constants';
+import { SYSTEM_PROGRAM_ID } from '../tools';
+import {GOVERNANCE_SCHEMA} from "./serialisation";
 
 export const withAddSignatory = async (
   instructions: TransactionInstruction[],
@@ -61,14 +60,6 @@ export const withAddSignatory = async (
       isWritable: false,
     },
   ];
-
-  if (programVersion === PROGRAM_VERSION_V1) {
-    keys.push({
-      pubkey: SYSVAR_RENT_PUBKEY,
-      isSigner: false,
-      isWritable: false,
-    });
-  }
 
   instructions.push(
     new TransactionInstruction({

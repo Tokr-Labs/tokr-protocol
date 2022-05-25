@@ -1,28 +1,25 @@
 //! ProposalTransaction Account
 
-use core::panic;
-
-use borsh::maybestd::io::Write;
-
-use crate::{
-    error::GovernanceError,
-    state::{
-        enums::{GovernanceAccountType, TransactionExecutionStatus},
-        legacy::ProposalInstructionV1,
-    },
-    PROGRAM_AUTHORITY_SEED,
-};
 use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use borsh::maybestd::io::Write;
 use solana_program::{
     account_info::AccountInfo,
-    borsh::try_from_slice_unchecked,
     clock::UnixTimestamp,
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     program_pack::IsInitialized,
     pubkey::Pubkey,
 };
-use spl_governance_tools::account::{get_account_data, AccountMaxSize};
+
+use spl_governance_tools::account::{AccountMaxSize, get_account_data};
+
+use crate::{
+    error::GovernanceError,
+    PROGRAM_AUTHORITY_SEED,
+    state::{
+        enums::{GovernanceAccountType, TransactionExecutionStatus},
+    },
+};
 
 /// InstructionData wrapper. It can be removed once Borsh serialization for Instruction is supported in the SDK
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
@@ -87,7 +84,7 @@ impl From<&InstructionData> for Instruction {
 /// Account for an instruction to be executed for Proposal
 #[repr(C)]
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct ProposalTransactionV2 {
+pub struct ProposalTransaction {
     /// Governance Account type
     pub account_type: GovernanceAccountType,
 
@@ -120,7 +117,7 @@ pub struct ProposalTransactionV2 {
     pub reserved_v2: [u8; 8],
 }
 
-impl AccountMaxSize for ProposalTransactionV2 {
+impl AccountMaxSize for ProposalTransaction {
     fn get_max_size(&self) -> Option<usize> {
         let instructions_size = self
             .instructions
@@ -132,42 +129,16 @@ impl AccountMaxSize for ProposalTransactionV2 {
     }
 }
 
-impl IsInitialized for ProposalTransactionV2 {
+impl IsInitialized for ProposalTransaction {
     fn is_initialized(&self) -> bool {
-        self.account_type == GovernanceAccountType::ProposalTransactionV2
+        self.account_type == GovernanceAccountType::ProposalTransaction
     }
 }
 
-impl ProposalTransactionV2 {
+impl ProposalTransaction {
     /// Serializes account into the target buffer
     pub fn serialize<W: Write>(self, writer: &mut W) -> Result<(), ProgramError> {
-        if self.account_type == GovernanceAccountType::ProposalTransactionV2 {
-            BorshSerialize::serialize(&self, writer)?
-        } else if self.account_type == GovernanceAccountType::ProposalInstructionV1 {
-            if self.instructions.len() != 1 {
-                panic!("Multiple instructions are not supported by ProposalInstructionV1")
-            };
-
-            // V1 account can't be resized and we have to translate it back to the original format
-
-            // If reserved_v2 is used it must be individually asses for v1 backward compatibility impact
-            if self.reserved_v2 != [0; 8] {
-                panic!("Extended data not supported by ProposalInstructionV1")
-            }
-
-            let proposal_transaction_data_v1 = ProposalInstructionV1 {
-                account_type: self.account_type,
-                proposal: self.proposal,
-                instruction_index: self.transaction_index,
-                hold_up_time: self.hold_up_time,
-                instruction: self.instructions[0].clone(),
-                executed_at: self.executed_at,
-                execution_status: self.execution_status,
-            };
-
-            BorshSerialize::serialize(&proposal_transaction_data_v1, writer)?;
-        }
-
+        BorshSerialize::serialize(&self, writer)?;
         Ok(())
     }
 }
@@ -208,29 +179,8 @@ pub fn get_proposal_transaction_address<'a>(
 pub fn get_proposal_transaction_data(
     program_id: &Pubkey,
     proposal_transaction_info: &AccountInfo,
-) -> Result<ProposalTransactionV2, ProgramError> {
-    let account_type: GovernanceAccountType =
-        try_from_slice_unchecked(&proposal_transaction_info.data.borrow())?;
-
-    // If the account is V1 version then translate to V2
-    if account_type == GovernanceAccountType::ProposalInstructionV1 {
-        let proposal_transaction_data_v1 =
-            get_account_data::<ProposalInstructionV1>(program_id, proposal_transaction_info)?;
-
-        return Ok(ProposalTransactionV2 {
-            account_type,
-            proposal: proposal_transaction_data_v1.proposal,
-            option_index: 0, // V1 has a single implied option at index 0
-            transaction_index: proposal_transaction_data_v1.instruction_index,
-            hold_up_time: proposal_transaction_data_v1.hold_up_time,
-            instructions: vec![proposal_transaction_data_v1.instruction],
-            executed_at: proposal_transaction_data_v1.executed_at,
-            execution_status: proposal_transaction_data_v1.execution_status,
-            reserved_v2: [0; 8],
-        });
-    }
-
-    get_account_data::<ProposalTransactionV2>(program_id, proposal_transaction_info)
+) -> Result<ProposalTransaction, ProgramError> {
+    get_account_data::<ProposalTransaction>(program_id, proposal_transaction_info)
 }
 
 ///  Deserializes and returns ProposalTransaction account and checks it belongs to the given Proposal
@@ -238,7 +188,7 @@ pub fn get_proposal_transaction_data_for_proposal(
     program_id: &Pubkey,
     proposal_transaction_info: &AccountInfo,
     proposal: &Pubkey,
-) -> Result<ProposalTransactionV2, ProgramError> {
+) -> Result<ProposalTransaction, ProgramError> {
     let proposal_transaction_data =
         get_proposal_transaction_data(program_id, proposal_transaction_info)?;
 
@@ -251,7 +201,6 @@ pub fn get_proposal_transaction_data_for_proposal(
 
 #[cfg(test)]
 mod test {
-
     use std::str::FromStr;
 
     use solana_program::{bpf_loader_upgradeable, clock::Epoch};
@@ -278,9 +227,9 @@ mod test {
         }]
     }
 
-    fn create_test_proposal_transaction() -> ProposalTransactionV2 {
-        ProposalTransactionV2 {
-            account_type: GovernanceAccountType::ProposalTransactionV2,
+    fn create_test_proposal_transaction() -> ProposalTransaction {
+        ProposalTransaction {
+            account_type: GovernanceAccountType::ProposalTransaction,
             proposal: Pubkey::new_unique(),
             option_index: 0,
             transaction_index: 1,
@@ -356,57 +305,4 @@ mod test {
         assert_eq!(base64,"Aqj2kU6IobDiEBU+92OuKwDCuT0WwSTSwFN6EASAAAAHAAAAchkHXTU9jF+rKpILT6dzsVyNI9NsQy9cab+GGvdwNn0AAfh2HVruy2YibpgcQUmJf5att5YdPXSv1k2pRAKAfpSWAAFDVQuXWos2urmegSPblI813GlTm7CJ/8rv+9yzNE3yfwAB3Gw+apCyfrRNqJ6f1160Htkx+uYZT6FIILQ3WzNA4KwAAQan1RcZLFxRIYzJTD1K8X9Y2u4Im6H9ROPb2YoAAAAAAAAGp9UXGMd0yShWY5hpHV62i164o5tLbVxzVVshAAAAAAAA3Gw+apCyfrRNqJ6f1160Htkx+uYZT6FIILQ3WzNA4KwBAAQAAAADAAAA");
     }
 
-    #[test]
-    fn test_proposal_transaction_v1_to_v2_serialization_roundtrip() {
-        // Arrange
-
-        let proposal_transaction_v1_source = ProposalInstructionV1 {
-            account_type: GovernanceAccountType::ProposalInstructionV1,
-            proposal: Pubkey::new_unique(),
-            instruction_index: 1,
-            hold_up_time: 120,
-            instruction: create_test_instruction_data()[0].clone(),
-            executed_at: Some(155),
-            execution_status: TransactionExecutionStatus::Success,
-        };
-
-        let mut account_data = vec![];
-        proposal_transaction_v1_source
-            .serialize(&mut account_data)
-            .unwrap();
-
-        let program_id = Pubkey::new_unique();
-
-        let info_key = Pubkey::new_unique();
-        let mut lamports = 10u64;
-
-        let account_info = AccountInfo::new(
-            &info_key,
-            false,
-            false,
-            &mut lamports,
-            &mut account_data[..],
-            &program_id,
-            false,
-            Epoch::default(),
-        );
-
-        // Act
-
-        let proposal_transaction_v2 =
-            get_proposal_transaction_data(&program_id, &account_info).unwrap();
-
-        proposal_transaction_v2
-            .serialize(&mut &mut **account_info.data.borrow_mut())
-            .unwrap();
-
-        // Assert
-        let proposal_transaction_v1_target =
-            get_account_data::<ProposalInstructionV1>(&program_id, &account_info).unwrap();
-
-        assert_eq!(
-            proposal_transaction_v1_source,
-            proposal_transaction_v1_target
-        )
-    }
 }

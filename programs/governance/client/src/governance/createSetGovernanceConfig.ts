@@ -1,8 +1,8 @@
 import { PublicKey, TransactionInstruction } from '@solana/web3.js';
 import { GovernanceConfig } from './accounts';
 import { SetGovernanceConfigArgs } from './instructions';
-import { GOVERNANCE_SCHEMA } from './serialisation';
 import { serialize } from 'borsh';
+import {GOVERNANCE_SCHEMA} from "./serialisation";
 
 export function createSetGovernanceConfig(
   programId: PublicKey,

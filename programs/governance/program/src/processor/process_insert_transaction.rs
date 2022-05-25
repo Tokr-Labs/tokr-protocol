@@ -18,7 +18,7 @@ use crate::{
         governance::get_governance_data,
         proposal::get_proposal_data_for_governance,
         proposal_transaction::{
-            get_proposal_transaction_address_seeds, InstructionData, ProposalTransactionV2,
+            get_proposal_transaction_address_seeds, InstructionData, ProposalTransaction,
         },
         token_owner_record::get_token_owner_record_data_for_proposal_owner,
     },
@@ -85,8 +85,8 @@ pub fn process_insert_transaction(
     option.transactions_count = option.transactions_count.checked_add(1).unwrap();
     proposal_data.serialize(&mut *proposal_info.data.borrow_mut())?;
 
-    let proposal_transaction_data = ProposalTransactionV2 {
-        account_type: GovernanceAccountType::ProposalTransactionV2,
+    let proposal_transaction_data = ProposalTransaction {
+        account_type: GovernanceAccountType::ProposalTransaction,
         option_index,
         transaction_index: instruction_index,
         hold_up_time,
@@ -97,7 +97,7 @@ pub fn process_insert_transaction(
         reserved_v2: [0; 8],
     };
 
-    create_and_serialize_account_signed::<ProposalTransactionV2>(
+    create_and_serialize_account_signed::<ProposalTransaction>(
         payer_info,
         proposal_transaction_info,
         &proposal_transaction_data,

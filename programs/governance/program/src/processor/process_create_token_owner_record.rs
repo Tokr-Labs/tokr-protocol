@@ -14,7 +14,7 @@ use crate::{
     state::{
         enums::GovernanceAccountType,
         realm::get_realm_data,
-        token_owner_record::{get_token_owner_record_address_seeds, TokenOwnerRecordV2},
+        token_owner_record::{get_token_owner_record_address_seeds, TokenOwnerRecord},
     },
 };
 
@@ -40,8 +40,8 @@ pub fn process_create_token_owner_record(
         return Err(GovernanceError::TokenOwnerRecordAlreadyExists.into());
     }
 
-    let token_owner_record_data = TokenOwnerRecordV2 {
-        account_type: GovernanceAccountType::TokenOwnerRecordV2,
+    let token_owner_record_data = TokenOwnerRecord {
+        account_type: GovernanceAccountType::TokenOwnerRecord,
         realm: *realm_info.key,
         governing_token_owner: *governing_token_owner_info.key,
         governing_token_deposit_amount: 0,

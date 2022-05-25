@@ -1,41 +1,39 @@
 //! Proposal  Account
 
-use borsh::maybestd::io::Write;
-use solana_program::account_info::next_account_info;
 use std::cmp::Ordering;
 use std::slice::Iter;
 
-use solana_program::borsh::try_from_slice_unchecked;
-use solana_program::clock::{Slot, UnixTimestamp};
-
+use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use borsh::maybestd::io::Write;
 use solana_program::{
     account_info::AccountInfo, program_error::ProgramError, program_pack::IsInitialized,
     pubkey::Pubkey,
 };
-use spl_governance_tools::account::{get_account_data, AccountMaxSize};
+use solana_program::account_info::next_account_info;
+use solana_program::clock::{Slot, UnixTimestamp};
 
-use crate::addins::max_voter_weight::{
-    assert_is_valid_max_voter_weight,
-    get_max_voter_weight_record_data_for_realm_and_governing_token_mint,
-};
-use crate::state::legacy::ProposalV1;
-use crate::tools::spl_token::get_spl_token_mint_supply;
+use spl_governance_tools::account::{AccountMaxSize, get_account_data};
+
 use crate::{
     error::GovernanceError,
+    PROGRAM_AUTHORITY_SEED,
     state::{
         enums::{
             GovernanceAccountType, InstructionExecutionFlags, MintMaxVoteWeightSource,
             ProposalState, TransactionExecutionStatus, VoteThresholdPercentage, VoteTipping,
         },
         governance::GovernanceConfig,
-        proposal_transaction::ProposalTransactionV2,
-        realm::RealmV2,
+        proposal_transaction::ProposalTransaction,
+        realm::Realm,
         realm_config::get_realm_config_data_for_realm,
         vote_record::Vote,
     },
-    PROGRAM_AUTHORITY_SEED,
 };
-use borsh::{BorshDeserialize, BorshSchema, BorshSerialize};
+use crate::addins::max_voter_weight::{
+    assert_is_valid_max_voter_weight,
+    get_max_voter_weight_record_data_for_realm_and_governing_token_mint,
+};
+use crate::tools::spl_token::get_spl_token_mint_supply;
 
 /// Proposal option vote result
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
@@ -103,7 +101,7 @@ pub enum VoteType {
 
 /// Governance Proposal
 #[derive(Clone, Debug, PartialEq, BorshDeserialize, BorshSerialize, BorshSchema)]
-pub struct ProposalV2 {
+pub struct Proposal {
     /// Governance account type
     pub account_type: GovernanceAccountType,
 
@@ -202,20 +200,20 @@ pub struct ProposalV2 {
     pub description_link: String,
 }
 
-impl AccountMaxSize for ProposalV2 {
+impl AccountMaxSize for Proposal {
     fn get_max_size(&self) -> Option<usize> {
         let options_size: usize = self.options.iter().map(|o| o.label.len() + 19).sum();
         Some(self.name.len() + self.description_link.len() + options_size + 295)
     }
 }
 
-impl IsInitialized for ProposalV2 {
+impl IsInitialized for Proposal {
     fn is_initialized(&self) -> bool {
-        self.account_type == GovernanceAccountType::ProposalV2
+        self.account_type == GovernanceAccountType::Proposal
     }
 }
 
-impl ProposalV2 {
+impl Proposal {
     /// Checks if Signatories can be edited (added or removed) for the Proposal in the given state
     pub fn assert_can_edit_signatories(&self) -> Result<(), ProgramError> {
         self.assert_is_draft_state()
@@ -413,7 +411,7 @@ impl ProposalV2 {
     /// Calculates max voter weight for given mint supply and realm config
     fn get_max_voter_weight_from_mint_supply(
         &mut self,
-        realm_data: &RealmV2,
+        realm_data: &Realm,
         governing_token_mint_supply: u64,
     ) -> Result<u64, ProgramError> {
         // max vote weight fraction is only used for community mint
@@ -464,7 +462,7 @@ impl ProposalV2 {
         governing_token_mint_info: &AccountInfo,
         account_info_iter: &mut Iter<AccountInfo>,
         realm: &Pubkey,
-        realm_data: &RealmV2,
+        realm_data: &Realm,
     ) -> Result<u64, ProgramError> {
         // if the realm uses addin for max community voter weight then use the externally provided max weight
         if realm_data.config.use_max_community_voter_weight_addin
@@ -643,7 +641,7 @@ impl ProposalV2 {
     /// Checks if Instructions can be executed for the Proposal in the given state
     pub fn assert_can_execute_transaction(
         &self,
-        proposal_transaction_data: &ProposalTransactionV2,
+        proposal_transaction_data: &ProposalTransaction,
         current_unix_timestamp: UnixTimestamp,
     ) -> Result<(), ProgramError> {
         match self.state {
@@ -686,7 +684,7 @@ impl ProposalV2 {
     /// Checks if the instruction can be flagged with error for the Proposal in the given state
     pub fn assert_can_flag_transaction_error(
         &self,
-        proposal_transaction_data: &ProposalTransactionV2,
+        proposal_transaction_data: &ProposalTransaction,
         current_unix_timestamp: UnixTimestamp,
     ) -> Result<(), ProgramError> {
         // Instruction can be flagged for error only when it's eligible for execution
@@ -752,61 +750,7 @@ impl ProposalV2 {
 
     /// Serializes account into the target buffer
     pub fn serialize<W: Write>(self, writer: &mut W) -> Result<(), ProgramError> {
-        if self.account_type == GovernanceAccountType::ProposalV2 {
-            BorshSerialize::serialize(&self, writer)?
-        } else if self.account_type == GovernanceAccountType::ProposalV1 {
-            // V1 account can't be resized and we have to translate it back to the original format
-
-            if self.abstain_vote_weight.is_some() {
-                panic!("ProposalV1 doesn't support Abstain vote")
-            }
-
-            if self.veto_vote_weight.is_some() {
-                panic!("ProposalV1 doesn't support Veto vote")
-            }
-
-            if self.start_voting_at.is_some() {
-                panic!("ProposalV1 doesn't support start time")
-            }
-
-            if self.max_voting_time.is_some() {
-                panic!("ProposalV1 doesn't support max voting time")
-            }
-
-            if self.options.len() != 1 {
-                panic!("ProposalV1 doesn't support multiple options")
-            }
-
-            let proposal_data_v1 = ProposalV1 {
-                account_type: self.account_type,
-                governance: self.governance,
-                governing_token_mint: self.governing_token_mint,
-                state: self.state,
-                token_owner_record: self.token_owner_record,
-                signatories_count: self.signatories_count,
-                signatories_signed_off_count: self.signatories_signed_off_count,
-                yes_votes_count: self.options[0].vote_weight,
-                no_votes_count: self.deny_vote_weight.unwrap(),
-                instructions_executed_count: self.options[0].transactions_executed_count,
-                instructions_count: self.options[0].transactions_count,
-                instructions_next_index: self.options[0].transactions_next_index,
-                draft_at: self.draft_at,
-                signing_off_at: self.signing_off_at,
-                voting_at: self.voting_at,
-                voting_at_slot: self.voting_at_slot,
-                voting_completed_at: self.voting_completed_at,
-                executing_at: self.executing_at,
-                closed_at: self.closed_at,
-                execution_flags: self.execution_flags,
-                max_vote_weight: self.max_vote_weight,
-                vote_threshold_percentage: self.vote_threshold_percentage,
-                name: self.name,
-                description_link: self.description_link,
-            };
-
-            BorshSerialize::serialize(&proposal_data_v1, writer)?;
-        }
-
+        BorshSerialize::serialize(&self, writer)?;
         Ok(())
     }
 }
@@ -843,65 +787,8 @@ fn get_min_vote_threshold_weight(
 pub fn get_proposal_data(
     program_id: &Pubkey,
     proposal_info: &AccountInfo,
-) -> Result<ProposalV2, ProgramError> {
-    let account_type: GovernanceAccountType =
-        try_from_slice_unchecked(&proposal_info.data.borrow())?;
-
-    // If the account is V1 version then translate to V2
-    if account_type == GovernanceAccountType::ProposalV1 {
-        let proposal_data_v1 = get_account_data::<ProposalV1>(program_id, proposal_info)?;
-
-        let vote_result = match proposal_data_v1.state {
-            ProposalState::Draft
-            | ProposalState::SigningOff
-            | ProposalState::Voting
-            | ProposalState::Cancelled => OptionVoteResult::None,
-            ProposalState::Succeeded
-            | ProposalState::Executing
-            | ProposalState::ExecutingWithErrors
-            | ProposalState::Completed => OptionVoteResult::Succeeded,
-            ProposalState::Defeated => OptionVoteResult::None,
-        };
-
-        return Ok(ProposalV2 {
-            account_type,
-            governance: proposal_data_v1.governance,
-            governing_token_mint: proposal_data_v1.governing_token_mint,
-            state: proposal_data_v1.state,
-            token_owner_record: proposal_data_v1.token_owner_record,
-            signatories_count: proposal_data_v1.signatories_count,
-            signatories_signed_off_count: proposal_data_v1.signatories_signed_off_count,
-            vote_type: VoteType::SingleChoice,
-            options: vec![ProposalOption {
-                label: "Yes".to_string(),
-                vote_weight: proposal_data_v1.yes_votes_count,
-                vote_result,
-                transactions_executed_count: proposal_data_v1.instructions_executed_count,
-                transactions_count: proposal_data_v1.instructions_count,
-                transactions_next_index: proposal_data_v1.instructions_next_index,
-            }],
-            deny_vote_weight: Some(proposal_data_v1.no_votes_count),
-            veto_vote_weight: None,
-            abstain_vote_weight: None,
-            start_voting_at: None,
-            draft_at: proposal_data_v1.draft_at,
-            signing_off_at: proposal_data_v1.signing_off_at,
-            voting_at: proposal_data_v1.voting_at,
-            voting_at_slot: proposal_data_v1.voting_at_slot,
-            voting_completed_at: proposal_data_v1.voting_completed_at,
-            executing_at: proposal_data_v1.executing_at,
-            closed_at: proposal_data_v1.closed_at,
-            execution_flags: proposal_data_v1.execution_flags,
-            max_vote_weight: proposal_data_v1.max_vote_weight,
-            max_voting_time: None,
-            vote_threshold_percentage: proposal_data_v1.vote_threshold_percentage,
-            name: proposal_data_v1.name,
-            description_link: proposal_data_v1.description_link,
-            reserved: [0; 64],
-        });
-    }
-
-    get_account_data::<ProposalV2>(program_id, proposal_info)
+) -> Result<Proposal, ProgramError> {
+    get_account_data::<Proposal>(program_id, proposal_info)
 }
 
 /// Deserializes Proposal and validates it belongs to the given Governance and Governing Mint
@@ -910,7 +797,7 @@ pub fn get_proposal_data_for_governance_and_governing_mint(
     proposal_info: &AccountInfo,
     governance: &Pubkey,
     governing_token_mint: &Pubkey,
-) -> Result<ProposalV2, ProgramError> {
+) -> Result<Proposal, ProgramError> {
     let proposal_data = get_proposal_data_for_governance(program_id, proposal_info, governance)?;
 
     if proposal_data.governing_token_mint != *governing_token_mint {
@@ -925,7 +812,7 @@ pub fn get_proposal_data_for_governance(
     program_id: &Pubkey,
     proposal_info: &AccountInfo,
     governance: &Pubkey,
-) -> Result<ProposalV2, ProgramError> {
+) -> Result<Proposal, ProgramError> {
     let proposal_data = get_proposal_data(program_id, proposal_info)?;
 
     if proposal_data.governance != *governance {
@@ -997,21 +884,20 @@ pub fn assert_valid_proposal_options(
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use proptest::prelude::*;
     use solana_program::clock::Epoch;
 
     use crate::state::{
         enums::{MintMaxVoteWeightSource, VoteThresholdPercentage},
-        legacy::ProposalV1,
         realm::RealmConfig,
         vote_record::VoteChoice,
     };
 
-    use proptest::prelude::*;
+    use super::*;
 
-    fn create_test_proposal() -> ProposalV2 {
-        ProposalV2 {
-            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+    fn create_test_proposal() -> Proposal {
+        Proposal {
+            account_type: GovernanceAccountType::TokenOwnerRecord,
             governance: Pubkey::new_unique(),
             governing_token_mint: Pubkey::new_unique(),
             max_vote_weight: Some(10),
@@ -1055,7 +941,7 @@ mod test {
         }
     }
 
-    fn create_test_multi_option_proposal() -> ProposalV2 {
+    fn create_test_multi_option_proposal() -> Proposal {
         let mut proposal = create_test_proposal();
         proposal.options = vec![
             ProposalOption {
@@ -1087,9 +973,9 @@ mod test {
         proposal
     }
 
-    fn create_test_realm() -> RealmV2 {
-        RealmV2 {
-            account_type: GovernanceAccountType::RealmV2,
+    fn create_test_realm() -> Realm {
+        Realm {
+            account_type: GovernanceAccountType::Realm,
             community_mint: Pubkey::new_unique(),
             reserved: [0; 6],
 
@@ -2207,68 +2093,5 @@ mod test {
         assert_eq!(result, Err(GovernanceError::InvalidProposalOptions.into()));
     }
 
-    #[test]
-    fn test_proposal_v1_to_v2_serialisation_roundtrip() {
-        // Arrange
 
-        let proposal_v1_source = ProposalV1 {
-            account_type: GovernanceAccountType::ProposalV1,
-            governance: Pubkey::new_unique(),
-            governing_token_mint: Pubkey::new_unique(),
-            state: ProposalState::Executing,
-            token_owner_record: Pubkey::new_unique(),
-            signatories_count: 5,
-            signatories_signed_off_count: 4,
-            yes_votes_count: 100,
-            no_votes_count: 80,
-            instructions_executed_count: 7,
-            instructions_count: 8,
-            instructions_next_index: 9,
-            draft_at: 200,
-            signing_off_at: Some(201),
-            voting_at: Some(202),
-            voting_at_slot: Some(203),
-            voting_completed_at: Some(204),
-            executing_at: Some(205),
-            closed_at: Some(206),
-            execution_flags: InstructionExecutionFlags::None,
-            max_vote_weight: Some(250),
-            vote_threshold_percentage: Some(VoteThresholdPercentage::YesVote(65)),
-            name: "proposal".to_string(),
-            description_link: "proposal-description".to_string(),
-        };
-
-        let mut account_data = vec![];
-        proposal_v1_source.serialize(&mut account_data).unwrap();
-
-        let program_id = Pubkey::new_unique();
-
-        let info_key = Pubkey::new_unique();
-        let mut lamports = 10u64;
-
-        let account_info = AccountInfo::new(
-            &info_key,
-            false,
-            false,
-            &mut lamports,
-            &mut account_data[..],
-            &program_id,
-            false,
-            Epoch::default(),
-        );
-
-        // Act
-
-        let proposal_v2 = get_proposal_data(&program_id, &account_info).unwrap();
-
-        proposal_v2
-            .serialize(&mut &mut **account_info.data.borrow_mut())
-            .unwrap();
-
-        // Assert
-        let proposal_v1_target =
-            get_account_data::<ProposalV1>(&program_id, &account_info).unwrap();
-
-        assert_eq!(proposal_v1_source, proposal_v1_target)
-    }
 }

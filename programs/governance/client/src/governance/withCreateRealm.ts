@@ -14,7 +14,6 @@ import {
   getRealmConfigAddress,
 } from './accounts';
 import BN from 'bn.js';
-import { PROGRAM_VERSION_V2 } from '../registry/constants';
 import { SYSTEM_PROGRAM_ID, TOKEN_PROGRAM_ID } from '../tools/sdk';
 
 export async function withCreateRealm(
@@ -31,11 +30,6 @@ export async function withCreateRealm(
   communityVoterWeightAddin?: PublicKey | undefined,
   maxCommunityVoterWeightAddin?: PublicKey | undefined,
 ) {
-  if (communityVoterWeightAddin && programVersion < PROGRAM_VERSION_V2) {
-    throw new Error(
-      `Voter weight addin is not supported in version ${programVersion}`,
-    );
-  }
 
   const configArgs = new RealmConfigArgs({
     useCouncilMint: councilMint !== undefined,
@@ -49,8 +43,9 @@ export async function withCreateRealm(
     configArgs,
     name,
   });
+
   const data = Buffer.from(
-    serialize(getGovernanceSchema(programVersion), args),
+    serialize(getGovernanceSchema(), args),
   );
 
   const [realmAddress] = await PublicKey.findProgramAddress(

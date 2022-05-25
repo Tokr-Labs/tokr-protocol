@@ -9,7 +9,7 @@ use crate::{
         enums::GovernanceAccountType,
         realm::{
             assert_valid_realm_config_args, get_governing_token_holding_address_seeds,
-            get_realm_address_seeds, RealmConfig, RealmConfigArgs, RealmV2,
+            get_realm_address_seeds, RealmConfig, RealmConfigArgs, Realm,
         },
         realm_config::{get_realm_config_address_seeds, RealmConfigAccount},
     },
@@ -124,8 +124,8 @@ pub fn process_create_realm(
         )?;
     }
 
-    let realm_data = RealmV2 {
-        account_type: GovernanceAccountType::RealmV2,
+    let realm_data = Realm {
+        account_type: GovernanceAccountType::Realm,
         community_mint: *governance_token_mint_info.key,
 
         name: name.clone(),
@@ -145,7 +145,7 @@ pub fn process_create_realm(
         reserved_v2: [0; 128],
     };
 
-    create_and_serialize_account_signed::<RealmV2>(
+    create_and_serialize_account_signed::<Realm>(
         payer_info,
         realm_info,
         &realm_data,

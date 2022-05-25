@@ -32,22 +32,22 @@ use spl_governance::{
         },
         governance::{
             get_governance_address, get_mint_governance_address, get_program_governance_address,
-            get_token_governance_address, GovernanceConfig, GovernanceV2,
+            get_token_governance_address, GovernanceConfig, Governance,
         },
         native_treasury::{get_native_treasury_address, NativeTreasury},
         program_metadata::{get_program_metadata_address, ProgramMetadata},
-        proposal::{get_proposal_address, OptionVoteResult, ProposalOption, ProposalV2, VoteType},
+        proposal::{get_proposal_address, OptionVoteResult, ProposalOption, Proposal, VoteType},
         proposal_transaction::{
-            get_proposal_transaction_address, InstructionData, ProposalTransactionV2,
+            get_proposal_transaction_address, InstructionData, ProposalTransaction,
         },
         realm::{
             get_governing_token_holding_address, get_realm_address, RealmConfig, RealmConfigArgs,
-            RealmV2, SetRealmAuthorityAction,
+            Realm, SetRealmAuthorityAction,
         },
         realm_config::{get_realm_config_address, RealmConfigAccount},
-        signatory_record::{get_signatory_record_address, SignatoryRecordV2},
-        token_owner_record::{get_token_owner_record_address, TokenOwnerRecordV2},
-        vote_record::{get_vote_record_address, Vote, VoteChoice, VoteRecordV2},
+        signatory_record::{get_signatory_record_address, SignatoryRecord},
+        token_owner_record::{get_token_owner_record_address, TokenOwnerRecord},
+        vote_record::{get_vote_record_address, Vote, VoteChoice, VoteRecord},
     },
     tools::bpf_loader_upgradeable::get_program_data_address,
 };
@@ -298,8 +298,8 @@ impl GovernanceProgramTest {
             .await
             .unwrap();
 
-        let account = RealmV2 {
-            account_type: GovernanceAccountType::RealmV2,
+        let account = Realm {
+            account_type: GovernanceAccountType::Realm,
             community_mint: community_token_mint_keypair.pubkey(),
 
             name,
@@ -391,8 +391,8 @@ impl GovernanceProgramTest {
             .await
             .unwrap();
 
-        let account = RealmV2 {
-            account_type: GovernanceAccountType::RealmV2,
+        let account = Realm {
+            account_type: GovernanceAccountType::Realm,
             community_mint: realm_cookie.account.community_mint,
 
             name,
@@ -472,8 +472,8 @@ impl GovernanceProgramTest {
             .await
             .unwrap();
 
-        let account = TokenOwnerRecordV2 {
-            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+        let account = TokenOwnerRecord {
+            account_type: GovernanceAccountType::TokenOwnerRecord,
             realm: realm_cookie.address,
             governing_token_mint: realm_cookie.account.community_mint,
             governing_token_owner: token_owner.pubkey(),
@@ -689,8 +689,8 @@ impl GovernanceProgramTest {
             &token_owner.pubkey(),
         );
 
-        let account = TokenOwnerRecordV2 {
-            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+        let account = TokenOwnerRecord {
+            account_type: GovernanceAccountType::TokenOwnerRecord,
             realm: *realm_address,
             governing_token_mint: *governing_mint,
             governing_token_owner: token_owner.pubkey(),
@@ -1240,8 +1240,8 @@ impl GovernanceProgramTest {
             governance_config.clone(),
         );
 
-        let account = GovernanceV2 {
-            account_type: GovernanceAccountType::GovernanceV2,
+        let account = Governance {
+            account_type: GovernanceAccountType::Governance,
             realm: realm_cookie.address,
             governed_account: governed_account_cookie.address,
             config: governance_config.clone(),
@@ -1409,8 +1409,8 @@ impl GovernanceProgramTest {
             .process_transaction(&[create_program_governance_ix], Some(signers))
             .await?;
 
-        let account = GovernanceV2 {
-            account_type: GovernanceAccountType::ProgramGovernanceV2,
+        let account = Governance {
+            account_type: GovernanceAccountType::ProgramGovernance,
             realm: realm_cookie.address,
             governed_account: governed_program_cookie.address,
             config,
@@ -1533,8 +1533,8 @@ impl GovernanceProgramTest {
             .process_transaction(&[create_mint_governance_ix], Some(signers))
             .await?;
 
-        let account = GovernanceV2 {
-            account_type: GovernanceAccountType::MintGovernanceV2,
+        let account = Governance {
+            account_type: GovernanceAccountType::MintGovernance,
             realm: realm_cookie.address,
             governed_account: governed_mint_cookie.address,
             config: governance_config.clone(),
@@ -1617,8 +1617,8 @@ impl GovernanceProgramTest {
             .process_transaction(&[create_token_governance_ix], Some(signers))
             .await?;
 
-        let account = GovernanceV2 {
-            account_type: GovernanceAccountType::TokenGovernanceV2,
+        let account = Governance {
+            account_type: GovernanceAccountType::TokenGovernance,
             realm: realm_cookie.address,
             governed_account: governed_token_cookie.address,
             config,
@@ -1783,8 +1783,8 @@ impl GovernanceProgramTest {
 
         let deny_vote_weight = if use_deny_option { Some(0) } else { None };
 
-        let account = ProposalV2 {
-            account_type: GovernanceAccountType::ProposalV2,
+        let account = Proposal {
+            account_type: GovernanceAccountType::Proposal,
             description_link,
             name: name.clone(),
             governance: governance_cookie.address,
@@ -1865,8 +1865,8 @@ impl GovernanceProgramTest {
             &signatory.pubkey(),
         );
 
-        let signatory_record_data = SignatoryRecordV2 {
-            account_type: GovernanceAccountType::SignatoryRecordV2,
+        let signatory_record_data = SignatoryRecord {
+            account_type: GovernanceAccountType::SignatoryRecord,
             proposal: proposal_cookie.address,
             signatory: signatory.pubkey(),
             signed_off: false,
@@ -2156,8 +2156,8 @@ impl GovernanceProgramTest {
             .account
             .governing_token_deposit_amount;
 
-        let account = VoteRecordV2 {
-            account_type: GovernanceAccountType::VoteRecordV2,
+        let account = VoteRecord {
+            account_type: GovernanceAccountType::VoteRecord,
             proposal: proposal_cookie.address,
             governing_token_owner: token_owner_record_cookie.token_owner.pubkey(),
             vote,
@@ -2442,8 +2442,8 @@ impl GovernanceProgramTest {
             &transaction_index.to_le_bytes(),
         );
 
-        let proposal_transaction_data = ProposalTransactionV2 {
-            account_type: GovernanceAccountType::ProposalTransactionV2,
+        let proposal_transaction_data = ProposalTransaction {
+            account_type: GovernanceAccountType::ProposalTransaction,
             option_index,
             transaction_index,
             hold_up_time,
@@ -2542,9 +2542,9 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_token_owner_record_account(&mut self, address: &Pubkey) -> TokenOwnerRecordV2 {
+    pub async fn get_token_owner_record_account(&mut self, address: &Pubkey) -> TokenOwnerRecord {
         self.bench
-            .get_borsh_account::<TokenOwnerRecordV2>(address)
+            .get_borsh_account::<TokenOwnerRecord>(address)
             .await
     }
 
@@ -2563,8 +2563,8 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_realm_account(&mut self, realm_address: &Pubkey) -> RealmV2 {
-        self.bench.get_borsh_account::<RealmV2>(realm_address).await
+    pub async fn get_realm_account(&mut self, realm_address: &Pubkey) -> Realm {
+        self.bench.get_borsh_account::<Realm>(realm_address).await
     }
 
     #[allow(dead_code)]
@@ -2578,23 +2578,23 @@ impl GovernanceProgramTest {
     }
 
     #[allow(dead_code)]
-    pub async fn get_governance_account(&mut self, governance_address: &Pubkey) -> GovernanceV2 {
+    pub async fn get_governance_account(&mut self, governance_address: &Pubkey) -> Governance {
         self.bench
-            .get_borsh_account::<GovernanceV2>(governance_address)
+            .get_borsh_account::<Governance>(governance_address)
             .await
     }
 
     #[allow(dead_code)]
-    pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> ProposalV2 {
+    pub async fn get_proposal_account(&mut self, proposal_address: &Pubkey) -> Proposal {
         self.bench
-            .get_borsh_account::<ProposalV2>(proposal_address)
+            .get_borsh_account::<Proposal>(proposal_address)
             .await
     }
 
     #[allow(dead_code)]
-    pub async fn get_vote_record_account(&mut self, vote_record_address: &Pubkey) -> VoteRecordV2 {
+    pub async fn get_vote_record_account(&mut self, vote_record_address: &Pubkey) -> VoteRecord {
         self.bench
-            .get_borsh_account::<VoteRecordV2>(vote_record_address)
+            .get_borsh_account::<VoteRecord>(vote_record_address)
             .await
     }
 
@@ -2602,9 +2602,9 @@ impl GovernanceProgramTest {
     pub async fn get_proposal_transaction_account(
         &mut self,
         proposal_transaction_address: &Pubkey,
-    ) -> ProposalTransactionV2 {
+    ) -> ProposalTransaction {
         self.bench
-            .get_borsh_account::<ProposalTransactionV2>(proposal_transaction_address)
+            .get_borsh_account::<ProposalTransaction>(proposal_transaction_address)
             .await
     }
 
@@ -2612,9 +2612,9 @@ impl GovernanceProgramTest {
     pub async fn get_signatory_record_account(
         &mut self,
         proposal_address: &Pubkey,
-    ) -> SignatoryRecordV2 {
+    ) -> SignatoryRecord {
         self.bench
-            .get_borsh_account::<SignatoryRecordV2>(proposal_address)
+            .get_borsh_account::<SignatoryRecord>(proposal_address)
             .await
     }
 

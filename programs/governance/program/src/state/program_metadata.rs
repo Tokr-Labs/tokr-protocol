@@ -5,7 +5,8 @@ use solana_program::{
     account_info::AccountInfo, clock::Slot, program_error::ProgramError,
     program_pack::IsInitialized, pubkey::Pubkey,
 };
-use spl_governance_tools::account::{get_account_data, AccountMaxSize};
+
+use spl_governance_tools::account::{AccountMaxSize, get_account_data};
 
 use crate::state::enums::GovernanceAccountType;
 
@@ -59,13 +60,12 @@ pub fn get_program_metadata_data(
 
 #[cfg(test)]
 mod test {
-
     use super::*;
 
     #[test]
     fn test_max_size() {
         let program_metadata_data = ProgramMetadata {
-            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+            account_type: GovernanceAccountType::TokenOwnerRecord,
             updated_at: 10,
             reserved: [0; 64],
             version: "111.122.155".to_string(),

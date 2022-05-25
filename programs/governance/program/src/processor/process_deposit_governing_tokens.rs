@@ -16,7 +16,7 @@ use crate::{
         realm::get_realm_data,
         token_owner_record::{
             get_token_owner_record_address_seeds, get_token_owner_record_data_for_seeds,
-            TokenOwnerRecordV2,
+            TokenOwnerRecord,
         },
     },
     tools::spl_token::{get_spl_token_mint, get_spl_token_owner, transfer_spl_tokens},
@@ -78,8 +78,8 @@ pub fn process_deposit_governing_tokens(
             return Err(GovernanceError::GoverningTokenOwnerMustSign.into());
         }
 
-        let token_owner_record_data = TokenOwnerRecordV2 {
-            account_type: GovernanceAccountType::TokenOwnerRecordV2,
+        let token_owner_record_data = TokenOwnerRecord {
+            account_type: GovernanceAccountType::TokenOwnerRecord,
             realm: *realm_info.key,
             governing_token_owner: *governing_token_owner_info.key,
             governing_token_deposit_amount: amount,
