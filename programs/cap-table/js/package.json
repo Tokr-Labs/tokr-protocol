@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@solana/spl-token": "0.2.0",
-    "@solana/web3.js": "1.22.0",
-    "underscore": "^1.13.3"
+    "@solana/web3.js": "1.43.1",
+    "underscore": "1.13.3"
   },
   "devDependencies": {
     "@types/underscore": "^1.11.4",

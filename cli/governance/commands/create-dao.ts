@@ -318,6 +318,7 @@ const executeMintInstructions = async (
     mintTransaction.add(...instructions)
     mintTransaction.feePayer = ownerKeypair.publicKey;
 
+
     await sendAndConfirmTransaction(
         connection,
         mintTransaction,
@@ -370,23 +371,26 @@ const mintMaxLpTokens = async (
     amount: number
 ) => {
 
-    const ownerAta = await getOrCreateAssociatedTokenAccount(
-        connection,
-        payer,
-        mint,
-        owner
-    )
+        const ownerAta = await getOrCreateAssociatedTokenAccount(
+            connection,
+            payer,
+            mint,
+            owner
+        )
 
-    await mintTo(
-        connection,
-        payer,
-        mint,
-        ownerAta.address,
-        owner,
-        amount
-    )
+        console.log(ownerAta.address.toBase58());
+        console.log(payer.publicKey.toString())
 
-    return ownerAta.address
+        await mintTo(
+            connection,
+            payer,
+            mint,
+            ownerAta.address,
+            owner,
+            amount
+        )
+
+        return ownerAta.address
 
 }
 
