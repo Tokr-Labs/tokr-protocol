@@ -4,7 +4,10 @@ import {IdentityStatus} from "../../../programs/identity-verification/client/src
 import {
     IdentityVerificationService
 } from "../../../programs/identity-verification/client/src/services/identity-verification-service";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src";
+import {
+    createIdentityRecordInstruction,
+    getIdentityVerificationRecord
+} from "../../../programs/identity-verification/client/src";
 
 describe("identity verification tests", () => {
 
@@ -27,7 +30,7 @@ describe("identity verification tests", () => {
         alsoAuthorized = await createAccount(connection);
         unauthorized = await createAccount(connection);
         groupId = Keypair.generate().publicKey
-        service = createIdentityVerificationServiceWith(connection, programId);
+        service = new IdentityVerificationService(connection, programId)
 
     });
 
@@ -35,7 +38,13 @@ describe("identity verification tests", () => {
 
         expect.assertions(4);
 
-        const tix = await service.createRecordInstruction(ownerKeypair.publicKey, groupId, authorized.publicKey);
+        const tix = await createIdentityRecordInstruction(
+            connection,
+            programId,
+            ownerKeypair.publicKey,
+            groupId,
+            authorized.publicKey
+        );
 
         const tx = new Transaction();
         tx.add(tix);
@@ -63,7 +72,12 @@ describe("identity verification tests", () => {
             // ...
         }
 
-        const record = await service.getRecord(ownerKeypair.publicKey, groupId)
+        const record = await getIdentityVerificationRecord(
+            connection,
+            programId,
+            ownerKeypair.publicKey,
+            groupId
+        )
 
         expect(record.amlStatus).toEqual(IdentityStatus.approved);
 
@@ -116,7 +130,7 @@ describe("identity verification tests", () => {
             const sig = await service.transferAuthority(ownerKeypair.publicKey, groupId, authorized, alsoAuthorized.publicKey);
             await connection.confirmTransaction(sig);
         } catch {
-           // ...
+            // ...
         }
 
         const record = await service.getRecord(ownerKeypair.publicKey, groupId)

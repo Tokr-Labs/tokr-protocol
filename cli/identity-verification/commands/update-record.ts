@@ -1,7 +1,7 @@
 import {loadKeypair} from "../../utils/load-keypair";
 import fs from "fs";
 import {Commitment, Connection, Keypair, PublicKey} from "@solana/web3.js";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src/index"
+import {IdentityVerificationService} from "../../../programs/identity-verification/client/src/services/identity-verification-service"
 import {IdentityStatus} from "../../../programs/identity-verification/client/src/models/identity-status"
 
 export async function updateRecord(options: any, approve: boolean) {
@@ -23,7 +23,7 @@ export async function updateRecord(options: any, approve: boolean) {
     const commitment: Commitment = rpcUrl.match(/local/) ? "processed" : "confirmed"
     const connection = new Connection(rpcUrl, commitment);
 
-    const service = createIdentityVerificationServiceWith(connection, programPublicKey)
+    const service = new IdentityVerificationService(connection, programPublicKey)
 
     console.log("Updating IA status...")
 
