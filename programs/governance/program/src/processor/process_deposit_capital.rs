@@ -3,7 +3,7 @@
 use solana_program::{account_info::{
     AccountInfo,
     next_account_info,
-}, entrypoint::ProgramResult, program::{invoke, invoke_signed}, pubkey::Pubkey};
+}, entrypoint::ProgramResult, msg, program::{invoke, invoke_signed}, pubkey::Pubkey};
 use crate::tools::verification::{assert_identity_verification};
 
 /// Processes DepositCapital instruction
@@ -66,6 +66,8 @@ pub fn process_deposit_capital(
     }
 
     // transfer capital
+
+    msg!("amount to amount decimals = {}", spl_token::ui_amount_to_amount(amount as f64, decimals));
 
     let capital_token_transfer_instruction = spl_token::instruction::transfer(
         token_program.key,
