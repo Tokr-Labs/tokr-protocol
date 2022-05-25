@@ -67,8 +67,6 @@ pub fn process_deposit_capital(
 
     // transfer capital
 
-    msg!("amount to amount decimals = {}", spl_token::ui_amount_to_amount(amount as f64, decimals));
-
     let capital_token_transfer_instruction = spl_token::instruction::transfer(
         token_program.key,
         capital_token_account.key,
