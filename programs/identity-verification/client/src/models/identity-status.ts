@@ -1,3 +1,10 @@
+
+export enum IdentityStatusType {
+    aml,
+    ia,
+    kyc
+}
+
 /**
  * Statuses associated with kyc, aml and accreditation
  */

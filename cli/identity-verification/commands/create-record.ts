@@ -1,7 +1,7 @@
 import fs from "fs"
 import * as anchor from "@project-serum/anchor";
 import {loadKeypair} from "../../utils/load-keypair";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src/index"
+import {IdentityVerificationService} from "../../../programs/identity-verification/client/src/services/identity-verification-service"
 import {Commitment, Connection, sendAndConfirmTransaction, Transaction} from "@solana/web3.js";
 
 export async function createRecord(options: any) {
@@ -20,7 +20,7 @@ export async function createRecord(options: any) {
 
     const commitment: Commitment = rpcUrl.match(/local/) ? "processed" : "confirmed"
     const connection = new Connection(rpcUrl, commitment);
-    const service = createIdentityVerificationServiceWith(connection, programPublicKey)
+    const service = new IdentityVerificationService(connection, programPublicKey)
 
     const tix = await service.createRecordInstruction(
         userKeypair.publicKey,

@@ -9,7 +9,7 @@ import {CapTable} from "./models/cap-table";
  * @param treasuryStockAccount Account that holds non-issued tokens for the mint
  * @param excludedAccounts Array of public keys to exclude from the calculation of the cap table
  */
-export async function determineCapTableForToken(
+export async function generateCapTable(
     connection: Connection,
     mint: PublicKey,
     treasuryStockAccount: PublicKey,
