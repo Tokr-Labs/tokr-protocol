@@ -7,6 +7,11 @@ const execSync = require("child_process").execSync;
     execSync('npm install', {cwd: "programs/identity-verification/client", stdio: "inherit"})
     execSync('npm install', {cwd: "programs/cap-table/client", stdio: "inherit"})
 
+    // build program client libraries
+    execSync('npm run build', {cwd: "programs/governance/client", stdio: "inherit"})
+    execSync('npm run build', {cwd: "programs/identity-verification/client", stdio: "inherit"})
+    execSync('npm run build', {cwd: "programs/cap-table/client", stdio: "inherit"})
+
     // run install for the cli
     execSync('npm install', {cwd: "cli", stdio: "inherit"})
 

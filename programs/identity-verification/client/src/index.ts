@@ -30,7 +30,7 @@ export async function createIdentityRecordInstruction(
  * @param user The user of whom the record is about.
  * @param group The public key of the group this record belongs to.
  */
-export async function getRecord(
+export async function getIdentityVerificationRecord(
     connection: Connection,
     programId: PublicKey,
     user: PublicKey,
