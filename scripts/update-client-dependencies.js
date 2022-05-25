@@ -3,7 +3,7 @@ const replace = require("replace-in-file");
 (async () => {
 
     const ANCHOR_VERSION = "0.24.2";
-    const SPL_TOKEN_VERSION = "0.24.2";
+    const SPL_TOKEN_VERSION = "0.2.0";
     const WEB3_VERSION = "1.43.1";
 
     const files = [
