@@ -4,7 +4,7 @@ import {
     getMaxVoterWeightRecordAddress,
     getVoterWeightRecord,
     getVoterWeightRecordAddress,
-} from '../../programs/governance/js/src';
+} from '../../programs/governance/client/src';
 import {requestAirdrop} from "../utils/request-airdrop";
 
 describe("addins client smoke tests", () => {

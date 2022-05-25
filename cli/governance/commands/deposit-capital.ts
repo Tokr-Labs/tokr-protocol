@@ -1,7 +1,7 @@
 import {Connection, PublicKey, sendAndConfirmTransaction, Transaction, TransactionInstruction} from "@solana/web3.js";
 import {loadKeypair} from "../../utils/load-keypair";
 import {getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount} from "@solana/spl-token";
-import {withDepositCapital} from "../../../programs/governance/js/src/governance/withDepositCaptial"
+import {withDepositCapital} from "../../../programs/governance/client/src/governance/withDepositCaptial"
 import {readFileSync} from "fs";
 import process from "process";
 import {validateDepositCapitalConfig} from "../../utils/validate-capital-config";

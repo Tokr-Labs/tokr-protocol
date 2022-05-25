@@ -29,12 +29,12 @@ import {
     GovernanceConfig,
     MintMaxVoteWeightSource,
     VoteThresholdPercentage
-} from "../../../programs/governance/js/src/governance/accounts"
-import {withDepositGoverningTokens} from '../../../programs/governance/js/src/governance/withDepositGoverningTokens'
-import {withCreateMintGovernance} from '../../../programs/governance/js/src/governance/withCreateMintGovernance'
-import {withSetRealmAuthority} from '../../../programs/governance/js/src/governance/withSetRealmAuthority'
-import {withCreateGovernance} from '../../../programs/governance/js/src/governance/withCreateGovernance'
-import {withCreateRealm} from '../../../programs/governance/js/src/governance/withCreateRealm'
+} from "../../../programs/governance/client/src/governance/accounts"
+import {withDepositGoverningTokens} from '../../../programs/governance/client/src/governance/withDepositGoverningTokens'
+import {withCreateMintGovernance} from '../../../programs/governance/client/src/governance/withCreateMintGovernance'
+import {withSetRealmAuthority} from '../../../programs/governance/client/src/governance/withSetRealmAuthority'
+import {withCreateGovernance} from '../../../programs/governance/client/src/governance/withCreateGovernance'
+import {withCreateRealm} from '../../../programs/governance/client/src/governance/withCreateRealm'
 import * as fs from "fs";
 import {readFileSync} from "fs";
 import path from "path";

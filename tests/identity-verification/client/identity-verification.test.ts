@@ -1,10 +1,10 @@
 import {Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction} from "@solana/web3.js";
 import {createAccount} from "../../utils/create-account";
-import {IdentityStatus} from "../../../programs/identity-verification/js/src/models/identity-status";
+import {IdentityStatus} from "../../../programs/identity-verification/client/src/models/identity-status";
 import {
     IdentityVerificationService
-} from "../../../programs/identity-verification/js/src/services/identity-verification-service";
-import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/js/src";
+} from "../../../programs/identity-verification/client/src/services/identity-verification-service";
+import {createIdentityVerificationServiceWith} from "../../../programs/identity-verification/client/src";
 
 describe("identity verification tests", () => {
 

@@ -6,7 +6,7 @@ import {
     SystemProgram,
     TransactionInstruction,
 } from '@solana/web3.js'
-import { TOKEN_PROGRAM_ID } from '../../programs/governance/js/src'
+import { TOKEN_PROGRAM_ID } from '../../programs/governance/client/src'
 
 
 export const withCreateMint = async (

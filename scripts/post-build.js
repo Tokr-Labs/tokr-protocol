@@ -6,7 +6,7 @@ const {copyFileSync} = require("fs");
 
         copyFileSync(
             "target/types/identity_verification.ts",
-            "programs/identity-verification/js/src/models/idl.ts"
+            "programs/identity-verification/client/src/models/idl.ts"
         );
 
     } catch (error) {

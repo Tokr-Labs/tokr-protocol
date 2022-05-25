@@ -21,7 +21,7 @@ import {
     withCreateRealm,
     withDepositGoverningTokens,
     withPostChatMessage,
-} from '../../programs/governance/js/src';
+} from '../../programs/governance/client/src';
 import {requestAirdrop} from "../utils/request-airdrop";
 import {sendTransaction} from "../utils/send-transaction";
 import {withCreateMint} from "../utils/create-mint";
