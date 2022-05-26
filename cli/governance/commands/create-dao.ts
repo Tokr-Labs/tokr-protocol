@@ -44,6 +44,7 @@ import {resolveHome} from "../../utils/resolve-home";
 
 export const createDao = async (
     configFile: string,
+    _name?: string
 ) => {
 
     const file = resolveHome(configFile);
@@ -58,7 +59,7 @@ export const createDao = async (
     const cluster = config.cluster;
     const owner = config.owner;
     const delegate = config.delegate;
-    const name = config.name;
+    const name = _name ?? config.name;
     const governanceProgramId = config.governanceProgramId;
     const usdcMint = config.usdcMint;
     const maxLpTokenSupply = config.maxLpTokenSupply;
@@ -70,8 +71,15 @@ export const createDao = async (
     console.log(config)
     console.log();
 
-    console.log("Updating local solana configuration...")
     console.log();
+    console.log("Overrides:")
+    if (_name) {
+        console.log(`Realm Name: ${_name}`)
+    }
+    console.log();
+
+    console.log("Updating local solana configuration...")
+
     await updateLocalConfig(owner, cluster);
 
     const connection = new Connection(cluster, {
@@ -371,26 +379,23 @@ const mintMaxLpTokens = async (
     amount: number
 ) => {
 
-        const ownerAta = await getOrCreateAssociatedTokenAccount(
-            connection,
-            payer,
-            mint,
-            owner
-        )
+    const ownerAta = await getOrCreateAssociatedTokenAccount(
+        connection,
+        payer,
+        mint,
+        owner
+    )
 
-        console.log(ownerAta.address.toBase58());
-        console.log(payer.publicKey.toString())
+    await mintTo(
+        connection,
+        payer,
+        mint,
+        ownerAta.address,
+        owner,
+        amount
+    )
 
-        await mintTo(
-            connection,
-            payer,
-            mint,
-            ownerAta.address,
-            owner,
-            amount
-        )
-
-        return ownerAta.address
+    return ownerAta.address
 
 }
 
@@ -425,9 +430,15 @@ const createRealm = async (
     tx.add(...transactionInstructions);
     tx.feePayer = ownerKeypair.publicKey;
 
-    await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
-
-    return realmAddress
+    try {
+        await sendAndConfirmTransaction(connection, tx, [ownerKeypair])
+        return realmAddress
+    } catch (error) {
+        console.log("Error:");
+        // @ts-ignore
+        console.log(error.logs);
+        process.exit(1);
+    }
 
 }
 

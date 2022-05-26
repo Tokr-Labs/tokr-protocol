@@ -55,9 +55,13 @@ export default (async (program: Command) => {
             "-i, --input-file <string>",
             "Input file containing the configuration of the DAO."
         )
+        .option(
+            "-n, --name <string>",
+            "The name of the dao. This defaults to the config options if not passed."
+        )
         .action(async (options: any) => {
 
-            await createDao(options.inputFile)
+            await createDao(options.inputFile, options.name)
 
         })
         .addHelpText("afterAll", `\nExample Config File:\n${daoConfig}`);
