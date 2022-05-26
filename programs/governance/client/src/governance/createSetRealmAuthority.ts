@@ -3,7 +3,6 @@ import { SetRealmAuthorityAction, withSetRealmAuthority } from '.';
 
 export function createSetRealmAuthority(
   programId: PublicKey,
-  programVersion: number,
   realm: PublicKey,
   realmAuthority: PublicKey,
   newRealmAuthority: PublicKey | undefined,
@@ -14,7 +13,6 @@ export function createSetRealmAuthority(
   withSetRealmAuthority(
     instructions,
     programId,
-    programVersion,
     realm,
     realmAuthority,
     newRealmAuthority,

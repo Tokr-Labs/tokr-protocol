@@ -11,7 +11,6 @@ import {SignOffProposalArgs} from './instructions';
 export const withSignOffProposal = (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governance: PublicKey,
     proposal: PublicKey,

@@ -14,7 +14,6 @@ import {withRealmConfigAccounts} from './withRealmConfigAccounts';
 export const withCreateProgramGovernance = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governedProgram: PublicKey,
     config: GovernanceConfig,

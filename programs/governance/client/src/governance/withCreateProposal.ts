@@ -18,7 +18,6 @@ import {withRealmConfigAccounts} from './withRealmConfigAccounts';
 export const withCreateProposal = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governance: PublicKey,
     tokenOwnerRecord: PublicKey,

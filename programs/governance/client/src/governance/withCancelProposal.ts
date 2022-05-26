@@ -11,7 +11,6 @@ import {CancelProposalArgs} from './instructions';
 export const withCancelProposal = (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governance: PublicKey,
     proposal: PublicKey,

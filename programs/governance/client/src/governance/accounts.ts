@@ -999,7 +999,6 @@ export class ProposalTransaction {
 
 export async function getProposalTransactionAddress(
     programId: PublicKey,
-    programVersion: number,
     proposal: PublicKey,
     optionIndex: number,
     transactionIndex: number,

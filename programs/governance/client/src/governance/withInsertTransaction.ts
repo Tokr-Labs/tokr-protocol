@@ -12,7 +12,6 @@ import {SYSTEM_PROGRAM_ID} from '../tools/sdk/runtime';
 export const withInsertTransaction = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     governance: PublicKey,
     proposal: PublicKey,
     tokenOwnerRecord: PublicKey,
@@ -36,7 +35,6 @@ export const withInsertTransaction = async (
 
     const proposalTransactionAddress = await getProposalTransactionAddress(
         programId,
-        programVersion,
         proposal,
         optionIndex,
         index,

@@ -14,7 +14,6 @@ import {withRealmConfigAccounts} from './withRealmConfigAccounts';
 export const withCastVote = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governance: PublicKey,
     proposal: PublicKey,

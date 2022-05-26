@@ -6,7 +6,6 @@ import {SetRealmAuthorityAction, SetRealmAuthorityArgs} from './instructions';
 export const withSetRealmAuthority = (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     realmAuthority: PublicKey,
     newRealmAuthority: PublicKey | undefined,

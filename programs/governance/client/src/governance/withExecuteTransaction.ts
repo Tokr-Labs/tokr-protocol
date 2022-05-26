@@ -15,7 +15,6 @@ import {
 export const withExecuteTransaction = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     governance: PublicKey,
     proposal: PublicKey,
     transactionAddress: PublicKey,

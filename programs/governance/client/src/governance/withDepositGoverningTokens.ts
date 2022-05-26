@@ -17,7 +17,6 @@ import {TOKEN_PROGRAM_ID} from '../tools/sdk/splToken';
 export const withDepositGoverningTokens = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governingTokenSource: PublicKey,
     governingTokenMint: PublicKey,

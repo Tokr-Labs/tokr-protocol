@@ -415,7 +415,6 @@ const createRealm = async (
     const realmAddress = await withCreateRealm(
         transactionInstructions,
         governanceProgramId,
-        2,
         name,
         ownerKeypair.publicKey,
         communityMintPublicKey,
@@ -497,7 +496,6 @@ const depositDelegateCouncilTokenInGovernance = async (
     await withDepositGoverningTokens(
         instruction,
         governanceProgramId,
-        2, // why does program 2 work and not program 1
         realmPublicKey,
         delegateAta.address,
         delegateMintPublicKey,
@@ -558,7 +556,6 @@ const createGovernances = async (
     const limitedPartnerGovernancePublicKey = await withCreateGovernance(
         instructions,
         governanceProgramId,
-        2,
         realmPublicKey,
         limitedPartnerGovernedAccountPublicKey,
         config,
@@ -570,7 +567,6 @@ const createGovernances = async (
     const delegateMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
         governanceProgramId,
-        2,  // why does program 2 work and not program 1
         realmPublicKey,
         delegateMintPublicKey,
         config,
@@ -584,7 +580,6 @@ const createGovernances = async (
     const distributionMintGovernancePublicKey = await withCreateMintGovernance(
         instructions,
         governanceProgramId,
-        2,  // why does program 2 work and not program 1
         realmPublicKey,
         distributionMintPublicKey,
         config,
@@ -624,7 +619,6 @@ const setLimitedPartnerGovernanceAsRealmAuthority = async (
     withSetRealmAuthority(
         instructions,
         governanceProgramId,
-        2,
         realmPublicKey,
         ownerKeypair.publicKey,
         communityMintGovernancePublicKey,

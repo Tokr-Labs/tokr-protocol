@@ -9,7 +9,6 @@ import {SYSTEM_PROGRAM_ID} from '../tools';
 export async function withSetRealmConfig(
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     realmAuthority: PublicKey,
     councilMint: PublicKey | undefined,

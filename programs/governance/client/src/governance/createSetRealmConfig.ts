@@ -5,7 +5,6 @@ import { withSetRealmConfig } from './withSetRealmConfig';
 
 export async function createSetRealmConfig(
   programId: PublicKey,
-  programVersion: number,
   realm: PublicKey,
   realmAuthority: PublicKey,
   councilMint: PublicKey | undefined,
@@ -19,7 +18,6 @@ export async function createSetRealmConfig(
   await withSetRealmConfig(
     instructions,
     programId,
-    programVersion,
     realm,
     realmAuthority,
     councilMint,

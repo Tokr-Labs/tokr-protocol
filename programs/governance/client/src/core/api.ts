@@ -11,14 +11,12 @@ import { WalletNotConnectedError, WalletSigner } from '../tools/walletAdapter';
 // Context to make RPC calls for given clone programId, current connection, endpoint and wallet
 export class RpcContext {
   programId: PublicKey;
-  programVersion: number;
   wallet: WalletSigner;
   connection: Connection;
   endpoint: string;
 
   constructor(
     programId: PublicKey,
-    programVersion: number,
     wallet: WalletSigner,
     connection: Connection,
     endpoint: string,
@@ -27,7 +25,6 @@ export class RpcContext {
     this.wallet = wallet;
     this.connection = connection;
     this.endpoint = endpoint;
-    this.programVersion = programVersion;
   }
 
   get walletPubkey() {

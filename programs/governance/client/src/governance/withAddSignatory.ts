@@ -12,7 +12,6 @@ import {GOVERNANCE_SCHEMA} from "./serialisation";
 export const withAddSignatory = async (
   instructions: TransactionInstruction[],
   programId: PublicKey,
-  programVersion: number,
   proposal: PublicKey,
   tokenOwnerRecord: PublicKey,
   governanceAuthority: PublicKey,

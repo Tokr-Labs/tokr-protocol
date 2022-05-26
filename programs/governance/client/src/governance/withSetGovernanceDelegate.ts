@@ -7,7 +7,6 @@ import { getTokenOwnerRecordAddress } from './accounts';
 export const withSetGovernanceDelegate = async (
   instructions: TransactionInstruction[],
   programId: PublicKey,
-  programVersion: number,
   realm: PublicKey,
   governingTokenMint: PublicKey,
   governingTokenOwner: PublicKey,

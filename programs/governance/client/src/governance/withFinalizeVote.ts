@@ -11,7 +11,6 @@ import {withRealmConfigAccounts} from './withRealmConfigAccounts';
 export const withFinalizeVote = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
-    programVersion: number,
     realm: PublicKey,
     governance: PublicKey,
     proposal: PublicKey,
