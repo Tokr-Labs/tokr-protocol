@@ -1,0 +1,19 @@
+[package]
+name = "cap_table"
+version = "0.1.0"
+description = "Created with Anchor"
+rust-version = "1.56"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "cap_table"
+
+[features]
+no-entrypoint = []
+cpi = ["no-entrypoint"]
+
+[dependencies]
+solana-program = "1.9.17"
+anchor-lang = "0.24.2"
+anchor-spl = "0.24.2"

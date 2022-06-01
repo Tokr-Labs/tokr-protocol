@@ -5,7 +5,8 @@ solana_version = "1.9.17"
 members = [
   "programs/governance/program",
   "programs/identity-verification/program",
-  "programs/permissioned-list/program"
+  "programs/permissioned-list/program",
+  "programs/cap-table/program"
 ]
 
 [provider]
@@ -16,11 +17,13 @@ wallet = "~/.config/solana/id.json"
 governance = "govB89Q9nod6CYMjC2zVhefv4oW1zWrYQGfU7gAsrnr"
 identity_verification = "idv2F375xYuz2K7a7LxcrkhgWbPsJgpuWD3XLW1AFdD"
 permissioned_list = "permXeEzAzbSbtDS6CZxodr6iP3fP8B8Gvid1vXMpvM"
+cap_table = "capHECuaWKqRXjprrW2nQ6MEsVi73rpUBCBfCWuffyN"
 
 [programs.devnet]
 governance = "CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd"
 identity_verification = "5WJNeGKQQJMaTCPgtXhmsiEK4bA6dLT94smLFmTU8Gh9"
 permissioned_list = "Hwh92WNAfui11wsSEgkyowFEkG3Kb6ALTQrTTQSxfL26"
+cap_table = "35dT31cxMxdXjURjEvRfj4c3vZPXXdvDX6zpeF4YRckn"
 
 [scripts]
 test = "jest --detectOpenHandles --forceExit --noStackTrace"

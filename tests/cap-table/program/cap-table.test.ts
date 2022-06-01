@@ -1,14 +1,16 @@
 import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 import {createMint, mintTo} from "@solana/spl-token";
-import {where} from "underscore";
-import {createAccount} from "../utils/create-account";
-import {createAta} from "../utils/create-ata";
-import {transferTokens} from "../utils/transfer-tokens";
-import {CapTable} from "../../programs/cap-table/client/src/models/cap-table";
-import {generateCapTable} from "../../programs/cap-table/client/src";
+import {createAccount} from "../../utils/create-account";
+import {createAta} from "../../utils/create-ata";
+import {transferTokens} from "../../utils/transfer-tokens";
+import {AnchorProvider, Program} from "@project-serum/anchor";
+import {CapTable} from "../../../target/types/cap_table"
+import * as anchor from "@project-serum/anchor";
 
-describe("cap table", () => {
+describe("cap table program", () => {
 
+    let program: Program<CapTable>;
+    let provider: AnchorProvider;
     let connection: Connection
     let mintAddress: PublicKey
 
@@ -21,7 +23,10 @@ describe("cap table", () => {
 
     beforeAll(async () => {
 
-        connection = new Connection("http://localhost:8899", "recent")
+        anchor.setProvider(anchor.AnchorProvider.local());
+        provider = anchor.AnchorProvider.local();
+        program = anchor.workspace.IdentityVerification as Program<CapTable>;
+        connection = provider.connection;
 
         ownerKeypair = await createAccount(connection);
         holder1 = await createAccount(connection);
@@ -62,38 +67,16 @@ describe("cap table", () => {
 
     })
 
-    test("test that cap table is calculated correctly", async () => {
+    test("cap table creation succeeds", async () => {
 
-        expect.assertions(8)
+        const capTable = await program.methods.generate()
+            .accounts({
+                mint: mintAddress
+            })
+            .rpc();
 
-        const capTable: CapTable = await generateCapTable(
-            connection,
-            mintAddress,
-            treasuryStockAccount,
-            [
-                ownerKeypair.publicKey
-            ]
-        );
+        console.log(capTable);
 
-        // @ts-ignore
-        let holder1Entry = where(capTable.entries, {holder: holder1.publicKey.toBase58()})[0];
-        // @ts-ignore
-        let holder2Entry = where(capTable.entries, {holder: holder2.publicKey.toBase58()})[0];
-        // @ts-ignore
-        let holder3Entry = where(capTable.entries, {holder: holder3.publicKey.toBase58()})[0];
+    })
 
-        expect(holder1Entry.tokensHeld).toEqual(150);
-        expect(holder1Entry.percentHeld).toBeCloseTo(0.17);
-
-        expect(holder2Entry.tokensHeld).toEqual(300);
-        expect(holder2Entry.percentHeld).toBeCloseTo(0.33);
-
-        expect(holder3Entry.tokensHeld).toEqual(450);
-        expect(holder3Entry.percentHeld).toBeCloseTo(0.5);
-
-        expect(capTable.authorizedSupply).toEqual(1000);
-        expect(capTable.reservedSupply).toEqual(100);
-
-    });
-
-});
+})

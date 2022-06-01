@@ -61,6 +61,7 @@
       <sourceFolder url="file://$MODULE_DIR$/programs/permissioned-list/program/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/cli/utils/cgen/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/cli/utils/test-client/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/programs/cap-table/program/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
