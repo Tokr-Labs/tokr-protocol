@@ -24,6 +24,24 @@ mod identity_verification {
         instructions::create_record::create_record(ctx, bump, group)
     }
 
+    /// Approve identity verification for the record
+    pub fn approve(
+        ctx: Context<UpdateRecord>,
+        bump: u8,
+        group: Pubkey
+    ) -> Result<()> {
+        instructions::update_record::approve(ctx, bump, group)
+    }
+
+    /// Deny identity verification for the record
+    pub fn deny(
+        ctx: Context<UpdateRecord>,
+        bump: u8,
+        group: Pubkey
+    ) -> Result<()> {
+        instructions::update_record::deny(ctx, bump, group)
+    }
+
     /// Update accreditation status of account
     pub fn update_ia_status(
         ctx: Context<UpdateRecord>,

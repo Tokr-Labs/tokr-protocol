@@ -7,7 +7,7 @@ import {
 } from '../../programs/governance/client/src';
 import {requestAirdrop} from "../utils/request-airdrop";
 
-describe("addins client smoke tests", () => {
+describe.skip("addins client smoke tests", () => {
 
     const rpcEndpoint = clusterApiUrl('devnet');
     const connection = new Connection(rpcEndpoint, 'recent');

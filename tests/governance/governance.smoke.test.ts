@@ -45,7 +45,7 @@ import {withCreateAssociatedTokenAccount} from "../utils/create-ata-instruction"
 import {withMintTo} from "../utils/mint-to";
 import {getTimestampFromDays} from "../utils/get-timestamp-from-days";
 
-describe("governance smoke test", () => {
+describe.skip("governance smoke test", () => {
 
     const programId = new PublicKey('BfFUxwBiJLhD1wL36xGXWRe7RXAFL4QKircHydAHS3wt');
     const rpcEndpoint = clusterApiUrl('devnet');

@@ -29,7 +29,7 @@ import {withCreateAssociatedTokenAccount} from "../utils/create-ata-instruction"
 import {withMintTo} from "../utils/mint-to";
 import {getTimestampFromDays} from "../utils/get-timestamp-from-days";
 
-describe("addins client smoke tests", () => {
+describe.skip("addins client smoke tests", () => {
 
     const chatProgramId = new PublicKey('7fjWgipzcHFP3c5TMMWumFHNAL5Eme1gFqqRGnNPbbfG',);
     const rpcEndpoint = clusterApiUrl('devnet');

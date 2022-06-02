@@ -2,6 +2,40 @@ use anchor_lang::prelude::*;
 use crate::errors::IdentityVerificationErrorCode;
 use crate::state::identity_record::*;
 
+/// Update all statuses to approved
+pub fn approve(
+    ctx: Context<UpdateRecord>,
+    _bump: u8,
+    _group: Pubkey
+) -> Result<()> {
+    let authority = &mut ctx.accounts.authority;
+
+    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
+
+    ctx.accounts.record.aml_status = 2;
+    ctx.accounts.record.kyc_status = 2;
+    ctx.accounts.record.ia_status = 2;
+
+    Ok(())
+}
+
+/// Update all statuses to denied
+pub fn deny(
+    ctx: Context<UpdateRecord>,
+    _bump: u8,
+    _group: Pubkey
+) -> Result<()> {
+    let authority = &mut ctx.accounts.authority;
+
+    require!(ctx.accounts.record.authority.key() == authority.key.clone(), IdentityVerificationErrorCode::NotAuthorized);
+
+    ctx.accounts.record.aml_status = 3;
+    ctx.accounts.record.kyc_status = 3;
+    ctx.accounts.record.ia_status = 3;
+
+    Ok(())
+}
+
 /// Update aml status of account
 pub fn update_aml_status(
     ctx: Context<UpdateRecord>,

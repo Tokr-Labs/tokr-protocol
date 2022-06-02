@@ -38,6 +38,66 @@ export type IdentityVerification = {
       ]
     },
     {
+      "name": "approve",
+      "accounts": [
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "deny",
+      "accounts": [
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
       "name": "updateIaStatus",
       "accounts": [
         {
@@ -280,6 +340,66 @@ export const IDL: IdentityVerification = {
           "name": "authority",
           "isMut": false,
           "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "approve",
+      "accounts": [
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "group",
+          "type": "publicKey"
+        }
+      ]
+    },
+    {
+      "name": "deny",
+      "accounts": [
+        {
+          "name": "record",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "subject",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
         }
       ],
       "args": [

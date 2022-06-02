@@ -95,7 +95,6 @@ describe("test that the identity-verification program", () => {
         expect.assertions(1);
 
         await program.methods.updateKycStatus(pdaBump, groupKeypair.publicKey, 2)
-
             .accounts({
                 record: pdaPubkey,
                 subject: keypair.publicKey,
@@ -162,6 +161,49 @@ describe("test that the identity-verification program", () => {
 
         expect(accountMeta.iaStatus).toEqual(accreditationStatus);
 
+
+    });
+
+    test("can approve record", async () => {
+
+        expect.assertions(3);
+
+        await program.methods.approve(pdaBump, groupKeypair.publicKey)
+            .accounts({
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            })
+            .signers([authority])
+            .rpc()
+
+
+        const accountMeta = await program.account.identityRecord.fetch(pdaPubkey);
+
+        expect(accountMeta.amlStatus).toEqual(2);
+        expect(accountMeta.kycStatus).toEqual(2);
+        expect(accountMeta.iaStatus).toEqual(2);
+
+    });
+
+    test("can deny record", async () => {
+
+        expect.assertions(3);
+
+        await program.methods.deny(pdaBump, groupKeypair.publicKey)
+            .accounts({
+                record: pdaPubkey,
+                subject: keypair.publicKey,
+                authority: authority.publicKey
+            })
+            .signers([authority])
+            .rpc()
+
+        const accountMeta = await program.account.identityRecord.fetch(pdaPubkey);
+
+        expect(accountMeta.amlStatus).toEqual(3);
+        expect(accountMeta.kycStatus).toEqual(3);
+        expect(accountMeta.iaStatus).toEqual(3);
 
     });
 

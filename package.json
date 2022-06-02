@@ -9,6 +9,7 @@
     "clean:node": "node ./scripts/clean-node.js",
     "deploy": "anchor deploy --provider.cluster localnet",
     "postinstall": "node ./scripts/post-install.js",
+    "pretest": "node ./scripts/pre-test.js",
     "relink": "node ./scripts/relink-cli.js",
     "test": "anchor test",
     "upgrade:governance:devnet": "anchor upgrade --provider.cluster devnet --program-id CCzEwDHqNqq4KL4srnRKQeQ7P9Aa1uoAQmkz1kWFc2rd ./target/deploy/governance.so",

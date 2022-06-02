@@ -1,5 +1,4 @@
 import {CapTableEntry} from "./cap-table-entry";
-import {PublicKey} from "@solana/web3.js";
 
 export interface CapTableParams {
     /// array of cap table entries
