@@ -83,6 +83,50 @@ describe("identity verification tests", () => {
 
     });
 
+    test("that record can be denied", async () => {
+
+        expect.assertions(1);
+
+        try {
+            const sig = await service.deny(ownerKeypair.publicKey, groupId, authorized);
+            await connection.confirmTransaction(sig);
+        } catch {
+            // ...
+        }
+
+        const record = await getIdentityVerificationRecord(
+            connection,
+            programId,
+            ownerKeypair.publicKey,
+            groupId
+        )
+
+        expect(record.isVerified).toBeFalsy()
+
+    });
+
+    test("that record can be approved", async () => {
+
+        expect.assertions(1);
+
+        try {
+            const sig = await service.approve(ownerKeypair.publicKey, groupId, authorized);
+            await connection.confirmTransaction(sig);
+        } catch {
+            // ...
+        }
+
+        const record = await getIdentityVerificationRecord(
+            connection,
+            programId,
+            ownerKeypair.publicKey,
+            groupId
+        )
+
+        expect(record.isVerified).toBeTruthy()
+
+    });
+
     test("that record cannot be updated by unrecognized authority", async () => {
 
         expect.assertions(2);
@@ -103,22 +147,18 @@ describe("identity verification tests", () => {
         expect.assertions(2);
 
         const preRecord = await service.getRecord(ownerKeypair.publicKey, groupId)
-        expect(preRecord.isVerified).toBeFalsy()
+        expect(preRecord.isVerified).toBeTruthy()
 
         try {
-            const sig1 = await service.updateAmlStatus(ownerKeypair.publicKey, groupId, authorized, IdentityStatus.approved);
-            const sig2 = await service.updateIaStatus(ownerKeypair.publicKey, groupId, authorized, IdentityStatus.approved);
-            const sig3 = await service.updateKycStatus(ownerKeypair.publicKey, groupId, authorized, IdentityStatus.approved);
-            await connection.confirmTransaction(sig1);
-            await connection.confirmTransaction(sig2);
-            await connection.confirmTransaction(sig3);
+            const sig = await service.deny(ownerKeypair.publicKey, groupId, authorized);
+            await connection.confirmTransaction(sig);
         } catch {
             // ...
         }
 
         const postRecord = await service.getRecord(ownerKeypair.publicKey, groupId)
 
-        expect(postRecord.isVerified).toBeTruthy()
+        expect(postRecord.isVerified).toBeFalsy()
 
     });
 
