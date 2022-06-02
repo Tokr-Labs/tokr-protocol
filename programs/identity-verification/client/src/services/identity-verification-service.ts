@@ -104,6 +104,78 @@ export class IdentityVerificationService {
     }
 
     /**
+     * Approve user's identity
+     * @param user The user of whom the record is about.
+     * @param group The public key of the group this record belongs to.
+     * @param signer The authority over the record that will also sign the transaction
+     */
+    async approve(
+        user: PublicKey,
+        group: PublicKey,
+        signer: Keypair
+    ): Promise<TransactionSignature> {
+
+        // this method is not available in the browser
+
+        this.checkEnvironment()
+
+        const [record, bump] = await PublicKey.findProgramAddress(
+            [
+                Buffer.from("identity"),
+                group.toBuffer(),
+                user.toBuffer(),
+            ],
+            this.programId
+        );
+
+        return await this.program.methods.approve(bump, group)
+            .accounts({
+                record: record,
+                subject: user,
+                authority: signer.publicKey
+            })
+            .signers([signer])
+            .rpc()
+
+    }
+
+    /**
+     * Deny user's identity
+     * @param user The user of whom the record is about.
+     * @param group The public key of the group this record belongs to.
+     * @param signer The authority over the record that will also sign the transaction
+     */
+    async deny(
+        user: PublicKey,
+        group: PublicKey,
+        signer: Keypair
+    ): Promise<TransactionSignature> {
+
+        // this method is not available in the browser
+
+        this.checkEnvironment()
+
+        const [record, bump] = await PublicKey.findProgramAddress(
+            [
+                Buffer.from("identity"),
+                group.toBuffer(),
+                user.toBuffer(),
+            ],
+            this.programId
+        );
+
+        return await this.program.methods.deny(bump, group)
+            .accounts({
+                record: record,
+                subject: user,
+                authority: signer.publicKey
+            })
+            .signers([signer])
+            .rpc()
+
+    }
+
+    /**
      * Updates the investor accreditation status for the record
      * @param user The user of whom the record is about.
      * @param group The public key of the group this record belongs to.
