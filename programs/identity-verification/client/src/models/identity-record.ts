@@ -66,6 +66,49 @@ export class IdentityRecord {
             this.kycStatus == IdentityStatus.approved
     }
 
+    /// get the combined status of aml, kyc and ia
+    get status(): IdentityStatus {
+
+        if (
+            this.amlStatus === IdentityStatus.denied ||
+            this.kycStatus === IdentityStatus.denied ||
+            this.iaStatus === IdentityStatus.denied
+        ) {
+
+            return IdentityStatus.denied
+
+        } else if (
+            this.amlStatus === IdentityStatus.initial &&
+            this.kycStatus === IdentityStatus.initial &&
+            this.iaStatus === IdentityStatus.initial
+        ) {
+
+            return IdentityStatus.initial
+
+        } else if (
+            this.amlStatus === IdentityStatus.started ||
+            this.kycStatus === IdentityStatus.started ||
+            this.iaStatus === IdentityStatus.started
+        ) {
+
+            return IdentityStatus.started
+
+        } else if (
+            this.amlStatus === IdentityStatus.approved &&
+            this.kycStatus === IdentityStatus.approved &&
+            this.iaStatus === IdentityStatus.approved
+        ) {
+
+            return IdentityStatus.approved
+
+        } else {
+
+            return IdentityStatus.started
+
+        }
+
+    }
+
     // ============================================================
     // === Private API ============================================
     // ============================================================

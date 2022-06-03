@@ -1,6 +1,5 @@
 import {Connection, Keypair, PublicKey, sendAndConfirmTransaction, Transaction} from "@solana/web3.js";
 import {createAccount} from "../../utils/create-account";
-import {IdentityStatus} from "../../../programs/identity-verification/client/src/models/identity-status";
 import {
     IdentityVerificationService
 } from "../../../programs/identity-verification/client/src/services/identity-verification-service";
@@ -8,6 +7,8 @@ import {
     createIdentityRecordInstruction,
     getIdentityVerificationRecord
 } from "../../../programs/identity-verification/client/src";
+import {IdentityRecord} from "../../../programs/identity-verification/client/src/models/identity-record";
+import {IdentityStatus} from "../../../programs/identity-verification/client/src/models/identity-status";
 
 describe("identity verification tests", () => {
 
@@ -194,5 +195,94 @@ describe("identity verification tests", () => {
 
 
     });
+
+    describe("combined status returns as expected", () => {
+
+        test("when no statuses are initial", () => {
+
+            const record = IdentityRecord.with(
+                {
+                    amlStatus: 0,
+                    iaStatus: 0,
+                    kycStatus: 0,
+                    bump: 0,
+                    authority: Keypair.generate().publicKey
+                },
+                Keypair.generate().publicKey
+            );
+
+            expect(record.status).toEqual(IdentityStatus.initial)
+
+        })
+
+        test("when statuses are started", () => {
+
+            const record = IdentityRecord.with(
+                {
+                    amlStatus: 1,
+                    iaStatus: 1,
+                    kycStatus: 0,
+                    bump: 0,
+                    authority: Keypair.generate().publicKey
+                },
+                Keypair.generate().publicKey
+            );
+
+            expect(record.status).toEqual(IdentityStatus.started)
+
+        })
+
+        test("when any status has been denied", () => {
+
+            const record = IdentityRecord.with(
+                {
+                    amlStatus: 1,
+                    iaStatus: 3,
+                    kycStatus: 0,
+                    bump: 0,
+                    authority: Keypair.generate().publicKey
+                },
+                Keypair.generate().publicKey
+            );
+
+            expect(record.status).toEqual(IdentityStatus.denied)
+
+        })
+
+        test("when some statuses are approved", () => {
+
+            const record = IdentityRecord.with(
+                {
+                    amlStatus: 2,
+                    iaStatus: 2,
+                    kycStatus: 1,
+                    bump: 0,
+                    authority: Keypair.generate().publicKey
+                },
+                Keypair.generate().publicKey
+            );
+
+            expect(record.status).toEqual(IdentityStatus.started)
+
+        })
+
+        test("when all statuses are approved", () => {
+
+            const record = IdentityRecord.with(
+                {
+                    amlStatus: 2,
+                    iaStatus: 2,
+                    kycStatus: 2,
+                    bump: 0,
+                    authority: Keypair.generate().publicKey
+                },
+                Keypair.generate().publicKey
+            );
+
+            expect(record.status).toEqual(IdentityStatus.approved)
+
+        })
+
+    })
 
 });
