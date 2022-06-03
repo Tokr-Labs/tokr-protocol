@@ -9,19 +9,36 @@ import {
 } from "../tools";
 import {getGovernanceSchema} from "./serialisation";
 
+/**
+ *
+ * @param instructions mutable transaction instruction array
+ * @param programId governance program id
+ * @param identityVerificationProgramId identity verification program id
+ * @param realm public key of realm
+ * @param capitalGovernance governance over the usdc account
+ * @param lpGovernance
+ * @param capitalTokenAuthority the owner of the usdc account being transfered from
+ * @param capitalTokenAccount the spl token ata account of the user
+ * @param capitalTokenMint spl token mint
+ * @param lpTokenAccount treasury stock account
+ * @param lpTokenMint treasury stock mint
+ * @param delegateTokenMint treasury stock transfer signer
+ * @param amount amount of spl token to transfer in
+ * @param decimals the decimal of the spl token
+ */
 export const withDepositCapital = async (
     instructions: TransactionInstruction[],
     programId: PublicKey,
     identityVerificationProgramId: PublicKey,
     realm: PublicKey,
-    capitalGovernance: PublicKey, // governance over the usdc account
+    capitalGovernance: PublicKey,
     lpGovernance: PublicKey,
-    capitalTokenAuthority: PublicKey, // the owner of the usdc account being transfer from
-    capitalTokenAccount: PublicKey, // the usdc ata account of the owner
-    capitalTokenMint: PublicKey, // usdc mint
-    lpTokenAccount: PublicKey, // treasury stock account
-    lpTokenMint: PublicKey, // treasury stock mint
-    delegateTokenMint: PublicKey, // treasury stock transfer signer
+    capitalTokenAuthority: PublicKey,
+    capitalTokenAccount: PublicKey,
+    capitalTokenMint: PublicKey,
+    lpTokenAccount: PublicKey,
+    lpTokenMint: PublicKey,
+    delegateTokenMint: PublicKey,
     amount: number,
     decimals: number,
 ) => {
