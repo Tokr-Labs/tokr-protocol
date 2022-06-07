@@ -5,7 +5,9 @@ export const validateRealmConfig = (config: any) => {
     return !!(
         isString(config.cluster) &&
         isString(config.owner) &&
-        isString(config.delegate) &&
+        // @FIXME: For now we're always making the creator of the delegate of the dao, otherwise we cannot deposit the
+        //    token into the dao for the delegate.
+        // isString(config.delegate) &&
         isString(config.name) &&
         isString(config.governanceProgramId) &&
         isString(config.usdcMint) &&

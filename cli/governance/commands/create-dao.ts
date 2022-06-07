@@ -36,7 +36,6 @@ export const createDao = async (
 
     const cluster = config.cluster;
     const owner = config.owner;
-    const delegate = config.delegate;
     const name = config.name !== "" ? config.name : generateSlug(3, {format: "title"});
 
     const governanceProgramId = config.governanceProgramId;
@@ -55,7 +54,7 @@ export const createDao = async (
     const connection = new Connection(cluster, {commitment})
 
     const ownerKeypair = await loadKeypair(owner);
-    // @TODO: For now we're always making the creator of the delegate of the dao, otherwise we cannot deposit the
+    // @FIXME: For now we're always making the creator of the delegate of the dao, otherwise we cannot deposit the
     //    token into the dao for the delegate.
     const delegateKeypair = ownerKeypair; // await loadKeypair(delegate);
     const governanceProgramIdPublicKey = new PublicKey(governanceProgramId);
@@ -219,7 +218,7 @@ export const sendTransactions = async (
                     skipPreflight,
                     commitment
                 }
-            ).then(sig => console.log(sig))
+            )
         )
 
     }
