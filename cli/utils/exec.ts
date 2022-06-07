@@ -1,6 +1,6 @@
 import {spawn} from "child_process";
 
-async function exec(command: string, {capture = false, echo = false, cwd = process.cwd()} = {}) {
+export async function exec(command: string, {capture = false, echo = false, cwd = process.cwd()} = {}) {
 
     let parsedCommand = command.replace(/\\?\n/g, ''); // need to merge multi-line commands into one string
 
@@ -42,5 +42,3 @@ async function exec(command: string, {capture = false, echo = false, cwd = proce
 
     });
 }
-
-module.exports.exec = exec;

@@ -57,7 +57,11 @@ export default (async (program: Command) => {
         )
         .action(async (options: any) => {
 
-            await createDao(options.inputFile)
+            await createDao(
+                options.inputFile,
+                true,
+                "confirmed"
+            )
 
         })
         .addHelpText("afterAll", `\nExample Config File:\n${daoConfig}`);

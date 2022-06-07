@@ -11,7 +11,8 @@
     "@solana/web3.js": "1.43.1",
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
-    "commander": "9.2.0"
+    "commander": "9.2.0",
+    "random-word-slugs": "^0.1.6"
   },
   "bin": {
     "tokr": "cli.js"
