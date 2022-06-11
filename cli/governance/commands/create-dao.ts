@@ -157,9 +157,9 @@ export const createDao = async (
         "addresses": {
             "realm": "${ixResponse.realm.toBase58()}",
             "governance": {
-                "lp_token_governance": "${ixResponse.limitedPartnerGovernance.toBase58()}",
-                "distribution_token_mint_governance": "${ixResponse.distributionMintGovernance.toBase58()}",
-                "delegate_token_mint_governance": "${ixResponse.delegateMintGovernance.toBase58()}"
+                "lp_governance": "${ixResponse.limitedPartnerGovernance.toBase58()}",
+                "distribution_mint_governance": "${ixResponse.distributionMintGovernance.toBase58()}",
+                "delegate_mint_governance": "${ixResponse.delegateMintGovernance.toBase58()}"
             },
             "mint": {
                 "lp_token_mint": "${limitedPartnerMintKeypair.publicKey.toBase58()}",
